@@ -1,4 +1,4 @@
 #!/bin/bash
 
-CP="bin/main/:lib/java-cup-11b-runtime.jar"
+CP="build/classes/java/main/:lib/java-cup-11b-runtime.jar"
 exec java -enableassertions -cp "$CP" Main "$@"
