@@ -16,6 +16,9 @@ public interface ObjVisitor<E> {
     E visit(FDiv e);
     E visit(Eq e);
     E visit(LE e);
+    E visit(GE e);
+    E visit(FEq e);
+    E visit(FLE e);
     E visit(If e);
     E visit(Let e);
     E visit(Var e);
@@ -23,10 +26,8 @@ public interface ObjVisitor<E> {
     E visit(App e);
     E visit(Tuple e);
     E visit(LetTuple e);
-    E visit(Array e);
+    E visit(New e);
     E visit(Get e);
     E visit(Put e);
     E visit(Nop e);
 }
-
-

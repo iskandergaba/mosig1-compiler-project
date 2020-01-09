@@ -18,7 +18,7 @@ class Bool extends Exp {
     Bool(boolean b) {
         this.b = b;
     }
-    
+
     <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
@@ -74,10 +74,10 @@ class Not extends Exp {
 }
 
 class Neg extends Exp {
-    final Exp e;
+    final Id id;
 
-    Neg(Exp e) {
-        this.e = e;
+    Neg(Id id) {
+        this.id = id;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -89,12 +89,12 @@ class Neg extends Exp {
 }
 
 class Add extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id id;
+    final Exp e;
 
-    Add(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    Add(Id id, Exp e) {
+        this.id = id;
+        this.e = e;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -106,12 +106,12 @@ class Add extends Exp {
 }
 
 class Sub extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id id;
+    final Exp e;
 
-    Sub(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    Sub(Id id, Exp e) {
+        this.id = id;
+        this.e = e;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -123,10 +123,10 @@ class Sub extends Exp {
 }
 
 class FNeg extends Exp {
-    final Exp e;
+    final Id id;
 
-    FNeg(Exp e) {
-        this.e = e;
+    FNeg(Id id) {
+        this.id = id;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -139,12 +139,12 @@ class FNeg extends Exp {
 }
 
 class FAdd extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id id1;
+    final Id id2;
 
-    FAdd(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    FAdd(Id id1, Id id2) {
+        this.id1 = id1;
+        this.id2 = id2;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -156,12 +156,12 @@ class FAdd extends Exp {
 }
 
 class FSub extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id id1;
+    final Id id2;
 
-    FSub(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    FSub(Id id1, Id id2) {
+        this.id1 = id1;
+        this.id2 = id2;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -173,12 +173,12 @@ class FSub extends Exp {
 }
 
 class FMul extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id id1;
+    final Id id2;
 
-    FMul(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    FMul(Id id1, Id id2) {
+        this.id1 = id1;
+        this.id2 = id2;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -190,12 +190,12 @@ class FMul extends Exp {
 }
 
 class FDiv extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id id1;
+    final Id id2;
 
-    FDiv(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    FDiv(Id id1, Id id2) {
+        this.id1 = id1;
+        this.id2 = id2;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -206,13 +206,13 @@ class FDiv extends Exp {
     }
 }
 
-class Eq extends Exp { 
-    final Exp e1;
-    final Exp e2;
+class Eq extends Exp {
+    final Id id;
+    final Exp e;
 
-    Eq(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    Eq(Id id, Exp e) {
+        this.id = id;
+        this.e = e;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -223,13 +223,64 @@ class Eq extends Exp {
     }
 }
 
-class LE extends Exp { 
-    final Exp e1;
-    final Exp e2;
+class LE extends Exp {
+    final Id id;
+    final Exp e;
 
-    LE(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    LE(Id id, Exp e) {
+        this.id = id;
+        this.e = e;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
+class GE extends Exp {
+    final Id id;
+    final Exp e;
+
+    GE(Id id, Exp e) {
+        this.id = id;
+        this.e = e;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
+class FEq extends Exp {
+    final Id id1;
+    final Id id2;
+
+    FEq(Id id1, Id id2) {
+        this.id1 = id1;
+        this.id2 = id2;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
+class FLE extends Exp {
+    final Id id1;
+    final Id id2;
+
+    FLE(Id id1, Id id2) {
+        this.id1 = id1;
+        this.id2 = id2;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -241,14 +292,14 @@ class LE extends Exp {
 }
 
 class If extends Exp {
+    final Exp cond;
     final Exp e1;
     final Exp e2;
-    final Exp e3;
 
-    If(Exp e1, Exp e2, Exp e3) {
+    If(Exp cond, Exp e1, Exp e2) {
+        this.cond = cond;
         this.e1 = e1;
         this.e2 = e2;
-        this.e3 = e3;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -366,32 +417,31 @@ class LetTuple extends Exp {
     }
 }
 
-class Array extends Exp {
-    final Exp e1;
-    final Exp e2;
+class New extends Exp {
+    final Exp size;
 
-    Array(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    New(Exp size) {
+        this.size = size;
     }
 
     <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
 }
 
 class Get extends Exp {
-    final Exp e1;
-    final Exp e2;
+    final Id base;
+    final Exp offset;
 
-    Get(Exp e1, Exp e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    Get(Id base, Exp offset) {
+        this.base = base;
+        this.offset = offset;
     }
- 
+
     <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
@@ -402,14 +452,14 @@ class Get extends Exp {
 }
 
 class Put extends Exp {
-    final Exp e1;
-    final Exp e2;
-    final Exp e3;
+    final Id base;
+    final Exp offset;
+    final Id dest;
 
-    Put(Exp e1, Exp e2, Exp e3) {
-        this.e1 = e1;
-        this.e2 = e2;
-        this.e3 = e3;
+    Put(Id base, Exp offset, Id dest) {
+        this.base = base;
+        this.offset = offset;
+        this.dest = dest;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -423,7 +473,7 @@ class Put extends Exp {
 
 class Nop extends Exp {
     Nop() {
-        
+
     }
     <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
@@ -446,6 +496,5 @@ class FunDef {
         this.args = args;
         this.e = e;
     }
- 
+
 }
- 

@@ -19,6 +19,9 @@ public interface Visitor {
     void visit(FDiv e);
     void visit(Eq e);
     void visit(LE e);
+    void visit(GE e);
+    void visit(FEq e);
+    void visit(FLE e);
     void visit(If e);
     void visit(Let e);
     void visit(Var e);
@@ -26,10 +29,8 @@ public interface Visitor {
     void visit(App e);
     void visit(Tuple e);
     void visit(LetTuple e);
-    void visit(Array e);
+    void visit(New e);
     void visit(Get e);
     void visit(Put e);
     void visit(Nop e);
 }
-
-
