@@ -1,5 +1,6 @@
+package frontend;
 
-interface ObjVisitor<E> {
+public interface ObjVisitor<E> {
     E visit(Unit e);
     E visit(Bool e);
     E visit(Int e);

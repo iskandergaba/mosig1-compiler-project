@@ -36,12 +36,13 @@ dependencies {
 
 task generateLexer(type:Exec) {
     workingDir './'
-    commandLine './jflex', 'src/main/java/Lexer.flex'
+    commandLine './jflex', 'src/main/java/frontend/Lexer.flex'
+    commandLine './jflex', 'src/main/java/backend/Lexer.flex'
 }
 
 task generateParser(type:Exec) {
     dependsOn generateLexer
-    workingDir 'src/main/java'
+    workingDir 'src/main/java/'
     commandLine '../../../cup', 'Parser.cup'
 }
 

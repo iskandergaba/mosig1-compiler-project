@@ -1,6 +1,8 @@
+package backend;
+
 import java.util.*;
 
-interface Visitor {
+public interface Visitor {
 
     void visit(Unit e);
     void visit(Bool e);
@@ -27,6 +29,7 @@ interface Visitor {
     void visit(Array e);
     void visit(Get e);
     void visit(Put e);
+    void visit(Nop e);
 }
 
 

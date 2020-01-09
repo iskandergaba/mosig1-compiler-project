@@ -1,10 +1,6 @@
+package frontend;
+
 import java.util.*;
-
-abstract class Exp {
-    abstract void accept(Visitor v);
-
-    abstract <E> E accept(ObjVisitor<E> v);
-}
 
 class Unit extends Exp {
     <E> E accept(ObjVisitor<E> v) {

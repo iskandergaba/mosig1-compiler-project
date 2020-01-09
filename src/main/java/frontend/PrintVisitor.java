@@ -1,6 +1,8 @@
+package frontend;
+
 import java.util.*;
 
-class PrintVisitor implements Visitor {
+public class PrintVisitor implements Visitor {
     public void visit(Unit e) {
         System.out.print("()");
     }

@@ -1,10 +1,12 @@
+package backend;
+
 import java_cup.runtime.*;
       
 %%
    
 /* -----------------Options and Declarations Section----------------- */
    
-%class Lexer
+%public %class Lexer
 
 /*
   The current line number can be accessed with the variable yyline
@@ -75,39 +77,40 @@ comment =  "(*" [^*] ~"*)"
 ")"     { return symbol(sym.RPAREN); }
 "true"  { return symbol(sym.BOOL, true); }
 "false" { return symbol(sym.BOOL, false); }
-"not"   { return symbol(sym.NOT); }
 
 {digit}+  { return symbol(sym.INT, new Integer(yytext())); }
 {digit}+ ("." {digit}*)? (["e" "E"] ["+" "-"]? digit+)?  
         { return symbol(sym.FLOAT, new java.lang.Float(yytext())); } 
 
-"-"     { return symbol(sym.MINUS); }
-"+"     { return symbol(sym.PLUS); }
-"-."    { return symbol(sym.MINUS_DOT); }
-"+."    { return symbol(sym.PLUS_DOT); }
-"*."    { return symbol(sym.AST_DOT); }
-"/."    { return symbol(sym.SLASH_DOT); }
-"="     { return symbol(sym.EQUAL); }
-"<>"    { return symbol(sym.LESS_GREATER); }
-"<="    { return symbol(sym.LESS_EQUAL); }
-">="    { return symbol(sym.GREATER_EQUAL); }
-"<"     { return symbol(sym.LESS); }
-">"     { return symbol(sym.GREATER); }
-"if"    { return symbol(sym.IF); }
-"then"  { return symbol(sym.THEN); }
-"else"  { return symbol(sym.ELSE); }
-"let"   { return symbol(sym.LET); }
-"in"    { return symbol(sym.IN); }
-"rec"   { return symbol(sym.REC); }
-","     { return symbol(sym.COMMA); }
-"_"     { return symbol(sym.IDENT, Id.gen()); }
-"Array.create" { return symbol(sym.ARRAY_CREATE); }
-"."     { return symbol(sym.DOT); }
-"<-"    { return symbol(sym.LESS_MINUS); }
-";"     { return symbol(sym.SEMICOLON); }
-eof     { return symbol(sym.EOF); }
+"+" { return symbol(sym.PLUS); }
+"=" { return symbol(sym.EQUAL); }
+"=." { return symbol(sym.FEQUAL); }
+"<=" { return symbol(sym.LE); }
+"<=." { return symbol(sym.FLE); }
+">=" { return symbol(sym.GE); }
+"if" { return symbol(sym.IF); }
+"then" { return symbol(sym.THEN); }
+"else" { return symbol(sym.ELSE); }
+"let" { return symbol(sym.LET); }
+"in" { return symbol(sym.IN); }
+"neg" { return symbol(sym.NEG); }
+"fneg" { return symbol(sym.FNEG); }
+"mem" { return symbol(sym.MEM); }
+"fmul" { return symbol(sym.FMUL); }
+"fdiv" { return symbol(sym.FDIV); }
+"fsub" { return symbol(sym.FSUB); }
+"fadd" { return symbol(sym.FADD); }
+"<-" { return symbol(sym.ASSIGN); }
+"add" { return symbol(sym.ADD); }
+"sub" { return symbol(sym.SUB); }
+"call" { return symbol(sym.CALL); }
+"new" { return symbol(sym.NEW); }
+"nop" { return symbol(sym.NOP); }
+"apply_closure" { return symbol(sym.APPCLO); }
+"_" { return symbol(sym.UNDERSC); }
 
 {lower} ({digit}|{lower}|{upper}|"_")*   { return symbol(sym.IDENT, new Id(yytext())); }
+"_" ({digit}|{lower}|{upper}|"_")* { return symbol(sym.LABEL, new Id(yytext()))}
 }
 [^]                    { throw new Error("Illegal character <"+yytext()+">"); }
 

@@ -1,0 +1,68 @@
+package backend;
+
+import java_cup.runtime.*;
+import java.util.*;
+
+parser code {:
+    Lexer l;
+    Parser(Lexer l){
+	   this.l = l;
+    }
+
+    class Pair<A,B> {
+        A left;
+        B right;
+
+        Pair(A left, B right) {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    :}
+
+init with {:  :};
+scan with {: return l.next_token(); :};
+
+terminal boolean BOOL;
+
+terminal int INT;
+terminal float FLOAT;
+terminal Id IDENT;
+terminal LPAREN, RPAREN, PLUS, EQUAL, FEQUAL, LE, FLE, GE, IF,
+ THEN, ELSE, LET, IN, NEG, FNEG, MEM, FMUL, FDIV, LABEL,
+ FSUB, FADD, ASSIGN, ADD, SUB, CALL, NEW, NOP, APPCLO,
+ UNDERSC;
+terminal prec_let, prec_if, prec_unary_minus, prec_app;
+
+non terminal Exp ident_or_imm;
+non terminal Exp exp;
+non terminal Exp asmt;
+non terminal List<Id> formal_args;
+non terminal FunDef fundefs;
+non terminal Exp toplevel;
+
+precedence nonassoc INT, FLOAT, IDENT, LPAREN;
+
+start with toplevel;
+
+ident_or_imm ::= INT:i    {: RESULT = new Int(i); :}
+               | BOOL:b   {: RESULT = new Bool(b); :}
+               | IDENT:id {: RESULT = new Var(id); :}
+;
+
+exp ::= NOP                 {: RESULT = new Nop(); :}
+      | LPAREN exp:e RPAREN {: RESULT = e; :}
+      | INT:i               {: RESULT = new Int(i); :}
+      | IDENT:id            {: RESULT = new Var(id); :}
+;
+
+asmt ::= exp;
+
+fundefs ::= LET UNDERSC EQUAL asmt:e {:
+    RESULT = e;
+:}
+          | LET LABEL:l EQUAL 
+;
+
+toplevel ::= fundefs:e {: RESULT = e; :};
