@@ -91,7 +91,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         Type res2 = e.e2.accept(this);
         Type res3 = e.e3.accept(this);
         return res1 instanceof TBool && res2 instanceof TUnit && res3 instanceof TUnit 
-            ? new TFloat()
+            ? new TUnit()
             : null;
     }
 
@@ -109,10 +109,11 @@ class TypeVisitor implements ObjVisitor<Type> {
         return new TVar(e.id.id);
     }
 
+    // TODO
     public Type visit(LetRec e){
         Type res1 = e.fd.e.accept(this);
         Type res2 = e.e.accept(this);
-        if (res1 instanceof TFun && res2 instanceof TUnit) {
+        if (res1 instanceof TUnit && res2 instanceof TUnit) {
             env.put(e.fd.id.id, e.fd.type);
             return new TUnit();
         }
@@ -120,20 +121,27 @@ class TypeVisitor implements ObjVisitor<Type> {
     }
 
     public Type visit(App e) {
-        /*
-        int res1 = e.e.accept(this);
-        for (Exp exp : e.es) {
-            res1 = Math.max(res1, exp.accept(this));
+        Type res = e.e.accept(this);
+        if (res instanceof TFun) {
+            for (Exp exp : e.es) {
+                res = exp.accept(this);
+                if (res == null) {
+                    return null;
+                }
+            }
+            return new TUnit();
         }
-        return res1 + 1;
-        */
-        return new TUnit();
+        return null;
     }
 
     public Type visit(Tuple e) {
         List<Type> types = new ArrayList<>();
         for (Exp exp : e.es) {
-            types.add(exp.accept(this));
+            Type res = exp.accept(this);
+            if (res == null) {
+                return null;
+            }
+            types.add(res);
         }
         return new TTuple(types);
     }
