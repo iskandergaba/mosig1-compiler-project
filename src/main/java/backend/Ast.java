@@ -365,13 +365,30 @@ class LetRec extends Exp {
     }
 }
 
-class App extends Exp {
-    final Exp e;
-    final List<Exp> es;
+class Call extends Exp {
+    final Label f;
+    final List<Id> args;
 
-    App(Exp e, List<Exp> es) {
-        this.e = e;
-        this.es = es;
+    Call(Label f, List<Id> args) {
+        this.f = f;
+        this.args = args;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
+class AppClosure extends Exp {
+    final Id id;
+    final List<Id> args;
+
+    AppClosure(Id id, List<Id> args) {
+        this.id = id;
+        this.args = args;
     }
 
     <E> E accept(ObjVisitor<E> v) {

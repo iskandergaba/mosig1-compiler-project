@@ -23,7 +23,7 @@ public interface ObjVisitor<E> {
     E visit(Let e);
     E visit(Var e);
     E visit(LetRec e);
-    E visit(App e);
+    E visit(Call e);
     E visit(Tuple e);
     E visit(LetTuple e);
     E visit(New e);
@@ -31,4 +31,5 @@ public interface ObjVisitor<E> {
     E visit(Put e);
     E visit(Nop e);
     E visit(Fun e);
+    E visit(AppClosure e);
 }

@@ -26,7 +26,7 @@ public interface Visitor {
     void visit(Let e);
     void visit(Var e);
     void visit(LetRec e);
-    void visit(App e);
+    void visit(Call e);
     void visit(Tuple e);
     void visit(LetTuple e);
     void visit(New e);
@@ -34,4 +34,5 @@ public interface Visitor {
     void visit(Put e);
     void visit(Nop e);
     void visit(Fun e);
+    void visit(AppClosure e);
 }

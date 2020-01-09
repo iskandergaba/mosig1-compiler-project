@@ -31,7 +31,7 @@ terminal float FLOAT;
 terminal Id IDENT;
 terminal Label LABEL;
 terminal LPAREN, RPAREN, PLUS, EQUAL, FEQUAL, LE, FLE, GE, IF,
- THEN, ELSE, LET, IN, NEG, FNEG, MEM, FMUL, FDIV,
+ THEN, ELSE, LET, IN, NEG, FNEG, MEM, FMUL, FDIV, SELF,
  FSUB, FADD, ASSIGN, ADD, SUB, CALL, NEW, NOP, APPCLO,
  UNDERSC;
 terminal prec_let, prec_if, prec_unary_minus, prec_app;
@@ -51,6 +51,7 @@ ident_or_imm ::= INT:i    {: RESULT = new Int(i); :}
                | IDENT:id {: RESULT = new Var(id); :}
 ;
 
+// TODO: Ask the teachers about the %self construct in memory accesses.
 exp ::= NOP                 {: RESULT = new Nop(); :}
       | LPAREN exp:e RPAREN {: RESULT = e; :}
       | INT:i               {: RESULT = new Int(i); :}
@@ -79,8 +80,8 @@ exp ::= NOP                 {: RESULT = new Nop(); :}
             {: RESULT = new If(new FEq(id1, id2), e1, e2); :}
       | IF IDENT:id1 FLE IDENT:id2 THEN asmt:e1 ELSE asmt:e2
             {: RESULT = new If(new FLE(id1, id2), e1, e2); :}
-    //   | CALL LABEL formal_args
-    //   | CALLCLO IDENT formal_args
+      | CALL LABEL:l formal_args:args {: new Call(l, args); :}
+      | APPCLO IDENT:id formal_args:args {: new AppClosure(id, args); :}
 ;
 
 asmt ::= LPAREN asmt:e RPAREN {: RESULT = e; :}
