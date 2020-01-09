@@ -34,10 +34,17 @@ dependencies {
     implementation name: 'java-cup-11b'
 }
 
-task generateLexer(type:Exec) {
-    workingDir './'
-    commandLine './jflex', 'src/main/java/frontend/Lexer.flex'
-    commandLine './jflex', 'src/main/java/backend/Lexer.flex'
+task generateLexer {
+    doLast {
+        exec {
+            workingDir './'
+            commandLine './jflex', 'src/main/java/frontend/Lexer.flex'
+        }
+        exec {
+            workingDir './'
+            commandLine './jflex', 'src/main/java/backend/Lexer.flex'
+        }
+    }
 }
 
 task generateParser(type:Exec) {

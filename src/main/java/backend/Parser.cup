@@ -59,10 +59,10 @@ exp ::= NOP                 {: RESULT = new Nop(); :}
 
 asmt ::= exp;
 
-fundefs ::= LET UNDERSC EQUAL asmt:e {:
-    RESULT = e;
-:}
-          | LET LABEL:l EQUAL 
-;
+// fundefs ::= LET UNDERSC EQUAL asmt:e {:
+//     RESULT = e;
+// :}
+//           | LET LABEL:l EQUAL
+// ;
 
-toplevel ::= fundefs:e {: RESULT = e; :};
+toplevel ::= asmt;

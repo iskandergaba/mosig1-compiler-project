@@ -8,44 +8,45 @@ package backend;
 /** CUP generated interface containing symbol constants. */
 public interface sym {
   /* terminals */
-  public static final int APPCLO = 32;
+  public static final int APPCLO = 33;
   public static final int GE = 13;
-  public static final int prec_app = 37;
+  public static final int prec_app = 38;
   public static final int FDIV = 23;
   public static final int LPAREN = 6;
   public static final int INT = 3;
-  public static final int prec_unary_minus = 36;
+  public static final int prec_unary_minus = 37;
   public static final int FMUL = 22;
   public static final int RPAREN = 7;
-  public static final int FADD = 25;
-  public static final int NOP = 31;
+  public static final int FADD = 26;
+  public static final int NOP = 32;
   public static final int IN = 18;
   public static final int BOOL = 2;
   public static final int FLE = 12;
-  public static final int CALL = 29;
-  public static final int prec_let = 34;
+  public static final int CALL = 30;
+  public static final int prec_let = 35;
   public static final int PLUS = 8;
-  public static final int ASSIGN = 26;
+  public static final int ASSIGN = 27;
   public static final int FNEG = 20;
   public static final int IF = 14;
   public static final int LE = 11;
   public static final int EOF = 0;
   public static final int EQUAL = 9;
-  public static final int NEW = 30;
+  public static final int NEW = 31;
   public static final int error = 1;
-  public static final int ADD = 27;
+  public static final int ADD = 28;
   public static final int IDENT = 5;
   public static final int FEQUAL = 10;
-  public static final int FSUB = 24;
+  public static final int FSUB = 25;
   public static final int NEG = 19;
   public static final int ELSE = 16;
   public static final int MEM = 21;
-  public static final int prec_if = 35;
+  public static final int prec_if = 36;
   public static final int LET = 17;
   public static final int FLOAT = 4;
   public static final int THEN = 15;
-  public static final int UNDERSC = 33;
-  public static final int SUB = 28;
+  public static final int UNDERSC = 34;
+  public static final int LABEL = 24;
+  public static final int SUB = 29;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -71,6 +72,7 @@ public interface sym {
   "MEM",
   "FMUL",
   "FDIV",
+  "LABEL",
   "FSUB",
   "FADD",
   "ASSIGN",
