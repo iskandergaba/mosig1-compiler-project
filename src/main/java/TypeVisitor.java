@@ -1,213 +1,175 @@
 import java.util.*;
 
-class PrintVisitor implements Visitor {
-    public void visit(Unit e) {
-        System.out.print("()");
+class TypeVisitor implements ObjVisitor<Type> {
+
+    public Hashtable<String, Type> env = new Hashtable<>();
+
+    public Type visit(Unit e) {
+        return new TUnit();
     }
 
-    public void visit(Bool e) {
-        System.out.print(e.b);
+    public Type visit(Bool e) {
+        return new TBool();
     }
 
-    public void visit(Int e) {
-        System.out.print(e.i);
+    public Type visit(Int e) {
+        return new TInt();
     }
 
-    public void visit(Float e) {
-        String s = String.format("%.2f", e.f);
-        System.out.print(s);
+    public Type visit(Float e) { 
+        return new TFloat();
     }
 
-    public void visit(Not e) {
-        System.out.print("(not ");
-        e.e.accept(this);
-        System.out.print(")");
+    public Type visit(Not e) {
+        Type res = e.e.accept(this);
+        return res instanceof TBool ? new TBool() : null;
     }
 
-    public void visit(Neg e) {
-        System.out.print("(- ");
-        e.e.accept(this);
-        System.out.print(")");
+    public Type visit(Neg e) {
+        Type res = e.e.accept(this);
+        return res instanceof TInt ? new TInt() : null;
     }
 
-    public void visit(Add e) {
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" + ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(Add e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TInt && res2 instanceof TInt ? new TInt() : null;
     }
 
-    public void visit(Sub e) {
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" - ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(Sub e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TInt && res2 instanceof TInt ? new TInt() : null;
+   }
+
+    public Type visit(FNeg e){
+        Type res = e.e.accept(this);
+        return res instanceof TFloat ? new TFloat() : null;
     }
 
-    public void visit(FNeg e){
-        System.out.print("(-. ");
-        e.e.accept(this);
-        System.out.print(")");
+    public Type visit(FAdd e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TFloat && res2 instanceof TFloat ? new TFloat() : null;
     }
 
-    public void visit(FAdd e){
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" +. ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(FSub e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TFloat && res2 instanceof TFloat ? new TFloat() : null;
     }
 
-    public void visit(FSub e){
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" -. ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(FMul e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TFloat && res2 instanceof TFloat ? new TFloat() : null;
+     }
+
+    public Type visit(FDiv e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TFloat && res2 instanceof TFloat ? new TFloat() : null;
     }
 
-    public void visit(FMul e) {
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" *. ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(Eq e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1.getClass().getName().equals(res2.getClass().getName()) ? new TBool() : null;
     }
 
-    public void visit(FDiv e){
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" /. ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(LE e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return (res1 instanceof TInt && res2 instanceof TInt)
+            || (res1 instanceof TFloat && res2 instanceof TFloat)
+                ? new TBool()
+                : null;
     }
 
-    public void visit(Eq e){
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" = ");
-        e.e2.accept(this);
-        System.out.print(")");
+    public Type visit(If e){
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        Type res3 = e.e3.accept(this);
+        return res1 instanceof TBool && res2 instanceof TUnit && res3 instanceof TUnit 
+            ? new TFloat()
+            : null;
     }
 
-    public void visit(LE e){
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(" <= ");
-        e.e2.accept(this);
-        System.out.print(")");
-    }
-
-    public void visit(If e){
-        System.out.print("(if ");
-        e.e1.accept(this);
-        System.out.print(" then ");
-        e.e2.accept(this);
-        System.out.print(" else ");
-        e.e3.accept(this);
-        System.out.print(")");
-    }
-
-    public void visit(Let e) {
-        System.out.print("(let ");
-        System.out.print(e.id);
-        System.out.print(" = ");
-        e.e1.accept(this);
-        System.out.print(" in ");
-        e.e2.accept(this);
-        System.out.print(")");
-    }
-
-    public void visit(Var e){
-        System.out.print(e.id);
-    }
-
-
-    // print sequence of identifiers 
-    static <E> void printInfix(List<E> l, String op) {
-        if (l.isEmpty()) {
-            return;
+    public Type visit(Let e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        if (e.t.getClass().getName().equals(res1.getClass().getName()) && res2 instanceof TUnit) {
+            env.put(e.id.id, e.t);
+            return new TUnit();
         }
-        Iterator<E> it = l.iterator();
-        System.out.print(it.next());
-        while (it.hasNext()) {
-            System.out.print(op + it.next());
+        return null;
+    }
+
+    public Type visit(Var e){
+        return new TVar(e.id.id);
+    }
+
+    public Type visit(LetRec e){
+        Type res1 = e.fd.e.accept(this);
+        Type res2 = e.e.accept(this);
+        if (res1 instanceof TFun && res2 instanceof TUnit) {
+            env.put(e.fd.id.id, e.fd.type);
+            return new TUnit();
         }
+        return null;
     }
 
-    // print sequence of Exp
-    void printInfix2(List<Exp> l, String op) {
-        if (l.isEmpty()) {
-            return;
+    public Type visit(App e) {
+        /*
+        int res1 = e.e.accept(this);
+        for (Exp exp : e.es) {
+            res1 = Math.max(res1, exp.accept(this));
         }
-        Iterator<Exp> it = l.iterator();
-        it.next().accept(this);
-        while (it.hasNext()) {
-            System.out.print(op);
-            it.next().accept(this);
+        return res1 + 1;
+        */
+        return new TUnit();
+    }
+
+    public Type visit(Tuple e) {
+        List<Type> types = new ArrayList<>();
+        for (Exp exp : e.es) {
+            types.add(exp.accept(this));
         }
+        return new TTuple(types);
     }
 
-    public void visit(LetRec e){
-        System.out.print("(let rec " + e.fd.id + " ");
-        printInfix(e.fd.args, " ");
-        System.out.print(" = ");
-        e.fd.e.accept(this);
-        System.out.print(" in ");
-        e.e.accept(this);
-        System.out.print(")");
+    public Type visit(LetTuple e) {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        if (res1 instanceof TTuple && res2 instanceof TUnit) {
+            for (int i = 0; i < e.ids.size(); i++) {
+                env.put(e.ids.get(i).id, e.ts.get(i));
+            }
+            return new TUnit();
+        }
+        return null;
     }
 
-    public void visit(App e){
-        System.out.print("(");
-        e.e.accept(this);
-        System.out.print(" ");
-        printInfix2(e.es, " ");
-        System.out.print(")");
+    public Type visit(Array e){
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TInt ? new TArray(res2) : null;
     }
 
-    public void visit(Tuple e){
-        System.out.print("(");
-        printInfix2(e.es, ", ");
-        System.out.print(")");
+    public Type visit(Get e){
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        return res1 instanceof TArray && res2 instanceof TInt ? ((TArray)res1).type : null;
     }
 
-    public void visit(LetTuple e){
-        System.out.print("(let (");
-        printInfix(e.ids, ", ");
-        System.out.print(") = ");
-        e.e1.accept(this);
-        System.out.print(" in ");
-        e.e2.accept(this);
-        System.out.print(")");
-    }
-
-    public void visit(Array e){
-        System.out.print("(Array.create ");
-        e.e1.accept(this);
-        System.out.print(" ");
-        e.e2.accept(this);
-        System.out.print(")");
-    }
-
-    public void visit(Get e){
-        e.e1.accept(this);
-        System.out.print(".(");
-        e.e2.accept(this);
-        System.out.print(")");
-    }
-
-    public void visit(Put e){
-        System.out.print("(");
-        e.e1.accept(this);
-        System.out.print(".(");
-        e.e2.accept(this);
-        System.out.print(") <- ");
-        e.e3.accept(this);
-        System.out.print(")");
+    public Type visit(Put e){
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        Type res3 = e.e3.accept(this);
+        return res1 instanceof TArray 
+            && res2 instanceof TInt
+            && res3.getClass().equals(((TArray)res1).type.getClass()) 
+                ? new TUnit()
+                : null;
     }
 }
-
-

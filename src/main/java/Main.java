@@ -17,9 +17,21 @@ public class Main {
       int height = Height.computeHeight(expression);
       System.out.println("using Height.computeHeight: " + height);
 
-      ObjVisitor<Integer> v = new HeightVisitor();
-      height = expression.accept(v);
+      ObjVisitor<Integer> v1 = new HeightVisitor();
+      height = expression.accept(v1);
       System.out.println("using HeightVisitor: " + height);
+
+      System.out.println("------ Type visiting ----");
+      ObjVisitor<Type> v2 = new TypeVisitor();
+      Type result = expression.accept(v2);
+      if(result instanceof TUnit) {
+        System.out.println("YEAAAAAAAAAAAH!");
+      } else if (result == null) {
+        System.out.println("Fuck UGA");
+      } else {
+        System.out.println("Fuck UGA anyways");
+        System.out.println(result.toString());
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
