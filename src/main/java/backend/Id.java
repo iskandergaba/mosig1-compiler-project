@@ -16,3 +16,19 @@ class Id {
     }
 
 }
+
+class Label {
+    String label;
+    Label(String label) {
+        this.label = label;
+    }
+    @Override
+    public String toString() {
+        return label;
+    }
+    static int x = -1;
+    static Label gen() {
+        x++;
+        return new Label("?f" + x);
+    }
+}

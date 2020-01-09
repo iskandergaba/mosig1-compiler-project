@@ -30,6 +30,7 @@ public interface Visitor {
     void visit(Get e);
     void visit(Put e);
     void visit(Nop e);
+    void visit(Fun e);
 }
 
 

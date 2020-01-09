@@ -45,9 +45,11 @@ class Int extends Exp {
 
 class Float extends Exp {
     float f;
+    Label l;
 
-    Float(float f) {
+    Float(float f, Label l) {
         this.f = f;
+        this.l = l;
     }
 
     <E> E accept(ObjVisitor<E> v) {
@@ -434,14 +436,30 @@ class Nop extends Exp {
     }
 }
 
+class Fun extends Exp {
+    final Label l;
+
+    Fun(Label l) {
+        this.l = l;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
 class FunDef {
-    final Id id;
+    final Fun fun;
     final Type type;
     final List<Id> args;
     final Exp e;
 
-    FunDef(Id id, Type t, List<Id> args, Exp e) {
-        this.id = id;
+    FunDef(Fun fun, Type t, List<Id> args, Exp e) {
+        this.fun = fun;
         this.type = t;
         this.args = args;
         this.e = e;

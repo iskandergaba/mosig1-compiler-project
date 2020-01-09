@@ -27,6 +27,7 @@ public interface ObjVisitor<E> {
     E visit(Get e);
     E visit(Put e);
     E visit(Nop e);
+    E visit(Fun e);
 }
 
 

@@ -29,8 +29,9 @@ terminal boolean BOOL;
 terminal int INT;
 terminal float FLOAT;
 terminal Id IDENT;
+terminal Label LABEL;
 terminal LPAREN, RPAREN, PLUS, EQUAL, FEQUAL, LE, FLE, GE, IF,
- THEN, ELSE, LET, IN, NEG, FNEG, MEM, FMUL, FDIV, LABEL,
+ THEN, ELSE, LET, IN, NEG, FNEG, MEM, FMUL, FDIV,
  FSUB, FADD, ASSIGN, ADD, SUB, CALL, NEW, NOP, APPCLO,
  UNDERSC;
 terminal prec_let, prec_if, prec_unary_minus, prec_app;
@@ -39,7 +40,7 @@ non terminal Exp ident_or_imm;
 non terminal Exp exp;
 non terminal Exp asmt;
 non terminal List<Id> formal_args;
-non terminal FunDef fundefs;
+non terminal Exp fundefs;
 non terminal Exp toplevel;
 
 precedence nonassoc INT, FLOAT, IDENT, LPAREN;
@@ -47,7 +48,6 @@ precedence nonassoc INT, FLOAT, IDENT, LPAREN;
 start with toplevel;
 
 ident_or_imm ::= INT:i    {: RESULT = new Int(i); :}
-               | BOOL:b   {: RESULT = new Bool(b); :}
                | IDENT:id {: RESULT = new Var(id); :}
 ;
 
@@ -55,14 +55,35 @@ exp ::= NOP                 {: RESULT = new Nop(); :}
       | LPAREN exp:e RPAREN {: RESULT = e; :}
       | INT:i               {: RESULT = new Int(i); :}
       | IDENT:id            {: RESULT = new Var(id); :}
+      | LABEL:l             {: RESULT = new Fun(l); :}
 ;
 
-asmt ::= exp;
+asmt ::= LPAREN asmt:e RPAREN {: RESULT = e; :}
+       | LET IDENT:id EQUAL exp:e IN asmt:a {:
+            RESULT = new Let(id, Type.gen(), e, a);
+       :}
+       | exp:e {: RESULT = e; :}
+;
 
-// fundefs ::= LET UNDERSC EQUAL asmt:e {:
-//     RESULT = e;
-// :}
-//           | LET LABEL:l EQUAL
-// ;
+fundefs ::= LET UNDERSC EQUAL asmt:e {: RESULT = e; :}
+          | LET LABEL:l formal_args:args EQUAL asmt:e fundefs {:
+                FunDef fd = new FunDef(new Fun(l), null, args, e);
+                RESULT = new LetRec(fd, e);
+          :}
+          | LET LABEL:l EQUAL FLOAT:f fundefs {:
+                RESULT = new Float(f, l);
+          :}
+;
 
-toplevel ::= asmt;
+formal_args ::= IDENT:id formal_args:args {:
+                    args.add(0, id);
+                    RESULT = args;
+              :}
+              | IDENT:id {:
+                    List l = new LinkedList<Id>();
+                    l.add(0, id);
+                    RESULT = l;
+              :}
+;
+
+toplevel ::= fundefs:f {: RESULT = f; :};

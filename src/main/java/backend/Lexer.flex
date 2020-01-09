@@ -108,8 +108,7 @@ comment =  "(*" [^*] ~"*)"
 "nop" { return symbol(sym.NOP); }
 "apply_closure" { return symbol(sym.APPCLO); }
 "_" { return symbol(sym.UNDERSC); }
-
+"_" ({digit}|{lower}|{upper}|"_")* { return symbol(sym.LABEL, new Label(yytext())); }
 {lower} ({digit}|{lower}|{upper}|"_")*   { return symbol(sym.IDENT, new Id(yytext())); }
-"_" ({digit}|{lower}|{upper}|"_")* { return symbol(sym.LABEL, new Id(yytext())); }
 }
 [^]                    { throw new Error("Illegal character <"+yytext()+">"); }
