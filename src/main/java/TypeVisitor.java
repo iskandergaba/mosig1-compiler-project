@@ -85,130 +85,164 @@ class TypeVisitor implements ObjVisitor<Type> {
         return new TFloat();
     }
 
-    public Type visit(Not e) {
+    public Type visit(Not e) throws Exception {
         Type res = e.e.accept(this);
-        return res instanceof TBool || res instanceof TAssumeOK ? new TBool() : null;
+        if(res instanceof TBool || res instanceof TAssumeOK){
+            return new TBool();
+        }
+        throw new TypingException("NOT error : wrong type");
     }
 
-    public Type visit(Neg e) {
+    public Type visit(Neg e) throws Exception {
         Type res = e.e.accept(this);
-        return res instanceof TInt  || res instanceof TAssumeOK ? new TInt() : null;
+        if(res instanceof TInt  || res instanceof TAssumeOK){
+            return new TInt();
+        }
+        throw new TypingException("NEG error : wrong type");
     }
 
-    public Type visit(Add e) {
+    public Type visit(Add e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return (res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK) ? new TInt() : null;
+        if((res1 instanceof TInt || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TInt || res2 instanceof TAssumeOK)) {
+            return new TInt();
+        }
+        throw new TypingException("ADD error : wrong type");   
     }
 
-    public Type visit(Sub e) {
+    public Type visit(Sub e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return (res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK) ? new TInt() : null;
+        if((res1 instanceof TInt || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TInt || res2 instanceof TAssumeOK)){
+            return new TInt();
+        }
+        throw new TypingException("SUB error : wrong type");
    }
 
-    public Type visit(FNeg e){
+    public Type visit(FNeg e) throws Exception {
         Type res = e.e.accept(this);
-        return res instanceof TFloat || res instanceof TAssumeOK ? new TFloat() : null;
+        if(res instanceof TFloat || res instanceof TAssumeOK){
+            return new TFloat();
+        }
+        throw new TypingException("FLOAT NEG error : wrong type");
     }
 
-    public Type visit(FAdd e) {
+    public Type visit(FAdd e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return (res1 instanceof TFloat || res1 instanceof TAssumeOK) && (res2 instanceof TFloat || res2 instanceof TAssumeOK) ? new TFloat() : null;
+        if((res1 instanceof TFloat || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
+            return new TFloat();
+        }
+        throw new TypingException("FLOAT ADD error : wrong type");
     }
 
-    public Type visit(FSub e) {
+    public Type visit(FSub e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return (res1 instanceof TFloat || res1 instanceof TAssumeOK) && (res2 instanceof TFloat || res2 instanceof TAssumeOK) ? new TFloat() : null;
+        if((res1 instanceof TFloat || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
+            return new TFloat();
+        }
+        throw new TypingException("FLOAT SUB error : wrong type");
     }
 
-    public Type visit(FMul e) {
+    public Type visit(FMul e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return (res1 instanceof TFloat || res1 instanceof TAssumeOK) && (res2 instanceof TFloat || res2 instanceof TAssumeOK) ? new TFloat() : null;
-     }
-
-    public Type visit(FDiv e) {
-        Type res1 = e.e1.accept(this);
-        Type res2 = e.e2.accept(this);
-        return (res1 instanceof TFloat || res1 instanceof TAssumeOK) && (res2 instanceof TFloat || res2 instanceof TAssumeOK) ? new TFloat() : null;
+        if((res1 instanceof TFloat || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
+            return new TFloat();
+        }
+        throw new TypingException("FLOAT MUL error : wrong type");    
     }
 
-    public Type visit(Eq e) {
+    public Type visit(FDiv e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return res1.getClass().getName().equals(res2.getClass().getName()) || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK ? new TBool() : null;
+        if((res1 instanceof TFloat || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
+            return new TFloat();
+        }
+        throw new TypingException("FLOAT DIV error : wrong type");
     }
 
-    public Type visit(LE e) {
+    public Type visit(Eq e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return ((res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK))
-            || ((res1 instanceof TFloat || res1 instanceof TAssumeOK) && (res2 instanceof TFloat || res2 instanceof TAssumeOK))
-                ? new TBool()
-                : null;
+        if((res1!=null && res2!=null 
+        && res1.getClass().getName().equals(res2.getClass().getName())) 
+        || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK) {
+            return new TBool();
+        }
+        throw new TypingException("EQ error : type mismatch");
     }
 
-    public Type visit(If e){
+    public Type visit(LE e) throws Exception {
+        Type res1 = e.e1.accept(this);
+        Type res2 = e.e2.accept(this);
+        if(((res1 instanceof TInt || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TInt || res2 instanceof TAssumeOK))
+        || ((res1 instanceof TFloat || res1 instanceof TAssumeOK) 
+        && (res2 instanceof TFloat || res2 instanceof TAssumeOK))) {
+            return new TBool();
+        }
+        throw new TypingException("LE error : wrong type");
+    }
+
+    public Type visit(If e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
         Type res3 = e.e3.accept(this);
-        return res1 instanceof TBool && res2!=null && res3!=null 
-            && (res2.getClass().getName().equals(res3.getClass().getName()) || res2 instanceof TAssumeOK || res3 instanceof TAssumeOK)
-            ? res2
-            : null;
-    }
-
-    public Type visit(Let e) {
-        Type res1 = e.e1.accept(this);
-        if(res1!=null){
-            env.put(e.id.id, res1);
-        }
-        else{
-            System.out.println("let "+e.id.id+" : bad assignment");
-            return null;
-        }
-        Type res2 = e.e2.accept(this);
-        if (res2!=null) {
+        if(res1 instanceof TBool
+        && (res2.getClass().getName().equals(res3.getClass().getName()) 
+        || res2 instanceof TAssumeOK || res3 instanceof TAssumeOK)) {
             return res2;
+        } else {
+            throw new TypingException("IF error : wrong type");
         }
-        System.out.println("let "+e.id.id+" : bad successor");
-        return null;
     }
 
-    public Type visit(Var e){
-        return env.get(e.id.id);
+    public Type visit(Let e) throws Exception {
+        Type res1 = e.e1.accept(this);
+        env.put(e.id.id, res1);
+        Type res2 = e.e2.accept(this);
+        return res2;
     }
 
-    // TODO
-    public Type visit(LetRec e){
-        //Type res1 = e.fd.e.accept(this);
+    public Type visit(Var e) throws Exception{
+        Type res=env.get(e.id.id);
+        if(res==null)
+            throw new TypingException("VAR exception : "+e.id.id+" is undeclared");
+        return res;
+    }
+
+    public Type visit(LetRec e) throws Exception {
         TFun t=new TFun();
         t.body=e.fd.e;
         t.args=e.fd.args;
         env.put(e.fd.id.id, t);
         Type res2 = e.e.accept(this);
-        if (res2 != null) {
-            return res2;
-        }
-        System.out.println("letrec : "+e.fd.id.id);
-        return null;
+        return res2;
     }
 
-    public Type visit(App e) {
+    public Type visit(App e) throws Exception {
         Type res = e.e.accept(this);
         if (res instanceof TFun) {
             if(((TFun)res).extern){
                 int i=0;
                 for(Exp exp : e.es){
                     Type res_=exp.accept(this);
-                    if(res_==null || !((res_ instanceof TAssumeOK) || res_.getClass().getName().equals(((TFun)res).extern_args.get(i).getClass().getName()))){
-                        System.out.print("app bad arg");
-                        e.e.accept(new PrintVisitor());
-                        System.out.println("");
-                        return null;
+                    if(e.es.size()!=((TFun)res).extern_args.size())
+                        throw new TypingException("APP error : wrong number of arguments");
+                    if(res_==null || !((res_ instanceof TAssumeOK) 
+                        || res_.getClass().getName().equals(((TFun)res).extern_args.get(i).getClass().getName()))){
+                        throw new TypingException("APP error : "+((Var)e.e).id.id
+                            +" : wrong argument type " +"(has "+res_.getClass().getName()
+                            +", expected "+((TFun)res).extern_args.get(i).getClass().getName()
+                            +")");
                     }
                     i++;
                 }
@@ -217,12 +251,6 @@ class TypeVisitor implements ObjVisitor<Type> {
             int i=0;
             for (Exp exp : e.es) {
                 Type res_ = exp.accept(this);
-                if (res_ == null) {
-                    System.out.print("app bad arg : ");
-                    e.e.accept(new PrintVisitor());
-                    System.out.println("");
-                    return null;
-                }
                 env.put(((TFun)res).args.get(i).id,res_);
                 i++;
             }
@@ -231,71 +259,71 @@ class TypeVisitor implements ObjVisitor<Type> {
                 ((TFun)res).rec_calls++;
                 res__=((TFun)res).body.accept(this);
                 ((TFun)res).rec_calls--;
-                if(res__==null){
-                    System.out.print("bad call : ");
-                    e.e.accept(new PrintVisitor());
-                    System.out.println("");
-                }
             } else {
                 res__=new TAssumeOK();
             }
-            return res__!=null ? res__ : null;
+            return res__;
         }
-        System.out.print("app not func : ");
-        e.e.accept(new PrintVisitor());
-        System.out.println("");
-        return null;
+        throw new TypingException("APP error : not a function");
     }
 
-    public Type visit(Tuple e) {
+    public Type visit(Tuple e) throws Exception {
         List<Type> types = new ArrayList<>();
         for (Exp exp : e.es) {
             Type res = exp.accept(this);
-            if (res == null) {
-                return null;
-            }
             types.add(res);
         }
         return new TTuple(types);
     }
 
-    public Type visit(LetTuple e) {
+    public Type visit(LetTuple e) throws Exception{
         Type res1 = e.e1.accept(this);
         if (res1 instanceof TTuple) {
             for (int i = 0; i < e.ids.size(); i++) {
                 Type res3=((TTuple)res1).types.get(i);
-                if(res3==null){
-                    System.out.println("LetTuple : bad expression");
-                    return null;
-                }
                 env.put(e.ids.get(i).id, res3);
             }
             Type res2 = e.e2.accept(this);
             return res2;
         }
-        return null;
+        throw new TypingException("LET TUPLE error : not a tuple");
     }
 
-    public Type visit(Array e){
+    public Type visit(Array e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return res1 instanceof TInt ? new TArray(res2) : null;
+        if(res1 instanceof TInt) {
+            return new TArray(res2);
+        }
+        throw new TypingException("ARRAY error : size is not int");
     }
 
-    public Type visit(Get e){
+    public Type visit(Get e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
-        return res1 instanceof TArray && res2 instanceof TInt ? ((TArray)res1).type : null;
+        if(res1 instanceof TArray && res2 instanceof TInt) {
+            return ((TArray)res1).type;
+        }
+        if(!(res1 instanceof TArray))
+            throw new TypingException("ARRAY GET error : not an array");
+        throw new TypingException("ARRAY GET error : index is not int");
     }
 
-    public Type visit(Put e){
+    public Type visit(Put e) throws Exception {
         Type res1 = e.e1.accept(this);
         Type res2 = e.e2.accept(this);
         Type res3 = e.e3.accept(this);
-        return res1 instanceof TArray 
-            && res2 instanceof TInt
-            && res3!=null && res3.getClass().equals(((TArray)res1).type.getClass()) 
-                ? new TUnit()
-                : null;
+        if(res1 instanceof TArray 
+        && res2 instanceof TInt
+        && res3.getClass().equals(((TArray)res1).type.getClass())) {
+            return new TUnit();
+        }
+        if(!(res1 instanceof TArray))
+            throw new TypingException("ARRAY PUT error : not an array");
+        if(!(res2 instanceof TInt))
+            throw new TypingException("ARRAY PUT error : index is not int");
+        throw new TypingException("ARRAY PUT error : wrong type (has "
+            +res3.getClass().getName()+", expected "
+            +((TArray)res1).type.getClass().getName()+")");
     }
 }

@@ -16,19 +16,20 @@ public class Main {
       ObjVisitor<Integer> v1 = new HeightVisitor();
       int height = expression.accept(v1);
       System.out.println("using HeightVisitor: " + height);
-
-      System.out.println("------ Type visiting ----");
+      System.out.println("------ Type checking ------");
       ObjVisitor<Type> v2 = new TypeVisitor();
       Type result = expression.accept(v2);
-      if(result !=null) {
-        System.out.println("YEAAAAAAAAAAAH!");
-      } else if (result == null) {
-        System.out.println("Fuck UGA");
+        if(result !=null) {
+        System.out.println("------ Type checking DONE ------");
       } else {
-        System.out.println("Fuck UGA anyways");
-        System.out.println(result.toString());
+        System.out.println("------ Typing error ------");
       }
-    } catch (Exception e) {
+    }
+    catch(TypingException e){
+      System.out.print("(TYPING ERROR) ");
+      e.printStackTrace();
+    } 
+    catch (Exception e) {
       e.printStackTrace();
     }
   }
