@@ -519,6 +519,22 @@ class Fun extends Exp {
     }
 }
 
+class FunDefs extends Exp {
+    List<Exp> funs;
+
+    FunDefs(List<Exp> funs) {
+        this.funs = funs;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
 class FunDef {
     final Fun fun;
     final Type type;

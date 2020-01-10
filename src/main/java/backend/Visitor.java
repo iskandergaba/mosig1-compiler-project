@@ -35,4 +35,5 @@ public interface Visitor {
     void visit(Nop e);
     void visit(Fun e);
     void visit(AppClosure e);
+    void visit(FunDefs e);
 }

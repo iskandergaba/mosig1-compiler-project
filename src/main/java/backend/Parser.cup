@@ -40,7 +40,7 @@ non terminal Exp ident_or_imm;
 non terminal Exp exp;
 non terminal Exp asmt;
 non terminal List<Id> formal_args;
-non terminal Exp fundefs;
+non terminal List<Exp> fundefs;
 non terminal Exp toplevel;
 
 precedence nonassoc INT, FLOAT, IDENT, LPAREN;
@@ -80,8 +80,8 @@ exp ::= NOP                 {: RESULT = new Nop(); :}
             {: RESULT = new If(new FEq(id1, id2), e1, e2); :}
       | IF IDENT:id1 FLE IDENT:id2 THEN asmt:e1 ELSE asmt:e2
             {: RESULT = new If(new FLE(id1, id2), e1, e2); :}
-      | CALL LABEL:l formal_args:args {: new Call(l, args); :}
-      | APPCLO IDENT:id formal_args:args {: new AppClosure(id, args); :}
+      | CALL LABEL:l formal_args:args {: RESULT = new Call(l, args); :}
+      | APPCLO IDENT:id formal_args:args {: RESULT = new AppClosure(id, args); :}
 ;
 
 asmt ::= LPAREN asmt:e RPAREN {: RESULT = e; :}
@@ -91,13 +91,22 @@ asmt ::= LPAREN asmt:e RPAREN {: RESULT = e; :}
        | exp:e {: RESULT = e; :}
 ;
 
-fundefs ::= LET UNDERSC EQUAL asmt:e {: RESULT = e; :}
-          | LET LABEL:l formal_args:args EQUAL asmt:e fundefs {:
-                FunDef fd = new FunDef(new Fun(l), null, args, e);
-                RESULT = new LetRec(fd, e);
+fundefs ::= LET UNDERSC EQUAL asmt:e {:
+                  List<Exp> funs = new LinkedList<Exp>();
+                  Fun f = new Fun(new Label("_"));
+                  List args = new LinkedList<Id>();
+                  FunDef fd = new FunDef(f, null, args, e);
+                  funs.add(0, new LetRec(fd, e));
+                  RESULT = funs; 
           :}
-          | LET LABEL:l EQUAL FLOAT:f fundefs {:
-                RESULT = new Float(f, l);
+          | LET LABEL:l formal_args:args EQUAL asmt:e fundefs:funs {:
+                FunDef fd = new FunDef(new Fun(l), null, args, e);
+                funs.add(0, new LetRec(fd, e));
+                RESULT = funs;
+          :}
+          | LET LABEL:l EQUAL FLOAT:f fundefs:funs {:
+                funs.add(new Float(f, l));
+                RESULT = funs;
           :}
 ;
 
@@ -112,4 +121,4 @@ formal_args ::= IDENT:id formal_args:args {:
               :}
 ;
 
-toplevel ::= fundefs:f {: RESULT = f; :};
+toplevel ::= fundefs:f {: RESULT = new FunDefs(f); :};

@@ -32,4 +32,5 @@ public interface ObjVisitor<E> {
     E visit(Nop e);
     E visit(Fun e);
     E visit(AppClosure e);
+    E visit(FunDefs e);
 }
