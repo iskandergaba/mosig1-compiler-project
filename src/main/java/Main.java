@@ -13,18 +13,14 @@ public class Main {
       expression.accept(new PrintVisitor());
       System.out.println();
 
-      System.out.println("------ Height of the AST ----");
-      int height = Height.computeHeight(expression);
-      System.out.println("using Height.computeHeight: " + height);
-
       ObjVisitor<Integer> v1 = new HeightVisitor();
-      height = expression.accept(v1);
+      int height = expression.accept(v1);
       System.out.println("using HeightVisitor: " + height);
 
       System.out.println("------ Type visiting ----");
       ObjVisitor<Type> v2 = new TypeVisitor();
       Type result = expression.accept(v2);
-      if(result instanceof TUnit) {
+      if(result !=null) {
         System.out.println("YEAAAAAAAAAAAH!");
       } else if (result == null) {
         System.out.println("Fuck UGA");

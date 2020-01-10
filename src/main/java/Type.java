@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 abstract class Type {
@@ -16,7 +17,14 @@ class TInt extends Type { }
 
 class TFloat extends Type { }
 
-class TFun extends Type {}
+class TFun extends Type {
+    List<Id> args;
+    Exp body;
+    boolean extern=false;
+    List<Type> extern_args;
+    Type extern_ret;
+    int rec_calls=0;
+}
 
 class TTuple extends Type {
     List<Type> types;
@@ -42,5 +50,9 @@ class TVar extends Type {
     public String toString() {
         return v; 
     }
+}
+
+class TAssumeOK extends Type {
+    
 }
 
