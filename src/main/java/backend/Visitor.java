@@ -1,7 +1,8 @@
 package backend;
 
-// import java.util.*;
-
+/** 
+ * Provides an interface for visiting an AST.
+ */
 public interface Visitor {
     void visit(Int e);
     void visit(Var e);

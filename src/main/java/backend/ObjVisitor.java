@@ -1,5 +1,9 @@
 package backend;
 
+/**
+ * Provides an interface for visiting an AST and returning a value.
+ * @param <E> The return type when parsing an expression
+ */
 public interface ObjVisitor<E> {
     E visit(Int e);
     E visit(Var e);
