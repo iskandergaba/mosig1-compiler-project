@@ -11,6 +11,62 @@ class TypeVisitor implements ObjVisitor<Type> {
         t.extern_args.add(new TInt());
         t.extern_ret=new TUnit();
         env.put("print_int",t);
+
+        TFun t2=new TFun();
+        t2.extern=true;
+        t2.extern_args=new ArrayList<Type>();
+        t2.extern_args.add(new TUnit());
+        t2.extern_ret=new TUnit();
+        env.put("print_newline",t2);
+
+        TFun t3=new TFun();
+        t3.extern=true;
+        t3.extern_args=new ArrayList<Type>();
+        t3.extern_args.add(new TFloat());
+        t3.extern_ret=new TInt();
+        env.put("truncate",t3);
+
+        TFun t4=new TFun();
+        t4.extern=true;
+        t4.extern_args=new ArrayList<Type>();
+        t4.extern_args.add(new TFloat());
+        t4.extern_ret=new TInt();
+        env.put("int_of_float",t4);
+
+        TFun t5=new TFun();
+        t5.extern=true;
+        t5.extern_args=new ArrayList<Type>();
+        t5.extern_args.add(new TFloat());
+        t5.extern_ret=new TFloat();
+        env.put("sin",t5);
+
+        TFun t6=new TFun();
+        t6.extern=true;
+        t6.extern_args=new ArrayList<Type>();
+        t6.extern_args.add(new TFloat());
+        t6.extern_ret=new TFloat();
+        env.put("cos",t6);
+
+        TFun t7=new TFun();
+        t7.extern=true;
+        t7.extern_args=new ArrayList<Type>();
+        t7.extern_args.add(new TFloat());
+        t7.extern_ret=new TFloat();
+        env.put("sqrt",t7);
+
+        TFun t8=new TFun();
+        t8.extern=true;
+        t8.extern_args=new ArrayList<Type>();
+        t8.extern_args.add(new TFloat());
+        t8.extern_ret=new TFloat();
+        env.put("abs_float",t8);
+
+        TFun t9=new TFun();
+        t9.extern=true;
+        t9.extern_args=new ArrayList<Type>();
+        t9.extern_args.add(new TInt());
+        t9.extern_ret=new TFloat();
+        env.put("float_of_int",t9);
     }
 
     public Type visit(Unit e) {
@@ -110,11 +166,15 @@ class TypeVisitor implements ObjVisitor<Type> {
         if(res1!=null){
             env.put(e.id.id, res1);
         }
+        else{
+            System.out.println("let "+e.id.id+" : bad assignment");
+            return null;
+        }
         Type res2 = e.e2.accept(this);
         if (res2!=null) {
             return res2;
         }
-        System.out.println("let : "+e.id.id);
+        System.out.println("let "+e.id.id+" : bad successor");
         return null;
     }
 
@@ -145,7 +205,7 @@ class TypeVisitor implements ObjVisitor<Type> {
                 for(Exp exp : e.es){
                     Type res_=exp.accept(this);
                     if(res_==null || !((res_ instanceof TAssumeOK) || res_.getClass().getName().equals(((TFun)res).extern_args.get(i).getClass().getName()))){
-                        System.out.print("app bad arg : ");
+                        System.out.print("app bad arg");
                         e.e.accept(new PrintVisitor());
                         System.out.println("");
                         return null;
@@ -201,12 +261,17 @@ class TypeVisitor implements ObjVisitor<Type> {
 
     public Type visit(LetTuple e) {
         Type res1 = e.e1.accept(this);
-        Type res2 = e.e2.accept(this);
-        if (res1 instanceof TTuple && res2 instanceof TUnit) {
+        if (res1 instanceof TTuple) {
             for (int i = 0; i < e.ids.size(); i++) {
-                env.put(e.ids.get(i).id, e.ts.get(i));
+                Type res3=((TTuple)res1).types.get(i);
+                if(res3==null){
+                    System.out.println("LetTuple : bad expression");
+                    return null;
+                }
+                env.put(e.ids.get(i).id, res3);
             }
-            return new TUnit();
+            Type res2 = e.e2.accept(this);
+            return res2;
         }
         return null;
     }
@@ -229,7 +294,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         Type res3 = e.e3.accept(this);
         return res1 instanceof TArray 
             && res2 instanceof TInt
-            && res3.getClass().equals(((TArray)res1).type.getClass()) 
+            && res3!=null && res3.getClass().equals(((TArray)res1).type.getClass()) 
                 ? new TUnit()
                 : null;
     }

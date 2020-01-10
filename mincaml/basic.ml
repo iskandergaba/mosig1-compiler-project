@@ -1,7 +1,3 @@
-let rec sum x =
-  if x = 1 then
-  sum (x+1) else
-  x+10 in 
-let y=
-  (sum 1) in
-sum y
+let a = Array.create 3 3 in
+(a.(0) <- 1;
+print_int(a.(0)))

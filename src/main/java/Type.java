@@ -31,7 +31,6 @@ class TTuple extends Type {
     TTuple(List<Type> types) {
         this.types = types;
     }
-    
 }
 
 class TArray extends Type {
