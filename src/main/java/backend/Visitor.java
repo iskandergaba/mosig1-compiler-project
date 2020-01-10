@@ -26,11 +26,8 @@ public interface Visitor {
     void visit(FLE e);
     void visit(Call e);
     void visit(AppClosure e);
-<<<<<<< HEAD
     void visit(FunDefs e);
-=======
     void visit(Let e);
     void visit(LetRec e);
     void visit(Float e);
->>>>>>> d466ea09ffdf82887ab99eb2c47f145ec9a32622
 }

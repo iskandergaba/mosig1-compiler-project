@@ -24,11 +24,8 @@ public interface ObjVisitor<E> {
     E visit(FLE e);
     E visit(Call e);
     E visit(AppClosure e);
-<<<<<<< HEAD
     E visit(FunDefs e);
-=======
     E visit(Let e);
     E visit(LetRec e);
     E visit(Float e);
->>>>>>> d466ea09ffdf82887ab99eb2c47f145ec9a32622
 }
