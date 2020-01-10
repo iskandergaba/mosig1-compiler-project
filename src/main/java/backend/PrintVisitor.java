@@ -1,17 +1,6 @@
 package backend;
 
 class PrintVisitor implements Visitor {
-
-    @Override
-    public void visit(Unit e) {
-        System.out.print("()");
-    }
-
-    @Override
-    public void visit(Bool e) {
-        System.out.print(e.b);
-    }
-
     @Override
     public void visit(Int e) {
         System.out.print(e.i);
@@ -20,11 +9,6 @@ class PrintVisitor implements Visitor {
     @Override
     public void visit(Float e) {
         System.out.print(String.format("%.2f", e.f));
-    }
-
-    @Override
-    public void visit(Not e) {
-        System.out.print("<error: not>");
     }
 
     @Override
@@ -186,18 +170,6 @@ class PrintVisitor implements Visitor {
             System.out.print(id);
         }
         System.out.print(")");
-    }
-
-    @Override
-    public void visit(Tuple e) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void visit(LetTuple e) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override

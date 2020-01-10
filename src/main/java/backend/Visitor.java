@@ -1,39 +1,36 @@
 package backend;
 
-import java.util.*;
+// import java.util.*;
 
 public interface Visitor {
-
-    void visit(Unit e);
-    void visit(Bool e);
     void visit(Int e);
-    void visit(Float e);
-    void visit(Not e);
+    void visit(Var e);
+    void visit(Nop e);
+    void visit(Fun e);
     void visit(Neg e);
-    void visit(Add e);
-    void visit(Sub e);
     void visit(FNeg e);
     void visit(FAdd e);
     void visit(FSub e);
     void visit(FMul e);
     void visit(FDiv e);
+    void visit(New e);
+    void visit(Add e);
+    void visit(Sub e);
+    void visit(Get e);
+    void visit(Put e);
+    void visit(If e);
     void visit(Eq e);
     void visit(LE e);
     void visit(GE e);
     void visit(FEq e);
     void visit(FLE e);
-    void visit(If e);
-    void visit(Let e);
-    void visit(Var e);
-    void visit(LetRec e);
     void visit(Call e);
-    void visit(Tuple e);
-    void visit(LetTuple e);
-    void visit(New e);
-    void visit(Get e);
-    void visit(Put e);
-    void visit(Nop e);
-    void visit(Fun e);
     void visit(AppClosure e);
+<<<<<<< HEAD
     void visit(FunDefs e);
+=======
+    void visit(Let e);
+    void visit(LetRec e);
+    void visit(Float e);
+>>>>>>> d466ea09ffdf82887ab99eb2c47f145ec9a32622
 }
