@@ -1,3 +1,6 @@
-let a = Array.create 3 3 in
-(a.(0) <- 1.0;
-print_int(a.(0)))
+let rec f x =
+    if x=1 then
+        x+1
+    else
+        3 in
+print_int (f 1)

@@ -90,7 +90,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         if(res instanceof TBool || res instanceof TAssumeOK){
             return new TBool();
         }
-        throw new TypingException("NOT error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nNOT error : wrong type (has "+res.getClass().getName()
+            +", expected TBool)");
     }
 
     public Type visit(Neg e) throws Exception {
@@ -98,7 +100,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         if(res instanceof TInt  || res instanceof TAssumeOK){
             return new TInt();
         }
-        throw new TypingException("NEG error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nNEG error : wrong type (has "+res.getClass().getName()
+            +", expected TInt)");
     }
 
     public Type visit(Add e) throws Exception {
@@ -108,7 +112,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TInt || res2 instanceof TAssumeOK)) {
             return new TInt();
         }
-        throw new TypingException("ADD error : wrong type");   
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nADD error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TInt*TInt)");   
     }
 
     public Type visit(Sub e) throws Exception {
@@ -118,7 +124,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TInt || res2 instanceof TAssumeOK)){
             return new TInt();
         }
-        throw new TypingException("SUB error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nSUB error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TInt*TInt)");
    }
 
     public Type visit(FNeg e) throws Exception {
@@ -126,7 +134,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         if(res instanceof TFloat || res instanceof TAssumeOK){
             return new TFloat();
         }
-        throw new TypingException("FLOAT NEG error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nFLOAT NEG error : wrong type (has "+res.getClass().getName()
+            +", expected TFloat)");
     }
 
     public Type visit(FAdd e) throws Exception {
@@ -136,7 +146,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
             return new TFloat();
         }
-        throw new TypingException("FLOAT ADD error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nFLOAT ADD error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TFloat*TFloat)");
     }
 
     public Type visit(FSub e) throws Exception {
@@ -146,7 +158,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
             return new TFloat();
         }
-        throw new TypingException("FLOAT SUB error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nFLOAT SUB error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TFloat*TFloat)");
     }
 
     public Type visit(FMul e) throws Exception {
@@ -156,7 +170,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
             return new TFloat();
         }
-        throw new TypingException("FLOAT MUL error : wrong type");    
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nFLOAT MUL error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TFloat*TFloat)");    
     }
 
     public Type visit(FDiv e) throws Exception {
@@ -166,7 +182,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TFloat || res2 instanceof TAssumeOK)) {
             return new TFloat();
         }
-        throw new TypingException("FLOAT DIV error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nFLOAT DIV error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TFloat*TFloat)");
     }
 
     public Type visit(Eq e) throws Exception {
@@ -177,7 +195,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK) {
             return new TBool();
         }
-        throw new TypingException("EQ error : type mismatch");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nEQ error : type mismatch (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+")");
     }
 
     public Type visit(LE e) throws Exception {
@@ -189,7 +209,9 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2 instanceof TFloat || res2 instanceof TAssumeOK))) {
             return new TBool();
         }
-        throw new TypingException("LE error : wrong type");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nLE error : wrong type (has "+res1.getClass().getName()+"*"
+            +res2.getClass().getName()+", expected TInt*TInt or TFloat*TFloat)");
     }
 
     public Type visit(If e) throws Exception {
@@ -200,8 +222,14 @@ class TypeVisitor implements ObjVisitor<Type> {
         && (res2.getClass().getName().equals(res3.getClass().getName()) 
         || res2 instanceof TAssumeOK || res3 instanceof TAssumeOK)) {
             return res2;
+        } else if(!(res1 instanceof TBool)){
+            throw new TypingException("In expression : "+e.accept(new StringVisitor())
+                +" :\nIF error : wrong type (condition is "+res1.getClass().getName()
+                +", expected TBool)");
         } else {
-            throw new TypingException("IF error : wrong type");
+            throw new TypingException("In expression : "+e.accept(new StringVisitor())
+                +" :\nIF error : then and else blocks return different types "
+                +res2.getClass().getName()+" and "+res3.getClass().getName());
         }
     }
 
@@ -236,10 +264,14 @@ class TypeVisitor implements ObjVisitor<Type> {
                 for(Exp exp : e.es){
                     Type res_=exp.accept(this);
                     if(e.es.size()!=((TFun)res).extern_args.size())
-                        throw new TypingException("APP error : wrong number of arguments");
+                        throw new TypingException("In expression : "
+                            +e.accept(new StringVisitor())
+                            +" :\nAPP error : wrong number of arguments");
                     if(res_==null || !((res_ instanceof TAssumeOK) 
                         || res_.getClass().getName().equals(((TFun)res).extern_args.get(i).getClass().getName()))){
-                        throw new TypingException("APP error : "+((Var)e.e).id.id
+                        throw new TypingException("In expression : "
+                            +e.accept(new StringVisitor())
+                            +" :\nAPP error : "+((Var)e.e).id.id
                             +" : wrong argument type " +"(has "+res_.getClass().getName()
                             +", expected "+((TFun)res).extern_args.get(i).getClass().getName()
                             +")");
@@ -257,14 +289,20 @@ class TypeVisitor implements ObjVisitor<Type> {
             Type res__;
             if(((TFun)res).rec_calls<2){
                 ((TFun)res).rec_calls++;
-                res__=((TFun)res).body.accept(this);
+                try{res__=((TFun)res).body.accept(this);}
+                catch(TypingException err){
+                    throw new TypingException("In expression : "
+                        +e.accept(new StringVisitor())+" :\n"+
+                        err.getMessage());
+                }
                 ((TFun)res).rec_calls--;
             } else {
                 res__=new TAssumeOK();
             }
             return res__;
         }
-        throw new TypingException("APP error : not a function");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nAPP error : not a function");
     }
 
     public Type visit(Tuple e) throws Exception {
@@ -286,7 +324,8 @@ class TypeVisitor implements ObjVisitor<Type> {
             Type res2 = e.e2.accept(this);
             return res2;
         }
-        throw new TypingException("LET TUPLE error : not a tuple");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nLET TUPLE error : not a tuple");
     }
 
     public Type visit(Array e) throws Exception {
@@ -295,7 +334,8 @@ class TypeVisitor implements ObjVisitor<Type> {
         if(res1 instanceof TInt) {
             return new TArray(res2);
         }
-        throw new TypingException("ARRAY error : size is not int");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nARRAY error : size is not int");
     }
 
     public Type visit(Get e) throws Exception {
@@ -305,8 +345,11 @@ class TypeVisitor implements ObjVisitor<Type> {
             return ((TArray)res1).type;
         }
         if(!(res1 instanceof TArray))
-            throw new TypingException("ARRAY GET error : not an array");
-        throw new TypingException("ARRAY GET error : index is not int");
+            throw new TypingException("In expression : "+e.accept(new StringVisitor())
+                +" :\nARRAY GET error : not an array");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nARRAY GET error : wrong index type (has "+res2.getClass().getName()
+            +", expected TInt)");
     }
 
     public Type visit(Put e) throws Exception {
@@ -319,10 +362,14 @@ class TypeVisitor implements ObjVisitor<Type> {
             return new TUnit();
         }
         if(!(res1 instanceof TArray))
-            throw new TypingException("ARRAY PUT error : not an array");
+            throw new TypingException("In expression : "+e.accept(new StringVisitor())
+                +" :\nARRAY PUT error : not an array");
         if(!(res2 instanceof TInt))
-            throw new TypingException("ARRAY PUT error : index is not int");
-        throw new TypingException("ARRAY PUT error : wrong type (has "
+            throw new TypingException("In expression : "+e.accept(new StringVisitor())
+                +" :\nARRAY PUT error : wrong index type (has "+res2.getClass().getName()
+                +", expected TInt)");
+        throw new TypingException("In expression : "+e.accept(new StringVisitor())
+            +" :\nARRAY PUT error : wrong type (has "
             +res3.getClass().getName()+", expected "
             +((TArray)res1).type.getClass().getName()+")");
     }
