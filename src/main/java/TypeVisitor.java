@@ -281,6 +281,10 @@ class TypeVisitor implements ObjVisitor<Type> {
                 return ((TFun)res).extern_ret;
             }
             int i=0;
+            if(e.es.size()!=((TFun)res).args.size())
+                throw new TypingException("In expression : "
+                    +e.accept(new StringVisitor())
+                    +" :\nAPP error : wrong number of arguments");
             for (Exp exp : e.es) {
                 Type res_ = exp.accept(this);
                 env.put(((TFun)res).args.get(i).id,res_);

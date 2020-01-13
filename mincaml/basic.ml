@@ -3,4 +3,4 @@ let rec f x =
         x+1
     else
         3 in
-print_int (f 1)
+print_int (f 1 2)
