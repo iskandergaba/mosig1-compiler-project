@@ -1,8 +1,6 @@
 package backend;
 
-import java_cup.runtime.*;
 import java.io.*;
-import java.util.*;
 import frontend.*;
 
 public class Main {
@@ -12,6 +10,10 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
       expression.accept(new PrintVisitor());
+
+      ARMWriter writer = new ARMWriter("output.s", ARMVerboseLevel.ALL);
+      writer.fileHeader();
+      writer.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
