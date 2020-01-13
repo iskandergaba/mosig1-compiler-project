@@ -22,7 +22,7 @@ class Bool extends Exp {
     Bool(boolean b) {
         this.b = b;
     }
-    
+
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
@@ -42,6 +42,7 @@ class Int extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -57,6 +58,7 @@ class Float extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -72,6 +74,7 @@ class Not extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -87,6 +90,7 @@ class Neg extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -104,6 +108,7 @@ class Add extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -121,6 +126,7 @@ class Sub extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -154,6 +160,7 @@ class FAdd extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -171,6 +178,7 @@ class FSub extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -188,6 +196,7 @@ class FMul extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -205,12 +214,13 @@ class FDiv extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
 }
 
-class Eq extends Exp { 
+class Eq extends Exp {
     final Exp e1;
     final Exp e2;
 
@@ -222,12 +232,13 @@ class Eq extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
 }
 
-class LE extends Exp { 
+class LE extends Exp {
     final Exp e1;
     final Exp e2;
 
@@ -239,6 +250,7 @@ class LE extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -258,6 +270,7 @@ class If extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -279,6 +292,7 @@ class Let extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -294,6 +308,7 @@ class Var extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -311,6 +326,7 @@ class LetRec extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -328,6 +344,7 @@ class App extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -365,6 +382,7 @@ class LetTuple extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -382,6 +400,7 @@ class Array extends Exp {
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
+
     void accept(Visitor v) {
         v.visit(this);
     }
@@ -395,7 +414,7 @@ class Get extends Exp {
         this.e1 = e1;
         this.e2 = e2;
     }
- 
+
     <E> E accept(ObjVisitor<E> v) throws Exception {
         return v.visit(this);
     }
@@ -437,6 +456,5 @@ class FunDef {
         this.args = args;
         this.e = e;
     }
- 
+
 }
- 

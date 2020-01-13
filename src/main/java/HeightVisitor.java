@@ -15,7 +15,7 @@ class HeightVisitor implements ObjVisitor<Integer> {
         return 0;
     }
 
-    public Integer visit(Float e) { 
+    public Integer visit(Float e) {
         return 0;
     }
 
@@ -30,14 +30,14 @@ class HeightVisitor implements ObjVisitor<Integer> {
     public Integer visit(Add e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(Sub e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
-   }
+        return Math.max(res1, res2) + 1;
+    }
 
     public Integer visit(FNeg e) throws Exception {
         return e.e.accept(this) + 1;
@@ -46,60 +46,60 @@ class HeightVisitor implements ObjVisitor<Integer> {
     public Integer visit(FAdd e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(FSub e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(FMul e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
-     }
+        return Math.max(res1, res2) + 1;
+    }
 
     public Integer visit(FDiv e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(Eq e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(LE e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(If e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
         int res3 = e.e3.accept(this);
-        return Math.max(res1, Math.max(res2, res3)) + 1 ;
+        return Math.max(res1, Math.max(res2, res3)) + 1;
     }
 
     public Integer visit(Let e) throws Exception {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
-    public Integer visit(Var e){
+    public Integer visit(Var e) {
         return 0;
     }
 
     public Integer visit(LetRec e) throws Exception {
         int res1 = e.e.accept(this);
         int res2 = e.fd.e.accept(this);
-        return Math.max(res1, res2) + 1 ;
+        return Math.max(res1, res2) + 1;
     }
 
     public Integer visit(App e) throws Exception {
@@ -141,8 +141,6 @@ class HeightVisitor implements ObjVisitor<Integer> {
         int res1 = e.e1.accept(this);
         int res2 = e.e2.accept(this);
         int res3 = e.e3.accept(this);
-        return Math.max(res1, Math.max(res2, res3)) + 1 ;
+        return Math.max(res1, Math.max(res2, res3)) + 1;
     }
 }
-
-

@@ -42,44 +42,10 @@ public interface sym {
   public static final int LET = 22;
   public static final int FLOAT = 4;
   public static final int THEN = 20;
-  public static final String[] terminalNames = new String[] {
-  "EOF",
-  "error",
-  "BOOL",
-  "INT",
-  "FLOAT",
-  "IDENT",
-  "NOT",
-  "MINUS",
-  "PLUS",
-  "MINUS_DOT",
-  "PLUS_DOT",
-  "AST_DOT",
-  "SLASH_DOT",
-  "EQUAL",
-  "LESS_GREATER",
-  "LESS_EQUAL",
-  "GREATER_EQUAL",
-  "LESS",
-  "GREATER",
-  "IF",
-  "THEN",
-  "ELSE",
-  "LET",
-  "IN",
-  "REC",
-  "COMMA",
-  "ARRAY_CREATE",
-  "DOT",
-  "LESS_MINUS",
-  "SEMICOLON",
-  "LPAREN",
-  "RPAREN",
-  "prec_let",
-  "prec_if",
-  "prec_unary_minus",
-  "prec_app"
-  };
+  public static final String[] terminalNames = new String[] { "EOF", "error", "BOOL", "INT", "FLOAT", "IDENT", "NOT",
+      "MINUS", "PLUS", "MINUS_DOT", "PLUS_DOT", "AST_DOT", "SLASH_DOT", "EQUAL", "LESS_GREATER", "LESS_EQUAL",
+      "GREATER_EQUAL", "LESS", "GREATER", "IF", "THEN", "ELSE", "LET", "IN", "REC", "COMMA", "ARRAY_CREATE", "DOT",
+      "LESS_MINUS", "SEMICOLON", "LPAREN", "RPAREN", "prec_let", "prec_if", "prec_unary_minus", "prec_app" };
 
   /* non terminals */
   static final int elems = 0;
@@ -90,4 +56,3 @@ public interface sym {
   static final int exp = 6;
   static final int actual_args = 1;
 }
-
