@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-class Memory {
+public class Memory {
     Boolean[] regIsFree = Collections.nCopies(16, true).toArray(new Boolean[16]);
 
     Map<String, Integer> varMap = new HashMap<String, Integer>();

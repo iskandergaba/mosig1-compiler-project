@@ -1,7 +1,6 @@
 package backend;
 
 import java.io.*;
-import frontend.*;
 
 public class Main {
   static public void main(String argv[]) {    
@@ -9,11 +8,14 @@ public class Main {
       Parser p = new Parser(new Lexer(new FileReader(argv[0])));
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
-      expression.accept(new PrintVisitor());
 
-      ARMWriter writer = new ARMWriter("output.s", ARMVerboseLevel.ALL);
-      writer.fileHeader();
-      writer.close();
+      System.out.println("# Register allocation");
+      RegAllocVisitor v = new RegAllocVisitor();
+      expression.accept(v);
+
+      System.out.println("# ARM generation");
+      System.out.println(expression.accept(new ARMVisitor(v.memory)));
+
     } catch (Exception e) {
       e.printStackTrace();
     }

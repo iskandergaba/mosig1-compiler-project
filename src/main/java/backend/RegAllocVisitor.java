@@ -1,7 +1,7 @@
 package backend;
 
 class RegAllocVisitor extends PrintVisitor {
-    Memory memory = new Memory();
+    public Memory memory = new Memory();
 
     @Override
     public void visit(Var e) {
