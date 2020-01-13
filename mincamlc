@@ -1,4 +1,11 @@
 #!/bin/bash
 
+end="frontend"
+
+if [ "$#" -eq 2 ]; then
+    end=$1
+    shift
+fi
+
 CP="build/classes/java/main/:lib/java-cup-11b-runtime.jar"
-exec java -enableassertions -cp "$CP" Main "$@"
+exec java -enableassertions -cp "$CP" "$end".Main "$@"

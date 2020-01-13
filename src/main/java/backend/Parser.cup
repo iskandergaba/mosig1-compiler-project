@@ -1,0 +1,124 @@
+package backend;
+
+import java_cup.runtime.*;
+import java.util.*;
+
+parser code {:
+    Lexer l;
+    Parser(Lexer l){
+	   this.l = l;
+    }
+
+    class Pair<A,B> {
+        A left;
+        B right;
+
+        Pair(A left, B right) {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    :}
+
+init with {:  :};
+scan with {: return l.next_token(); :};
+
+terminal boolean BOOL;
+
+terminal int INT;
+terminal float FLOAT;
+terminal Id IDENT;
+terminal Label LABEL;
+terminal LPAREN, RPAREN, PLUS, EQUAL, FEQUAL, LE, FLE, GE, IF,
+ THEN, ELSE, LET, IN, NEG, FNEG, MEM, FMUL, FDIV, SELF,
+ FSUB, FADD, ASSIGN, ADD, SUB, CALL, NEW, NOP, APPCLO,
+ UNDERSC;
+terminal prec_let, prec_if, prec_unary_minus, prec_app;
+
+non terminal Exp ident_or_imm;
+non terminal Exp exp;
+non terminal Exp asmt;
+non terminal List<Id> formal_args;
+non terminal List<Exp> fundefs;
+non terminal Exp toplevel;
+
+precedence nonassoc INT, FLOAT, IDENT, LPAREN;
+
+start with toplevel;
+
+ident_or_imm ::= INT:i    {: RESULT = new Int(i); :}
+               | IDENT:id {: RESULT = new Var(id); :}
+;
+
+// TODO: Ask the teachers about the %self construct in memory accesses.
+exp ::= NOP                 {: RESULT = new Nop(); :}
+      | LPAREN exp:e RPAREN {: RESULT = e; :}
+      | INT:i               {: RESULT = new Int(i); :}
+      | IDENT:id            {: RESULT = new Var(id); :}
+      | LABEL:l             {: RESULT = new Fun(l); :}
+      | NEG IDENT:id        {: RESULT = new Neg(id); :}
+      | FNEG IDENT:id       {: RESULT = new FNeg(id); :}
+      | FADD IDENT:id1 IDENT:id2 {: RESULT = new FAdd(id1, id2); :}
+      | FSUB IDENT:id1 IDENT:id2 {: RESULT = new FSub(id1, id2); :}
+      | FMUL IDENT:id1 IDENT:id2 {: RESULT = new FMul(id1, id2); :}
+      | FDIV IDENT:id1 IDENT:id2 {: RESULT = new FDiv(id1, id2); :}
+      | NEW ident_or_imm:size       {: RESULT = new New(size); :}
+      | ADD IDENT:id ident_or_imm:e {: RESULT = new Add(id, e); :}
+      | SUB IDENT:id ident_or_imm:e {: RESULT = new Sub(id, e); :}
+      | MEM LPAREN IDENT:base PLUS ident_or_imm:offset RPAREN
+            {: RESULT = new Get(base, offset); :}
+      | MEM LPAREN IDENT:base PLUS ident_or_imm:offset RPAREN ASSIGN IDENT:dest
+            {: RESULT = new Put(base, offset, dest); :}
+      | IF IDENT:id EQUAL ident_or_imm:e THEN asmt:e1 ELSE asmt:e2
+            {: RESULT = new If(new Eq(id, e), e1, e2); :}
+      | IF IDENT:id LE ident_or_imm:e THEN asmt:e1 ELSE asmt:e2
+            {: RESULT = new If(new LE(id, e), e1, e2); :}
+      | IF IDENT:id GE ident_or_imm:e THEN asmt:e1 ELSE asmt:e2
+            {: RESULT = new If(new GE(id, e), e1, e2); :}
+      | IF IDENT:id1 FEQUAL IDENT:id2 THEN asmt:e1 ELSE asmt:e2
+            {: RESULT = new If(new FEq(id1, id2), e1, e2); :}
+      | IF IDENT:id1 FLE IDENT:id2 THEN asmt:e1 ELSE asmt:e2
+            {: RESULT = new If(new FLE(id1, id2), e1, e2); :}
+      | CALL LABEL:l formal_args:args {: RESULT = new Call(l, args); :}
+      | APPCLO IDENT:id formal_args:args {: RESULT = new AppClosure(id, args); :}
+;
+
+asmt ::= LPAREN asmt:e RPAREN {: RESULT = e; :}
+       | LET IDENT:id EQUAL exp:e IN asmt:a {:
+            RESULT = new Let(id, Type.gen(), e, a);
+       :}
+       | exp:e {: RESULT = e; :}
+;
+
+fundefs ::= LET UNDERSC EQUAL asmt:e {:
+                  List<Exp> funs = new LinkedList<Exp>();
+                  Fun f = new Fun(new Label("_"));
+                  List args = new LinkedList<Id>();
+                  FunDef fd = new FunDef(f, null, args, e);
+                  funs.add(0, new LetRec(fd, e));
+                  RESULT = funs; 
+          :}
+          | LET LABEL:l formal_args:args EQUAL asmt:e fundefs:funs {:
+                FunDef fd = new FunDef(new Fun(l), null, args, e);
+                funs.add(0, new LetRec(fd, e));
+                RESULT = funs;
+          :}
+          | LET LABEL:l EQUAL FLOAT:f fundefs:funs {:
+                funs.add(new Float(f, l));
+                RESULT = funs;
+          :}
+;
+
+formal_args ::= IDENT:id formal_args:args {:
+                    args.add(0, id);
+                    RESULT = args;
+              :}
+              | IDENT:id {:
+                    List l = new LinkedList<Id>();
+                    l.add(0, id);
+                    RESULT = l;
+              :}
+;
+
+toplevel ::= fundefs:f {: RESULT = new FunDefs(f); :};
