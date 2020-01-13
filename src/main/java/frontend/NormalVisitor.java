@@ -22,7 +22,7 @@ class NormalVisitor implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Not e) throws Exception {
-        if(!(e.e instanceof Var)) {
+        if (!(e.e instanceof Var)) {
             Var v1 = Var.gen();
             Exp bExp = new Not(e);
             return new Let(v1.id, Type.gen(), e.e.accept(this), bExp);
@@ -31,7 +31,7 @@ class NormalVisitor implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Neg e) throws Exception {
-        if(!(e.e instanceof Var)) {
+        if (!(e.e instanceof Var)) {
             Var v1 = Var.gen();
             Exp aExp = new Neg(e);
             return new Let(v1.id, Type.gen(), e.e.accept(this), aExp);
@@ -66,7 +66,7 @@ class NormalVisitor implements ObjVisitor<Exp> {
     }
 
     public Exp visit(FNeg e) throws Exception {
-        if(!(e.e instanceof Var)) {
+        if (!(e.e instanceof Var)) {
             Var v1 = Var.gen();
             Exp aExp = new FNeg(e);
             return new Let(v1.id, Type.gen(), e.e.accept(this), aExp);
@@ -152,6 +152,7 @@ class NormalVisitor implements ObjVisitor<Exp> {
         return e;
     }
 
+    // TODO
     public Exp visit(If e) throws Exception {
         return new If(e.e1.accept(this), e.e2.accept(this), e.e3.accept(this));
     }
@@ -178,25 +179,21 @@ class NormalVisitor implements ObjVisitor<Exp> {
                 break;
             }
         }
+        if (normalize) {
+            Exp applyExp = e.e.accept(this);
+            List<Exp> vars = new ArrayList<>();
+            for (int i = 0; i < e.es.size(); i++) {
+                vars.add(Var.gen());
+            }
 
-        //TODO
-        /*if (normalize) {
-            Var v1 = Var.gen();
-            Var v2 = Var.gen();
-            Exp exp = new LE(v1, v2);
-            Let letExp = new Let(v2.id, Type.gen(), e.e2, exp);
-            Exp e1 = e.e1.accept(this);
-            Exp e2 = letExp.accept(this);
-            return new Let(v1.id, Type.gen(), e1, e2);
-        }
-        return e;*/
+            Exp exp = new App(applyExp, vars);
 
-        Exp applyExp = e.e.accept(this);
-        List<Exp> exps = new ArrayList<>();
-        for (Exp exp : e.es) {
-            exps.add(exp.accept(this));
+            for (int i = e.es.size() - 1; i >= 0; i--) {
+                exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
+            }
+            return exp;
         }
-        return new App(applyExp, exps);
+        return e;
     }
 
     public Exp visit(Tuple e) throws Exception {
@@ -207,6 +204,7 @@ class NormalVisitor implements ObjVisitor<Exp> {
         return new Tuple(es);
     }
 
+    //TODO
     public Exp visit(LetTuple e) throws Exception {
         return new LetTuple(e.ids, e.ts, e.e1.accept(this), e.e2.accept(this));
     }
