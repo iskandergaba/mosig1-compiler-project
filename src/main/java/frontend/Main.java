@@ -24,6 +24,13 @@ public class Main {
       } else {
         System.out.println("------ Typing error ------");
       }
+
+      System.out.println("------ Alpha-conversion ------");
+      expression.accept(new AlphaConversionVisitor());
+      System.out.println("------ Alpha-conversion DONE ------");
+
+      expression.accept(new PrintVisitor());
+
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
