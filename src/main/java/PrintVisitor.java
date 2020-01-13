@@ -46,13 +46,13 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(FNeg e){
+    public void visit(FNeg e) {
         System.out.print("(-. ");
         e.e.accept(this);
         System.out.print(")");
     }
 
-    public void visit(FAdd e){
+    public void visit(FAdd e) {
         System.out.print("(");
         e.e1.accept(this);
         System.out.print(" +. ");
@@ -60,7 +60,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(FSub e){
+    public void visit(FSub e) {
         System.out.print("(");
         e.e1.accept(this);
         System.out.print(" -. ");
@@ -76,7 +76,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(FDiv e){
+    public void visit(FDiv e) {
         System.out.print("(");
         e.e1.accept(this);
         System.out.print(" /. ");
@@ -84,7 +84,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(Eq e){
+    public void visit(Eq e) {
         System.out.print("(");
         e.e1.accept(this);
         System.out.print(" = ");
@@ -92,7 +92,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(LE e){
+    public void visit(LE e) {
         System.out.print("(");
         e.e1.accept(this);
         System.out.print(" <= ");
@@ -100,7 +100,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(If e){
+    public void visit(If e) {
         System.out.print("(if ");
         e.e1.accept(this);
         System.out.print(" then ");
@@ -120,12 +120,11 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(Var e){
+    public void visit(Var e) {
         System.out.print(e.id);
     }
 
-
-    // print sequence of identifiers 
+    // print sequence of identifiers
     static <E> void printInfix(List<E> l, String op) {
         if (l.isEmpty()) {
             return;
@@ -150,7 +149,7 @@ class PrintVisitor implements Visitor {
         }
     }
 
-    public void visit(LetRec e){
+    public void visit(LetRec e) {
         System.out.print("(let rec " + e.fd.id + " ");
         printInfix(e.fd.args, " ");
         System.out.print(" = ");
@@ -160,7 +159,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(App e){
+    public void visit(App e) {
         System.out.print("(");
         e.e.accept(this);
         System.out.print(" ");
@@ -168,13 +167,13 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(Tuple e){
+    public void visit(Tuple e) {
         System.out.print("(");
         printInfix2(e.es, ", ");
         System.out.print(")");
     }
 
-    public void visit(LetTuple e){
+    public void visit(LetTuple e) {
         System.out.print("(let (");
         printInfix(e.ids, ", ");
         System.out.print(") = ");
@@ -184,7 +183,7 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(Array e){
+    public void visit(Array e) {
         System.out.print("(Array.create ");
         e.e1.accept(this);
         System.out.print(" ");
@@ -192,14 +191,14 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 
-    public void visit(Get e){
+    public void visit(Get e) {
         e.e1.accept(this);
         System.out.print(".(");
         e.e2.accept(this);
         System.out.print(")");
     }
 
-    public void visit(Put e){
+    public void visit(Put e) {
         System.out.print("(");
         e.e1.accept(this);
         System.out.print(".(");
@@ -209,5 +208,3 @@ class PrintVisitor implements Visitor {
         System.out.print(")");
     }
 }
-
-
