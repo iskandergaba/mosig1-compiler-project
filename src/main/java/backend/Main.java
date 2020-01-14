@@ -12,7 +12,9 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
       // expression.accept(new PrintVisitor());
-      expression.accept(new RegAllocVisitor());
+      RegAllocVisitor visitor = new RegAllocVisitor();
+      expression.accept(visitor);
+      visitor.memory.printMem();
     } catch (Exception e) {
       e.printStackTrace();
     }
