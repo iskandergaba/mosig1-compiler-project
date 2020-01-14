@@ -8,8 +8,11 @@ import java.util.Map;
 
 class Memory {
     // Boolean[] regIsFree = Collections.nCopies(16, true).toArray(new Boolean[16]);
+    static final int fp = 11;
     Boolean[] regIsFree = new Boolean[16];
     int offset;
+
+    Map<String, String> finalMap = new HashMap<String, String>();
 
     Map<String, Integer> idRegMap = new HashMap<String, Integer>();
     Map<String, Integer> idOffMap = new HashMap<String, Integer>();
@@ -41,15 +44,20 @@ class Memory {
         if (out != null) return out;
 
         for (int i=4;i<=12;i++) {
+            if (i == fp) continue;
             if (regIsFree[i]) {
                 regIsFree[i] = false;
                 idRegMap.put(path, i);
-                return new String("r" + i);
+                out = new String("r" + i);
+                finalMap.put(path, out);
+                return out;
             }
         }
         offset -= 4;
         idOffMap.put(path, offset);
-        return new String("[fp, " + offset + "]");
+        out = new String("[r" + fp + ", " + offset + "]");
+        finalMap.put(path, out);
+        return out;
     }
 
     String varLookup(String path) {
@@ -64,6 +72,12 @@ class Memory {
             int i = idRegMap.get(path);
             idRegMap.remove(path);
             regIsFree[i] = true;
+        }
+    }
+
+    void printMem() {
+        for (Map.Entry<String, String> entry : finalMap.entrySet()) {
+            System.out.println(entry.getKey() + ":" + entry.getValue().toString());
         }
     }
 }
