@@ -9,12 +9,7 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      System.out.println("# Register allocation");
-      RegAllocVisitor v = new RegAllocVisitor();
-      expression.accept(v);
-
-      System.out.println("# ARM generation");
-      System.out.println(expression.accept(new ARMVisitor(v.memory)));
+      System.out.println(expression.accept(new CodeGenerationVisitor()));
 
     } catch (Exception e) {
       e.printStackTrace();

@@ -2,20 +2,46 @@ package backend;
 
 import java.util.*;
 
-class ARMVisitor implements ObjVisitor<String> {
+public class CodeGenerationVisitor implements ObjVisitor<String> {
     private LabelGenerator labelGenerator;
     private String currentFunction;
-    private Memory memory;
+    public Memory memory = new Memory();
     private boolean intImmediate = false; // TODO: find a way to do this better
     private Map<String, String> functionLabels;
     private InstructionFactory factory;
+    private String varRetrieve; // TODO: ugly !!!!
 
-    private String getRegister(Id id) {
-        return memory.finalMap.get(this.currentFunction + "." + id.id);
+    private int getOffset(Id id) {
+        return memory.idOffMap.get(this.currentFunction + "." + (id.id));
     }
 
-    private String prologue() {
-        return factory.push("{r0-r3,r14}").toString();
+    private int getNextAvailableRegister() {
+        for(int i = 4; i < 12; i++) {
+            if (i == 1) continue;
+            if (memory.regIsFree[i]) {
+                memory.regIsFree[i] = false;
+                return i;
+            }
+        }
+        System.err.println("Warning: no more available register found.");
+        return -1;
+    }
+
+    private void freeRegister(int reg) {
+        memory.regIsFree[reg] = true;
+    }
+
+    private String retrieveVariable(Id id, int reg) {
+        return factory.load("r" + reg, "[r13,#" + getOffset(id) + "]") + "\n";
+    }
+
+    private String spillVariable(Id id, int reg) {
+        return factory.store("r" + reg, "[r13,#" + getOffset(id) + "]") + "\n";
+    }
+
+    private String prologue(int size) {
+        return factory.push("{r0-r3,r14}").toString() + "\n"
+            + factory.add("r13", "r13", "#-" + (4 * size));
     }
 
     private String exit() {
@@ -24,16 +50,16 @@ class ARMVisitor implements ObjVisitor<String> {
             + factory.swi("#0");
     }
 
-    private String epilogue() {
-        return factory.pop("{r0-r3,r14}").toString();
+    private String epilogue(int size) {
+        return factory.pop("{r0-r3,r14}").toString() + "\n"
+            + factory.add("r13", "r13", "#" + (4 * size));
     }
 
     private String header() {
         return ".text\n.global _start\n\n";
     }
 
-    public ARMVisitor(Memory memory) {
-        this.memory = memory;
+    public CodeGenerationVisitor() {
         this.labelGenerator = new LabelGenerator();
         this.currentFunction = "";
         this.functionLabels = new HashMap<String, String>();
@@ -52,95 +78,146 @@ class ARMVisitor implements ObjVisitor<String> {
 
     @Override
     public String visit(Float e) {
-        return String.format("%f", e.f);
+        return String.format("%f", e.f);   
     }
 
     @Override
     public String visit(Neg e) {
-        return factory.rsb("%s", "#0", getRegister(e.id)).toString();
+        memory.allocate(e.id);
+        int reg = getNextAvailableRegister();
+        String res = retrieveVariable(e.id, reg) 
+            + factory.rsb("%s", "#0", "r" + reg);
+        freeRegister(reg);
+        return res;
     }
 
     @Override
     public String visit(Add e) {
         intImmediate = true;
-        String reg = getRegister(e.id);
+        memory.allocate(e.id);
+
+        int reg = getNextAvailableRegister();
         String op = e.e.accept(this);
-        String result = factory.add("%s", reg, op).toString();
+
+        String result = retrieveVariable(e.id, reg);
+
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+
+        result += factory.add("%s", "r"+ reg, op).toString();
+        
         intImmediate = false;
+        freeRegister(reg);
+        
         return result;
     }
 
     @Override
     public String visit(Sub e) {
         intImmediate = true;
-        String reg = getRegister(e.id);
+        memory.allocate(e.id);
+
+        int reg = getNextAvailableRegister();
         String op = e.e.accept(this);
-        String result = factory.sub("%s", reg, op).toString();
+        String result = retrieveVariable(e.id, reg);
+        
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+        
+        result += factory.sub("%s", "r" + reg, op).toString();
         intImmediate = false;
+        
+        freeRegister(reg);
         return result;
     }
 
     @Override
     public String visit(FNeg e) {
-
         return "";
     }
 
     @Override
     public String visit(FAdd e) {
-
         return "";
     }
 
     @Override
     public String visit(FSub e) {
-
         return "";
     }
 
     @Override
     public String visit(FMul e) {
-
         return "";
     }
 
     @Override
     public String visit(FDiv e) {
-
         return "";
     }
 
     @Override
     public String visit(Eq e) {
         intImmediate = true;
-        String reg1 = getRegister(e.id);
+        memory.allocate(e.id);
         String reg2 = e.e.accept(this);
         intImmediate = false;
-        String result = factory.cmp("%s") + "\n"
+
+        int reg1 = getNextAvailableRegister();
+        String result = retrieveVariable(e.id, reg1);
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+        freeRegister(reg1);
+
+        result += factory.cmp("%s", "%s") + "\n"
             + factory.branch("NE", "%%s") + "\n";
-        return String.format(result, reg1, reg2);
+        return String.format(result, "r" + reg1, reg2);
     }
 
     @Override
     public String visit(LE e) {
         intImmediate = true;
-        String reg1 = getRegister(e.id);
+        memory.allocate(e.id);
         String reg2 = e.e.accept(this);
         intImmediate = false;
-        String result = factory.cmp("%s") + "\n"
+
+        int reg1 = getNextAvailableRegister();
+        String result = retrieveVariable(e.id, reg1);
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+        freeRegister(reg1);
+
+        result += factory.cmp("%s", "%s") + "\n"
             + factory.branch("GE", "%%s") + "\n";
-        return String.format(result, reg1, reg2);
+        return String.format(result, "r" + reg1, reg2);
     }
 
     @Override
     public String visit(GE e) {
         intImmediate = true;
-        String reg1 = getRegister(e.id);
+        memory.allocate(e.id);
         String reg2 = e.e.accept(this);
         intImmediate = false;
-        String result = factory.cmp("%s") + "\n"
+
+        int reg1 = getNextAvailableRegister();
+        String result = retrieveVariable(e.id, reg1);
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+        freeRegister(reg1);
+
+        result += factory.cmp("%s", "%s") + "\n"
             + factory.branch("LE", "%%s") + "\n";
-        return String.format(result, reg1, reg2);
+        return String.format(result, "r" + reg1, reg2);
     }
 
     @Override
@@ -177,20 +254,31 @@ class ARMVisitor implements ObjVisitor<String> {
 
     @Override
     public String visit(Let e) {
-        String register = getRegister(e.id);
+        memory.allocate(e.id);
+        int reg = getNextAvailableRegister();
         String result1 = e.e1.accept(this);
+        freeRegister(reg);
+        String spill = spillVariable(e.id, reg);
         String result2 = e.e2.accept(this);
-
-        return String.format(result1, register) + "\n" + result2;
+        return String.format(result1, "r" + reg) + "\n"
+            + spill
+            + result2;
     }
 
     @Override
     public String visit(Var e) {
-        return getRegister(e.id);
+        memory.allocate(e.id);
+        int reg = getNextAvailableRegister();
+        freeRegister(reg);
+        varRetrieve = retrieveVariable(e.id, reg);
+        return "r" + reg;
     }
 
     @Override
     public String visit(LetRec e) {
+        int size = e.accept(new SizeVisitor());
+        memory.memInit();
+        memory.UpdateScope(e.fd.fun.l);
         String result = "";
         this.currentFunction = e.fd.fun.l.label;
 
@@ -204,9 +292,9 @@ class ARMVisitor implements ObjVisitor<String> {
         factory.setLabel(functionLabel);
         this.functionLabels.put(currentFunction, functionLabel);
 
-        result += prologue() + "\n";
+        result += prologue(size) + "\n";
         result += e.e.accept(this) + "\n";
-        result += epilogue() + "\n";
+        result += epilogue(size) + "\n";
         if (e.fd.fun.l.label == "_") {
             result += exit();
         }
@@ -221,10 +309,11 @@ class ARMVisitor implements ObjVisitor<String> {
         }
         String result = "";
         int paramReg = 0;
+        
         for (Id id: e.args) {
             if (paramReg < 4) {
-                String reg = getRegister(id);
-                result += factory.mov("r" + (paramReg++), reg) + "\n";
+                String location = memory.allocate(id);
+                result += factory.load("r" + (paramReg++), location) + "\n";
             }
         }
         String functionLabel = functionLabels.get(e.f.label);

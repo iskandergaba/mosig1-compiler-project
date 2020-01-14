@@ -43,16 +43,16 @@ class Memory {
         String out = varLookup(path);
         if (out != null) return out;
 
-        for (int i=4;i<=12;i++) {
-            if (i == fp) continue;
-            if (regIsFree[i]) {
-                regIsFree[i] = false;
-                idRegMap.put(path, i);
-                out = new String("r" + i);
-                finalMap.put(path, out);
-                return out;
-            }
-        }
+        // for (int i=4;i<=12;i++) {
+        //     if (i == fp) continue;
+        //     if (regIsFree[i]) {
+        //         regIsFree[i] = false;
+        //         idRegMap.put(path, i);
+        //         out = new String("r" + i);
+        //         finalMap.put(path, out);
+        //         return out;
+        //     }
+        // }
         offset -= 4;
         idOffMap.put(path, offset);
         out = new String("[r" + fp + ", " + offset + "]");
@@ -62,7 +62,7 @@ class Memory {
 
     String varLookup(String path) {
         if (idRegMap.containsKey(path)) return new String("r" + idRegMap.get(path));
-        if (idOffMap.containsKey(path)) return new String("[fp, " + idOffMap.get(path) + "]");
+        if (idOffMap.containsKey(path)) return new String("[r11, #" + idOffMap.get(path) + "]");
         return null;
     }
 

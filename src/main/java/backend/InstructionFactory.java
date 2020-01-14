@@ -98,11 +98,12 @@ public class InstructionFactory {
         return result;
     }
 
-    public Instruction cmp(String reg) {
+    public Instruction cmp(String reg1, String reg2) {
         Instruction result = createCSInstruction();
 
         result.setName("CMP");
-        result.addArgument(reg);
+        result.addArgument(reg1);
+        result.addArgument(reg2);
         return result;
     }
 
@@ -119,6 +120,24 @@ public class InstructionFactory {
 
         result.setName("SWI");
         result.addArgument(syscall);
+        return result;
+    }
+
+    public Instruction load(String reg, String mem) {
+        Instruction result = createCSInstruction();
+
+        result.setName("LDR");
+        result.addArgument(reg);
+        result.addArgument(mem);
+        return result;
+    }
+
+    public Instruction store(String reg, String mem) {
+        Instruction result = createCSInstruction();
+
+        result.setName("STR");
+        result.addArgument(reg);
+        result.addArgument(mem);
         return result;
     }
 }
