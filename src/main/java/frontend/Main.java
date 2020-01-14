@@ -24,6 +24,12 @@ public class Main {
       } else {
         System.out.println("------ Typing error ------");
       }
+      System.out.println("------ K-Normalization ------");
+      ObjVisitor<Exp> v3 = new KNVisitor();
+      Exp newAST = expression.accept(v3);
+      newAST.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ K-Normalization DONE------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();

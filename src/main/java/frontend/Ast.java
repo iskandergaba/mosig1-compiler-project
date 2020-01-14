@@ -301,10 +301,15 @@ class Let extends Exp {
 }
 
 class Var extends Exp {
+    private static int count = 0;
     final Id id;
 
     Var(Id id) {
         this.id = id;
+    }
+
+    static Var gen() {
+        return new Var(new Id("$" + count++));
     }
 
     <E> E accept(ObjVisitor<E> v) throws Exception {
