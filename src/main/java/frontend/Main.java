@@ -8,8 +8,6 @@ public class Main {
 
       FileReader file = null;
 
-      byte terminate_point = 0;
-
       // Command Line Arguments
       if (argv.length == 0) {
         throw new Exception();
@@ -56,10 +54,8 @@ public class Main {
           char c = argv[0].charAt(1);
           switch (c) {
           case 't':
-            terminate_point = 2;
             break;
           case 'p':
-            terminate_point = 1;
             break;
           case 'a':
             // Output ASML
@@ -128,6 +124,12 @@ public class Main {
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Alpha-conversion DONE ------");
+
+      System.out.println("------ Let-Reduction ------");
+      expression = expression.accept(new LetReducer());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ Let-Reduction DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();

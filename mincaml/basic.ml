@@ -1,6 +1,5 @@
-let rec f x =
-    if x=1 then
-        x+1
-    else
-        3 in
-print_int (f 1)
+let x = 
+   let y = 1 + 2 in y
+in let rec succ x = x + 1 
+in let rec double x = x + x 
+in print_int (succ (double x))
