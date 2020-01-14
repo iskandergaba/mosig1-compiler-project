@@ -8,17 +8,28 @@ class ARMVisitor implements ObjVisitor<String> {
     private Memory memory;
     private boolean intImmediate = false; // TODO: find a way to do this better
     private Map<String, String> functionLabels;
+    private InstructionFactory factory;
 
     private String getRegister(Id id) {
         return "r" + memory.varMap.get(/*this.currentFunction + "." + */id.id);
     }
 
     private String prologue() {
-        return "PUSH {r0-r3,r14}\n";
+        return factory.push("{r0-r3,r14}").toString();
+    }
+
+    private String exit() {
+        return factory.mov("r0", "#0") + "\n" 
+            + factory.mov("r7", "#1") + "\n"
+            + factory.swi("#0");
     }
 
     private String epilogue() {
-        return "POP {r0-r3,r14}\n";
+        return factory.pop("{r0-r3,r14}").toString();
+    }
+
+    private String header() {
+        return ".text\n.global _start\n\n";
     }
 
     public ARMVisitor(Memory memory) {
@@ -26,6 +37,7 @@ class ARMVisitor implements ObjVisitor<String> {
         this.labelGenerator = new LabelGenerator();
         this.currentFunction = "";
         this.functionLabels = new HashMap<String, String>();
+        this.factory = new InstructionFactory();
     }
 
     @Override
@@ -33,7 +45,8 @@ class ARMVisitor implements ObjVisitor<String> {
         if (intImmediate) {
             return String.format("#%d", e.i);
         } else {
-            return String.format("MOV %%s, #%d", e.i);
+            String instr = factory.mov("%%s", "#%d").toString();
+            return String.format(instr, e.i);
         }
     }
 
@@ -44,13 +57,15 @@ class ARMVisitor implements ObjVisitor<String> {
 
     @Override
     public String visit(Neg e) {
-        return "RSB %s, #0, " + getRegister(e.id);
+        return factory.rsb("%s", "#0", getRegister(e.id)).toString();
     }
 
     @Override
     public String visit(Add e) {
         intImmediate = true;
-        String result = "ADD %s, " + getRegister(e.id) + ", " + e.e.accept(this);
+        String reg = getRegister(e.id);
+        String op = e.e.accept(this);
+        String result = factory.add("%s", reg, op).toString();
         intImmediate = false;
         return result;
     }
@@ -58,7 +73,9 @@ class ARMVisitor implements ObjVisitor<String> {
     @Override
     public String visit(Sub e) {
         intImmediate = true;
-        String result = "SUB %s, " + getRegister(e.id) + ", " + e.e.accept(this);
+        String reg = getRegister(e.id);
+        String op = e.e.accept(this);
+        String result = factory.sub("%s", reg, op).toString();
         intImmediate = false;
         return result;
     }
@@ -99,7 +116,9 @@ class ARMVisitor implements ObjVisitor<String> {
         String reg1 = getRegister(e.id);
         String reg2 = e.e.accept(this);
         intImmediate = false;
-        return String.format("CMP %s, %s\nBNE %%s\n", reg1, reg2);
+        String result = factory.cmp("%s") + "\n"
+            + factory.branch("NE", "%%s") + "\n";
+        return String.format(result, reg1, reg2);
     }
 
     @Override
@@ -108,7 +127,9 @@ class ARMVisitor implements ObjVisitor<String> {
         String reg1 = getRegister(e.id);
         String reg2 = e.e.accept(this);
         intImmediate = false;
-        return String.format("CMP %s, %s\nBGE %%s\n", reg1, reg2);
+        String result = factory.cmp("%s") + "\n"
+            + factory.branch("GE", "%%s") + "\n";
+        return String.format(result, reg1, reg2);
     }
 
     @Override
@@ -117,7 +138,9 @@ class ARMVisitor implements ObjVisitor<String> {
         String reg1 = getRegister(e.id);
         String reg2 = e.e.accept(this);
         intImmediate = false;
-        return String.format("CMP %s, %s\nBLE %%s\n", reg1, reg2);
+        String result = factory.cmp("%s") + "\n"
+            + factory.branch("LE", "%%s") + "\n";
+        return String.format(result, reg1, reg2);
     }
 
     @Override
@@ -135,11 +158,21 @@ class ARMVisitor implements ObjVisitor<String> {
     @Override
     public String visit(If e) {
         String labelElse = labelGenerator.getLabel();
+        String labelEnd = labelGenerator.getLabel();
 
         String condition = String.format(e.cond.accept(this), labelElse);
         String then = e.e1.accept(this);
+
+        factory.setLabel(labelElse);
         String other = e.e2.accept(this);
-        return condition + then + other + "\n";
+        String branchToEnd = factory.branch("", labelEnd).toString();
+
+        factory.setLabel(labelEnd);
+        
+        return condition 
+             + then + "\n"
+             + branchToEnd + "\n"
+             + other;
     }
 
     @Override
@@ -160,13 +193,24 @@ class ARMVisitor implements ObjVisitor<String> {
     public String visit(LetRec e) {
         String result = "";
         this.currentFunction = e.fd.fun.l.label;
-        String functionLabel = this.labelGenerator.getLabel();
-        this.functionLabels.put(currentFunction, functionLabel);
-        result += functionLabel + ":\n";
 
-        result += prologue();
+        String functionLabel;
+        if (e.fd.fun.l.label == "_") {
+            functionLabel = "_start";
+        } else {
+            functionLabel = this.labelGenerator.getLabel();
+        }
+        
+        factory.setLabel(functionLabel);
+        this.functionLabels.put(currentFunction, functionLabel);
+
+        result += prologue() + "\n";
         result += e.e.accept(this) + "\n";
         result += epilogue() + "\n";
+        if (e.fd.fun.l.label == "_") {
+            result += exit();
+        }
+        result += "\n";
         return String.format(result, "r0");
     }
 
@@ -176,13 +220,18 @@ class ARMVisitor implements ObjVisitor<String> {
             System.err.println("Warning: too many arguments in syscall.");
         }
         String result = "";
-        int reg = 0;
+        int paramReg = 0;
         for (Id id: e.args) {
-            if (reg < 4) {
-                result += "MOV r" + (reg++) + ", " + getRegister(id) + "\n";
+            if (paramReg < 4) {
+                String reg = getRegister(id);
+                result += factory.mov("r" + (paramReg++), reg) + "\n";
             }
         }
-        result += "BL " + functionLabels.get(e.f.label);
+        String functionLabel = functionLabels.get(e.f.label);
+        if (functionLabel == null) {
+            functionLabel = e.f.label;
+        }
+        result += factory.branch("L", functionLabel);
         return result;
     }
 
@@ -224,7 +273,7 @@ class ARMVisitor implements ObjVisitor<String> {
 
     @Override
     public String visit(FunDefs e) {
-        String result = "";
+        String result = header();
         for (Exp exp: e.funs) {
             result += exp.accept(this);
         }
