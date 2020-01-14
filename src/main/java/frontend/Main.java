@@ -9,20 +9,17 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      System.out.println("------ AST ------");
+      System.out.println("------ AST generation ------");
       expression.accept(new PrintVisitor());
       System.out.println();
-
-      ObjVisitor<Integer> v1 = new HeightVisitor();
-      int height = expression.accept(v1);
-      System.out.println("using HeightVisitor: " + height);
+      System.out.println("------ AST generation DONE ------");
       
       System.out.println("------ Type checking ------");
-      Type result = expression.accept(new TypeVisitor(););
+      expression.accept(new TypeVisitor());
       System.out.println("------ Type checking DONE ------");
       
       System.out.println("------ K-Normalization ------");
-      expression = expression.accept(new KNVisitor(););
+      expression = expression.accept(new KNVisitor());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ K-Normalization DONE------");
