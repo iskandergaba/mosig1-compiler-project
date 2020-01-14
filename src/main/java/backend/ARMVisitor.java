@@ -13,6 +13,14 @@ class ARMVisitor implements ObjVisitor<String> {
         return "r" + memory.varMap.get(/*this.currentFunction + "." + */id.id);
     }
 
+    private String prologue() {
+        return "PUSH {r0-r3,r14}\n";
+    }
+
+    private String epilogue() {
+        return "POP {r0-r3,r14}\n";
+    }
+
     public ARMVisitor(Memory memory) {
         this.memory = memory;
         this.labelGenerator = new LabelGenerator();
@@ -25,7 +33,7 @@ class ARMVisitor implements ObjVisitor<String> {
         if (intImmediate) {
             return String.format("#%d", e.i);
         } else {
-            return String.format("MOV %%s, #%d\n", e.i);
+            return String.format("MOV %%s, #%d", e.i);
         }
     }
 
@@ -44,7 +52,7 @@ class ARMVisitor implements ObjVisitor<String> {
         intImmediate = true;
         String result = "ADD %s, " + getRegister(e.id) + ", " + e.e.accept(this);
         intImmediate = false;
-        return result + "\n";
+        return result;
     }
 
     @Override
@@ -52,7 +60,7 @@ class ARMVisitor implements ObjVisitor<String> {
         intImmediate = true;
         String result = "SUB %s, " + getRegister(e.id) + ", " + e.e.accept(this);
         intImmediate = false;
-        return result + "\n";
+        return result;
     }
 
     @Override
@@ -140,7 +148,7 @@ class ARMVisitor implements ObjVisitor<String> {
         String result1 = e.e1.accept(this);
         String result2 = e.e2.accept(this);
 
-        return String.format(result1, register) + "\n" + result2 + "\n";     
+        return String.format(result1, register) + "\n" + result2;     
     }
 
     @Override
@@ -155,8 +163,11 @@ class ARMVisitor implements ObjVisitor<String> {
         String functionLabel = this.labelGenerator.getLabel();
         this.functionLabels.put(currentFunction, functionLabel);
         result += functionLabel + ":\n";
-        result += e.e.accept(this);
-        return String.format(result, "r0") + "\n";
+
+        result += prologue();
+        result += e.e.accept(this) + "\n";
+        result += epilogue() + "\n";
+        return String.format(result, "r0");
     }
 
     @Override
@@ -171,7 +182,7 @@ class ARMVisitor implements ObjVisitor<String> {
                 result += "MOV r" + (reg++) + ", " + getRegister(id) + "\n";
             }
         }
-        result += "B " + functionLabels.get(e.f.label) + "\n";
+        result += "BL " + functionLabels.get(e.f.label);
         return result;
     }
 
