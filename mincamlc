@@ -2,7 +2,7 @@
 
 end="frontend"
 
-if [ "$#" -eq 2 ]; then
+if [ "$#" -ge 2 ]; then
     end=$1
     shift
 fi
