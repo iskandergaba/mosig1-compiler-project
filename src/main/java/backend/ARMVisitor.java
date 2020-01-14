@@ -11,7 +11,7 @@ class ARMVisitor implements ObjVisitor<String> {
     private InstructionFactory factory;
 
     private String getRegister(Id id) {
-        return "r" + memory.varMap.get(/*this.currentFunction + "." + */id.id);
+        return "r" + memory.idRegMap.get(this.currentFunction + "." + id.id);
     }
 
     private String prologue() {
