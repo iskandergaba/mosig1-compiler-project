@@ -11,7 +11,7 @@ class ARMVisitor implements ObjVisitor<String> {
     private InstructionFactory factory;
 
     private String getRegister(Id id) {
-        return "r" + memory.idRegMap.get(this.currentFunction + "." + id.id);
+        return memory.finalMap.get(this.currentFunction + "." + id.id);
     }
 
     private String prologue() {
@@ -19,7 +19,7 @@ class ARMVisitor implements ObjVisitor<String> {
     }
 
     private String exit() {
-        return factory.mov("r0", "#0") + "\n" 
+        return factory.mov("r0", "#0") + "\n"
             + factory.mov("r7", "#1") + "\n"
             + factory.swi("#0");
     }
@@ -168,8 +168,8 @@ class ARMVisitor implements ObjVisitor<String> {
         String branchToEnd = factory.branch("", labelEnd).toString();
 
         factory.setLabel(labelEnd);
-        
-        return condition 
+
+        return condition
              + then + "\n"
              + branchToEnd + "\n"
              + other;
@@ -181,7 +181,7 @@ class ARMVisitor implements ObjVisitor<String> {
         String result1 = e.e1.accept(this);
         String result2 = e.e2.accept(this);
 
-        return String.format(result1, register) + "\n" + result2;     
+        return String.format(result1, register) + "\n" + result2;
     }
 
     @Override
@@ -200,7 +200,7 @@ class ARMVisitor implements ObjVisitor<String> {
         } else {
             functionLabel = this.labelGenerator.getLabel();
         }
-        
+
         factory.setLabel(functionLabel);
         this.functionLabels.put(currentFunction, functionLabel);
 
