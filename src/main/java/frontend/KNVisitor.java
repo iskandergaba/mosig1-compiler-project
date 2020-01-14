@@ -3,7 +3,7 @@ package frontend;
 import java.util.ArrayList;
 import java.util.List;
 
-class NormalVisitor implements ObjVisitor<Exp> {
+class KNVisitor implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {
         return e;
@@ -23,18 +23,18 @@ class NormalVisitor implements ObjVisitor<Exp> {
 
     public Exp visit(Not e) throws Exception {
         if (!(e.e instanceof Var)) {
-            Var v1 = Var.gen();
+            Var v = Var.gen();
             Exp bExp = new Not(e);
-            return new Let(v1.id, Type.gen(), e.e.accept(this), bExp);
+            return new Let(v.id, Type.gen(), e.e.accept(this), bExp);
         }
         return e;
     }
 
     public Exp visit(Neg e) throws Exception {
         if (!(e.e instanceof Var)) {
-            Var v1 = Var.gen();
+            Var v = Var.gen();
             Exp aExp = new Neg(e);
-            return new Let(v1.id, Type.gen(), e.e.accept(this), aExp);
+            return new Let(v.id, Type.gen(), e.e.accept(this), aExp);
         }
         return e;
     }
@@ -67,9 +67,9 @@ class NormalVisitor implements ObjVisitor<Exp> {
 
     public Exp visit(FNeg e) throws Exception {
         if (!(e.e instanceof Var)) {
-            Var v1 = Var.gen();
+            Var v = Var.gen();
             Exp aExp = new FNeg(e);
-            return new Let(v1.id, Type.gen(), e.e.accept(this), aExp);
+            return new Let(v.id, Type.gen(), e.e.accept(this), aExp);
         }
         return e;
     }
@@ -152,9 +152,19 @@ class NormalVisitor implements ObjVisitor<Exp> {
         return e;
     }
 
-    // TODO
     public Exp visit(If e) throws Exception {
-        return new If(e.e1.accept(this), e.e2.accept(this), e.e3.accept(this));
+        if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var) || !(e.e3 instanceof Var)) {
+            Var v1 = Var.gen();
+            Var v2 = Var.gen();
+            Var v3 = Var.gen();
+            Exp exp = new If(v1, v2, v3);
+            Let let2 = new Let(v3.id, Type.gen(), e.e3, exp);
+            Let let1 = new Let(v2.id, Type.gen(), e.e2, let2);
+            Exp e1 = e.e1.accept(this);
+            Exp e2 = let1.accept(this);
+            return new Let(v1.id, Type.gen(), e1, e2);
+        }
+        return e;
     }
 
     public Exp visit(Let e) throws Exception {
@@ -197,27 +207,71 @@ class NormalVisitor implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Tuple e) throws Exception {
-        List<Exp> es = new ArrayList<>();
+        boolean normalize = false;
         for (Exp exp : e.es) {
-            es.add(exp.accept(this));
+            if (!(exp instanceof Var)) {
+                normalize = true;
+                break;
+            }
         }
-        return new Tuple(es);
+        if (normalize) {
+            List<Exp> vars = new ArrayList<>();
+            for (int i = 0; i < e.es.size(); i++) {
+                vars.add(Var.gen());
+            }
+
+            Exp exp = new Tuple(vars);
+
+            for (int i = e.es.size() - 1; i >= 0; i--) {
+                exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
+            }
+            return exp;
+        }
+        return e;
     }
 
-    //TODO
     public Exp visit(LetTuple e) throws Exception {
         return new LetTuple(e.ids, e.ts, e.e1.accept(this), e.e2.accept(this));
     }
 
     public Exp visit(Array e) throws Exception {
-        return new Array(e.e1.accept(this), e.e2.accept(this));
+        if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var)) {
+            Var v1 = Var.gen();
+            Var v2 = Var.gen();
+            Exp bExp = new Array(v1, v2);
+            Let letExp = new Let(v2.id, Type.gen(), e.e2, bExp);
+            Exp e1 = e.e1.accept(this);
+            Exp e2 = letExp.accept(this);
+            return new Let(v1.id, Type.gen(), e1, e2);
+        }
+        return e;
     }
 
     public Exp visit(Get e) throws Exception {
-        return new Get(e.e1.accept(this), e.e2.accept(this));
+        if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var)) {
+            Var v1 = Var.gen();
+            Var v2 = Var.gen();
+            Exp bExp = new Get(v1, v2);
+            Let letExp = new Let(v2.id, Type.gen(), e.e2, bExp);
+            Exp e1 = e.e1.accept(this);
+            Exp e2 = letExp.accept(this);
+            return new Let(v1.id, Type.gen(), e1, e2);
+        }
+        return e;
     }
 
     public Exp visit(Put e) throws Exception {
-        return new Put(e.e1.accept(this), e.e2.accept(this), e.e3.accept(this));
+        if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var) || !(e.e3 instanceof Var)) {
+            Var v1 = Var.gen();
+            Var v2 = Var.gen();
+            Var v3 = Var.gen();
+            Exp exp = new Put(v1, v2, v3);
+            Let let2 = new Let(v3.id, Type.gen(), e.e3, exp);
+            Let let1 = new Let(v2.id, Type.gen(), e.e2, let2);
+            Exp e1 = e.e1.accept(this);
+            Exp e2 = let1.accept(this);
+            return new Let(v1.id, Type.gen(), e1, e2);
+        }
+        return e;
     }
 }
