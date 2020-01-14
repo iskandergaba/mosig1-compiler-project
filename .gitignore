@@ -22,4 +22,3 @@ bin
 # Generated files
 Parser.java
 Lexer.java
-sym.java

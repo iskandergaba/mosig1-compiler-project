@@ -1,5 +1,3 @@
-package frontend;
-
 import java.util.*;
 
 // This is an "imperative-style" way of computing the height of
@@ -81,14 +79,14 @@ class Height {
             App e = (App) exp;
             res = computeHeight(e.e);
             for (Exp e1 : e.es) {
-                res = Math.max(computeHeight(e1), res);
+               res = Math.max(computeHeight(e1), res);
             }
             res++;
         } else if (exp instanceof Tuple) {
             Tuple e = (Tuple) exp;
             res = 0;
             for (Exp e1 : e.es) {
-                res = Math.max(computeHeight(e1), res);
+               res = Math.max(computeHeight(e1), res);
             }
             res++;
         } else if (exp instanceof LetTuple) {
@@ -100,13 +98,14 @@ class Height {
         } else if (exp instanceof Get) {
             Get e = (Get) exp;
             res = Math.max(computeHeight(e.e1), computeHeight(e.e2)) + 1;
-        } else if (exp instanceof Put) {
+        }  else if (exp instanceof Put) {
             Put e = (Put) exp;
             res = Math.max(computeHeight(e.e1), Math.max(computeHeight(e.e2), computeHeight(e.e3))) + 1;
         } else {
             // shouldn't happen
-            assert (false);
+            assert(false);
         }
         return res;
     }
 }
+

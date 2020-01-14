@@ -1,6 +1,3 @@
 #!/bin/bash
 
-java -jar ../../../lib/java-cup-11b.jar -nonterms -expect 150 -interface -parser Parser frontend/$@
-mv Parser.java sym.java frontend/
-java -jar ../../../lib/java-cup-11b.jar -nonterms -expect 150 -interface -parser Parser backend/$@
-mv Parser.java sym.java backend/
+java -jar ../../../lib/java-cup-11b.jar -nonterms -expect 150 -interface -parser Parser $@ 
