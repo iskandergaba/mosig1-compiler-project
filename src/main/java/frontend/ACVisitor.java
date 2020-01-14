@@ -2,18 +2,18 @@ package frontend;
 
 import java.util.*;
 
-class AlphaConversionVisitor implements Visitor {
+class ACVisitor implements Visitor {
 
     public Hashtable<String, String> changes;
     public static int varCount = 0;
     public static int funCount = 0;
     public static int argCount = 0;
 
-    public AlphaConversionVisitor() {
+    public ACVisitor() {
         changes = new Hashtable<String, String>();
     }
 
-    public AlphaConversionVisitor(Hashtable<String, String> changes) {
+    public ACVisitor(Hashtable<String, String> changes) {
         this.changes = changes;
     }
 
@@ -92,7 +92,7 @@ class AlphaConversionVisitor implements Visitor {
         newChanges.put(e.id.id, "var" + varCount);
         e.id.id = "var" + varCount;
         varCount++;
-        AlphaConversionVisitor v = new AlphaConversionVisitor(newChanges);
+        ACVisitor v = new ACVisitor(newChanges);
         e.e1.accept(v);
         e.e2.accept(v);
     }
@@ -114,8 +114,8 @@ class AlphaConversionVisitor implements Visitor {
             arg.id = "arg" + argCount;
             argCount++;
         }
-        e.fd.e.accept(new AlphaConversionVisitor(newChangesFun));
-        e.e.accept(new AlphaConversionVisitor(newChanges));
+        e.fd.e.accept(new ACVisitor(newChangesFun));
+        e.e.accept(new ACVisitor(newChanges));
     }
 
     public void visit(App e) {
@@ -139,7 +139,7 @@ class AlphaConversionVisitor implements Visitor {
             varCount++;
         }
         e.e1.accept(this);
-        e.e2.accept(new AlphaConversionVisitor(newChanges));
+        e.e2.accept(new ACVisitor(newChanges));
     }
 
     public void visit(Array e) {

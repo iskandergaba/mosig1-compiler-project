@@ -26,7 +26,7 @@ public class Main {
       }
 
       System.out.println("------ Alpha-conversion ------");
-      expression.accept(new AlphaConversionVisitor());
+      expression.accept(new ACVisitor());
       System.out.println("------ Alpha-conversion DONE ------");
 
       expression.accept(new PrintVisitor());
