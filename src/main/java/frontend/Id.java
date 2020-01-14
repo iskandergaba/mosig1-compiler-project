@@ -1,3 +1,5 @@
+package frontend;
+
 class Id {
     String id;
     Id(String id) {
