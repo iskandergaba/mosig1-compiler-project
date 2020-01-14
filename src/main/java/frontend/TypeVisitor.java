@@ -217,6 +217,8 @@ class TypeVisitor implements ObjVisitor<Type> {
         Type res3 = e.e3.accept(this);
         if (res1 instanceof TBool && (res2.getClass().getName().equals(res3.getClass().getName())
                 || res2 instanceof TAssumeOK || res3 instanceof TAssumeOK)) {
+            if (res2 instanceof TAssumeOK)
+                return res3;
             return res2;
         } else if (!(res1 instanceof TBool)) {
             throw new TypingException("In expression : " + e.accept(new StringVisitor())

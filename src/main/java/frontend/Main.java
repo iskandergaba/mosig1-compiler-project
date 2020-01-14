@@ -108,29 +108,26 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      System.out.println("------ AST ------");
+      System.out.println("------ AST generation ------");
       expression.accept(new PrintVisitor());
       System.out.println();
-
-      // End at Parsing
-      assert(terminate_point != 1);
-
-      ObjVisitor<Integer> v1 = new HeightVisitor();
-      int height = expression.accept(v1);
-      System.out.println("using HeightVisitor: " + height);
-
+      System.out.println("------ AST generation DONE ------");
+      
       System.out.println("------ Type checking ------");
-      ObjVisitor<Type> v2 = new TypeVisitor();
-      Type result = expression.accept(v2);
-      if (result != null) {
-        System.out.println("------ Type checking DONE ------");
-      } else {
-        System.out.println("------ Typing error ------");
-      }
-
-      // End at Typing
-      assert(terminate_point != 2);
-
+      expression.accept(new TypeVisitor());
+      System.out.println("------ Type checking DONE ------");
+      
+      System.out.println("------ K-Normalization ------");
+      expression = expression.accept(new KNVisitor());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ K-Normalization DONE------");
+      
+      System.out.println("------ Alpha-conversion ------");
+      expression.accept(new ACVisitor());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ Alpha-conversion DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
