@@ -16,21 +16,22 @@ public class Main {
       ObjVisitor<Integer> v1 = new HeightVisitor();
       int height = expression.accept(v1);
       System.out.println("using HeightVisitor: " + height);
+      
       System.out.println("------ Type checking ------");
-      ObjVisitor<Type> v2 = new TypeVisitor();
-      Type result = expression.accept(v2);
-      if (result != null) {
-        System.out.println("------ Type checking DONE ------");
-      } else {
-        System.out.println("------ Typing error ------");
-      }
-
+      Type result = expression.accept(new TypeVisitor(););
+      System.out.println("------ Type checking DONE ------");
+      
+      System.out.println("------ K-Normalization ------");
+      expression = expression.accept(new KNVisitor(););
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ K-Normalization DONE------");
+      
       System.out.println("------ Alpha-conversion ------");
       expression.accept(new ACVisitor());
-      System.out.println("------ Alpha-conversion DONE ------");
-
       expression.accept(new PrintVisitor());
-
+      System.out.println();
+      System.out.println("------ Alpha-conversion DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
