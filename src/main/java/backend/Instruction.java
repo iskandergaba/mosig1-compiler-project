@@ -2,7 +2,7 @@ package backend;
 
 import java.util.*;
 
-abstract class Instruction {
+public class Instruction {
     protected String name;
     protected List<String> args;
     protected int indent;
@@ -15,7 +15,16 @@ abstract class Instruction {
         this.label = null;
     }
 
-    public abstract String toString();
+    public String toString() {
+        String result = "";
+        if (label != null) {
+            result += label + ":";
+        }
+        String format = "%" + indent + "s%-" + instrSize + "s ";
+        result += String.format(format, " ", name);
+        result += String.join(", ", args);
+        return result;
+    }
     
     public void setIndent(int indent) {
         this.indent = indent; 
@@ -31,32 +40,5 @@ abstract class Instruction {
 
     public void setLabel(String label) {
         this.label = label;
-    }
-}
-
-class CommaSeparatedInstruction extends Instruction {
-    public String toString() {
-        String result = "";
-        if (label != null) {
-            result += label + ":";
-        }
-        String format = "%" + indent + "s%-" + instrSize + "s ";
-        result += String.format(format, " ", name);
-        result += String.join(", ", args);
-        return result;
-    }
-}
-
-class ArgumentListInstruction extends Instruction {
-    public String toString() {
-        String result = "";
-        if (label != null) {
-            result += label + ":";
-        }
-        String format = "%" + indent + "s%-" + instrSize + "s ";
-
-        result += String.format(format, " ", name);
-        result += args.get(0);
-        return result;
     }
 }
