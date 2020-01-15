@@ -103,23 +103,23 @@ class PrintVisitor implements Visitor {
     }
 
     public void visit(If e) {
-        System.out.print("(if ");
+        System.out.println("(if ");
         e.e1.accept(this);
-        System.out.print(" then ");
+        System.out.println("\nthen ");
         e.e2.accept(this);
-        System.out.print(" else ");
+        System.out.println("\nelse ");
         e.e3.accept(this);
-        System.out.print(")");
+        System.out.println(")");
     }
 
     public void visit(Let e) {
         System.out.print("(let ");
         System.out.print(e.id);
-        System.out.print(" = ");
+        System.out.println(" = ");
         e.e1.accept(this);
-        System.out.print(" in ");
+        System.out.println(" in ");
         e.e2.accept(this);
-        System.out.print(")");
+        System.out.println(")");
     }
 
     public void visit(Var e) {
@@ -154,11 +154,11 @@ class PrintVisitor implements Visitor {
     public void visit(LetRec e) {
         System.out.print("(let rec " + e.fd.id + " ");
         printInfix(e.fd.args, " ");
-        System.out.print(" = ");
+        System.out.println(" = ");
         e.fd.e.accept(this);
-        System.out.print(" in ");
+        System.out.println(" in ");
         e.e.accept(this);
-        System.out.print(")");
+        System.out.println(")");
     }
 
     public void visit(App e) {
