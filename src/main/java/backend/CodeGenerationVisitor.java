@@ -2,19 +2,45 @@ package backend;
 
 import java.util.*;
 
+/**
+ * Visits the ASML AST and generates ARM assembly code.
+ */
 public class CodeGenerationVisitor implements ObjVisitor<String> {
+
+    // Generates label for branching (if's, function calls, ...)
     private LabelGenerator labelGenerator;
+
+    // The function name currently parsing
     private String currentFunction;
-    public Memory memory = new Memory();
+
+    // The memory construct, to perform register allocation
+    private Memory memory = new Memory();
+
+    // A flag used to differentiate between the use of an immediate value
+    // (for example in additions) and moving an immediate value in a register
     private boolean intImmediate = false; // TODO: find a way to do this better
+
+    // A mapping between function names and labels
     private Map<String, String> functionLabels;
+
+    // The instruction factory, used to create and parse ARM instructions
+    // with the correct indentation and form.
     private InstructionFactory factory;
+
+    // Used to perform an additionnal variable retrieval before performing
+    // an operation, since the variable may not be in a register at that
+    // time. For example, if we want to ADD x y, we would need to fetch
+    // both x and y into registers before performing the addition.
     private String varRetrieve; // TODO: ugly !!!!
 
     private int getOffset(Id id) {
         return memory.idOffMap.get(this.currentFunction + "." + (id.id));
     }
 
+    // This function returns an available register for variable retrieval.
+    // Currently, if there are no registers available for retrieval, the
+    // function prints an error and returns a -1 register, effectively producing
+    // an erroneous assembly output.
     private int getNextAvailableRegister() {
         for(int i = 4; i < 12; i++) {
             if (i == 1) continue;
@@ -59,6 +85,7 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         return ".text\n.global _start\n\n";
     }
 
+    // Used for generating arithmetic operations like ADD, SUB, ...
     private String arithmeticOperation(String op, Id id, Exp e) {
         intImmediate = true;
         memory.allocate(id);
@@ -68,6 +95,8 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         int reg = getNextAvailableRegister();
         String result = retrieveVariable(id, reg);
 
+        // If we need to retrieve some variable before,
+        // we need to append the code before the operation !
         if (varRetrieve != null) {
             result += varRetrieve;
             varRetrieve = null;
@@ -80,6 +109,7 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         return result;
     }
 
+    // Used for generating condition checking, like =, >, ...
     private String conditionOperation(String condition, Id id, Exp e) {
         intImmediate = true;
         memory.allocate(id);
@@ -219,11 +249,17 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
     @Override
     public String visit(Let e) {
         memory.allocate(e.id);
+
         int reg = getNextAvailableRegister();
+
         String result1 = e.e1.accept(this);
-        freeRegister(reg);
+
+        freeRegister(reg); // Free the register before parsing the `in` part
+        
         String spill = spillVariable(e.id, reg);
+        
         String result2 = e.e2.accept(this);
+        
         return String.format(result1, "r" + reg)
             + spill
             + result2;
@@ -232,23 +268,28 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
     @Override
     public String visit(Var e) {
         memory.allocate(e.id);
+
         int reg = getNextAvailableRegister();
         freeRegister(reg);
+        
         varRetrieve = retrieveVariable(e.id, reg);
         return "r" + reg;
     }
 
     @Override
     public String visit(LetRec e) {
+        // We need to get the 'size' of the function (the number of local variables)
+        // so that we can generate the prologue
         int size = e.accept(new SizeVisitor());
+        
         memory.memInit();
         memory.UpdateScope(e.fd.fun.l);
-        String result = "";
+                
         this.currentFunction = e.fd.fun.l.label;
 
         String functionLabel;
         if (e.fd.fun.l.label == "_") {
-            functionLabel = "_start";
+            functionLabel = "_start"; // Default ARM main function label
         } else {
             functionLabel = this.labelGenerator.getLabel();
         }
@@ -256,34 +297,41 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         factory.setLabel(functionLabel);
         this.functionLabels.put(currentFunction, functionLabel);
 
-        result += prologue(size);
-        result += e.e.accept(this);
-        result += epilogue(size);
+        String result = prologue(size)
+            + e.e.accept(this)
+            + epilogue(size);
+        
         if (e.fd.fun.l.label == "_") {
             result += exit();
         }
-        result += "\n";
-        return String.format(result, "r0");
+        result += "\n"; // Newline to tell functions apart
+        return String.format(result, "r0"); // We put the result of the last instruction in r0
     }
 
     @Override
     public String visit(Call e) {
+        // For the moment this will do.
         if (e.args.size() > 4) {
             System.err.println("Warning: too many arguments in syscall.");
         }
+
         String result = "";
         int paramReg = 0;
         
         for (Id id: e.args) {
-            if (paramReg < 4) {
+            if (paramReg < 4) { // Don't put more than 4 parameters
                 String location = memory.allocate(id);
                 result += factory.instr("LDR", "r" + (paramReg++), location);
             }
         }
+
         String functionLabel = functionLabels.get(e.f.label);
-        if (functionLabel == null) {
+        
+        // For the moment this is how we handle external functions.
+        if (functionLabel == null) { 
             functionLabel = e.f.label;
         }
+        
         result += factory.instr("BL", functionLabel);
         return result;
     }
