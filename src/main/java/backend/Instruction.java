@@ -8,7 +8,7 @@ public class Instruction {
     protected int indent;
     protected String label;
 
-    protected static int instrSize = 6;
+    protected static final int instrSize = 6;
 
     public Instruction() {
         this.args = new ArrayList<String>();
@@ -23,7 +23,7 @@ public class Instruction {
         String format = "%" + indent + "s%-" + instrSize + "s ";
         result += String.format(format, " ", name);
         result += String.join(", ", args);
-        return result;
+        return result + "\n";
     }
     
     public void setIndent(int indent) {

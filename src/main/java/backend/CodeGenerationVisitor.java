@@ -32,31 +32,74 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
     }
 
     private String retrieveVariable(Id id, int reg) {
-        return factory.instr("LDR", "r" + reg, "[r13,#" + getOffset(id) + "]") + "\n";
+        return factory.instr("LDR", "r" + reg, "[r13,#" + getOffset(id) + "]").toString();
     }
 
     private String spillVariable(Id id, int reg) {
-        return factory.instr("STR", "r" + reg, "[r13,#" + getOffset(id) + "]") + "\n";
+        return factory.instr("STR", "r" + reg, "[r13,#" + getOffset(id) + "]").toString();
     }
 
     private String prologue(int size) {
-        return factory.instr("PUSH", "{r0-r3,r14}").toString() + "\n"
+        return factory.instr("PUSH", "{r0-r3,r14}").toString()
             + factory.instr("ADD", "r13", "r13", "#-" + (4 * size));
     }
 
     private String exit() {
-        return factory.instr("MOV", "r0", "#0") + "\n"
-            + factory.instr("MOV", "r7", "#1") + "\n"
+        return factory.instr("MOV", "r0", "#0").toString()
+            + factory.instr("MOV", "r7", "#1")
             + factory.instr("SWI", "#0");
     }
 
     private String epilogue(int size) {
-        return factory.instr("POP", "{r0-r3,r14}").toString() + "\n"
+        return factory.instr("POP", "{r0-r3,r14}").toString()
             + factory.instr("ADD", "r13", "r13", "#" + (4 * size));
     }
 
     private String header() {
         return ".text\n.global _start\n\n";
+    }
+
+    private String arithmeticOperation(String op, Id id, Exp e) {
+        intImmediate = true;
+        memory.allocate(id);
+        String operand = e.accept(this);
+        intImmediate = false;
+        
+        int reg = getNextAvailableRegister();
+        String result = retrieveVariable(id, reg);
+
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+
+        result += factory.instr(op, "%s", "r"+ reg, operand).toString();
+        
+        freeRegister(reg);
+        
+        return result;
+    }
+
+    private String conditionOperation(String condition, Id id, Exp e) {
+        intImmediate = true;
+        memory.allocate(id);
+        String reg2 = e.accept(this);
+        intImmediate = false;
+
+        int reg1 = getNextAvailableRegister();
+        String result = retrieveVariable(id, reg1);
+
+        if (varRetrieve != null) {
+            result += varRetrieve;
+            varRetrieve = null;
+        }
+        
+        result += factory.instr("CMP", "%s", "%s").toString()
+        + factory.instr(condition, "%%s");
+        
+        freeRegister(reg1);
+        
+        return String.format(result, "r" + reg1, reg2);
     }
 
     public CodeGenerationVisitor() {
@@ -93,46 +136,12 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
 
     @Override
     public String visit(Add e) {
-        intImmediate = true;
-        memory.allocate(e.id);
-
-        int reg = getNextAvailableRegister();
-        String op = e.e.accept(this);
-
-        String result = retrieveVariable(e.id, reg);
-
-        if (varRetrieve != null) {
-            result += varRetrieve;
-            varRetrieve = null;
-        }
-
-        result += factory.instr("ADD", "%s", "r"+ reg, op).toString();
-        
-        intImmediate = false;
-        freeRegister(reg);
-        
-        return result;
+        return arithmeticOperation("ADD", e.id, e.e);
     }
 
     @Override
     public String visit(Sub e) {
-        intImmediate = true;
-        memory.allocate(e.id);
-
-        int reg = getNextAvailableRegister();
-        String op = e.e.accept(this);
-        String result = retrieveVariable(e.id, reg);
-        
-        if (varRetrieve != null) {
-            result += varRetrieve;
-            varRetrieve = null;
-        }
-        
-        result += factory.instr("SUB", "%s", "r" + reg, op).toString();
-        intImmediate = false;
-        
-        freeRegister(reg);
-        return result;
+        return arithmeticOperation("SUB", e.id, e.e);
     }
 
     @Override
@@ -162,62 +171,17 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
 
     @Override
     public String visit(Eq e) {
-        intImmediate = true;
-        memory.allocate(e.id);
-        String reg2 = e.e.accept(this);
-        intImmediate = false;
-
-        int reg1 = getNextAvailableRegister();
-        String result = retrieveVariable(e.id, reg1);
-        if (varRetrieve != null) {
-            result += varRetrieve;
-            varRetrieve = null;
-        }
-        freeRegister(reg1);
-
-        result += factory.instr("CMP", "%s", "%s") + "\n"
-            + factory.instr("BNE", "%%s") + "\n";
-        return String.format(result, "r" + reg1, reg2);
+        return conditionOperation("BNE", e.id, e.e);
     }
 
     @Override
     public String visit(LE e) {
-        intImmediate = true;
-        memory.allocate(e.id);
-        String reg2 = e.e.accept(this);
-        intImmediate = false;
-
-        int reg1 = getNextAvailableRegister();
-        String result = retrieveVariable(e.id, reg1);
-        if (varRetrieve != null) {
-            result += varRetrieve;
-            varRetrieve = null;
-        }
-        freeRegister(reg1);
-
-        result += factory.instr("CMP", "%s", "%s") + "\n"
-            + factory.instr("BGE", "%%s") + "\n";
-        return String.format(result, "r" + reg1, reg2);
+        return conditionOperation("BGE", e.id, e.e);
     }
 
     @Override
     public String visit(GE e) {
-        intImmediate = true;
-        memory.allocate(e.id);
-        String reg2 = e.e.accept(this);
-        intImmediate = false;
-
-        int reg1 = getNextAvailableRegister();
-        String result = retrieveVariable(e.id, reg1);
-        if (varRetrieve != null) {
-            result += varRetrieve;
-            varRetrieve = null;
-        }
-        freeRegister(reg1);
-
-        result += factory.instr("CMP", "%s", "%s") + "\n"
-            + factory.instr("BLE", "%%s") + "\n";
-        return String.format(result, "r" + reg1, reg2);
+        return conditionOperation("BLE", e.id, e.e);
     }
 
     @Override
@@ -247,8 +211,8 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         factory.setLabel(labelEnd);
 
         return condition
-             + then + "\n"
-             + branchToEnd + "\n"
+             + then
+             + branchToEnd
              + other;
     }
 
@@ -260,7 +224,7 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         freeRegister(reg);
         String spill = spillVariable(e.id, reg);
         String result2 = e.e2.accept(this);
-        return String.format(result1, "r" + reg) + "\n"
+        return String.format(result1, "r" + reg)
             + spill
             + result2;
     }
@@ -292,9 +256,9 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         factory.setLabel(functionLabel);
         this.functionLabels.put(currentFunction, functionLabel);
 
-        result += prologue(size) + "\n";
-        result += e.e.accept(this) + "\n";
-        result += epilogue(size) + "\n";
+        result += prologue(size);
+        result += e.e.accept(this);
+        result += epilogue(size);
         if (e.fd.fun.l.label == "_") {
             result += exit();
         }
@@ -313,7 +277,7 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         for (Id id: e.args) {
             if (paramReg < 4) {
                 String location = memory.allocate(id);
-                result += factory.instr("LDR", "r" + (paramReg++), location) + "\n";
+                result += factory.instr("LDR", "r" + (paramReg++), location);
             }
         }
         String functionLabel = functionLabels.get(e.f.label);
