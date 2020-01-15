@@ -1,5 +1,3 @@
 let rec f x =
-    let rec g y =
-        g x+y in
-    g 1 in
-print_int (f 1)
+   let rec g y = x + y in g
+in print_int ((f 0) 0)

@@ -276,7 +276,7 @@ class TypeVisitor implements ObjVisitor<Type> {
                 }
                 return ((TFun) res).extern_ret;
             }
-            Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+            //Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
             int i = 0;
             if (e.es.size() != ((TFun) res).args.size())
                 throw new TypingException("In expression : " + e.accept(new StringVisitor())
@@ -299,7 +299,7 @@ class TypeVisitor implements ObjVisitor<Type> {
             } else {
                 res__ = new TAssumeOK();
             }
-            env = env_;
+            //env = env_;
             return res__;
         }
         throw new TypingException(

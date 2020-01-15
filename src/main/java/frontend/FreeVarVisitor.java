@@ -5,7 +5,7 @@ import java.util.*;
 class FreeVarVisitor implements Visitor {
 
     List<String> env=new ArrayList<>();
-    Hashtable<String,List<String>> free=new Hashtable<>();
+    Hashtable<String,List<Id>> free=new Hashtable<>();
     Id currentFun=null;
 
     public void visit(Unit e) {}
@@ -81,8 +81,8 @@ class FreeVarVisitor implements Visitor {
     }
 
     public void visit(Var e) {
-        if(currentFun!=null && !env.contains(e.id.id) && !free.get(currentFun.id).contains(e.id.id)){
-            free.get(currentFun.id).add(e.id.id);
+        if(currentFun!=null && !env.contains(e.id.id) && !free.get(currentFun.id).contains(e.id)){
+            free.get(currentFun.id).add(e.id);
         }
     }
 
@@ -96,12 +96,12 @@ class FreeVarVisitor implements Visitor {
         for(Id id : e.fd.args){
             env.add(id.id);
         }
-        free.put(currentFun.id,new ArrayList<String>());
+        free.put(currentFun.id,new ArrayList<Id>());
         e.fd.e.accept(this);
         currentFun=parentFun;
         env=parentEnv;
-        for(String var : free.get(e.fd.id.id)){
-            if(currentFun!=null && !env.contains(var) && !free.get(currentFun.id).contains(var)){
+        for(Id var : free.get(e.fd.id.id)){
+            if(currentFun!=null && !env.contains(var.id) && !free.get(currentFun.id).contains(var)){
                 free.get(currentFun.id).add(var);
             }
         }

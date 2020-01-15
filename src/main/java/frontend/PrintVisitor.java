@@ -153,6 +153,11 @@ class PrintVisitor implements Visitor {
 
     public void visit(LetRec e) {
         System.out.print("(let rec " + e.fd.id + " ");
+        if(e.fd.free!=null && e.fd.free.size()>0){
+            System.out.print("[ ");
+            printInfix(e.fd.free," ");
+            System.out.print(" ] ");
+        }
         printInfix(e.fd.args, " ");
         System.out.println(" = ");
         e.fd.e.accept(this);

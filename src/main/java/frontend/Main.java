@@ -38,10 +38,12 @@ public class Main {
       System.out.println("------ Computing free variables DONE ------");
 
       System.out.println("------ Closure conversion ------");
-      CCVisitor v2 = new CCVisitor();
+      CCVisitor v2 = new CCVisitor(v1);
       expression = expression.accept(v2);
       expression = v2.join(expression);
       expression.accept(new PrintVisitor());
+      System.out.println(v2.retClosure);
+      System.out.println(v2.isClosure);
       System.out.println();
       System.out.println("------ Closure conversion DONE ------");
 

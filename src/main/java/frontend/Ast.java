@@ -3,6 +3,11 @@ package frontend;
 import java.util.*;
 
 abstract class Exp {
+
+    Boolean retClosureFlag=false;
+    Boolean isClosureFlag=false;
+
+
     abstract void accept(Visitor v);
 
     abstract <E> E accept(ObjVisitor<E> v) throws Exception;
@@ -343,6 +348,8 @@ class App extends Exp {
     final Exp e;
     final List<Exp> es;
 
+    boolean closureFlag=false;
+
     App(Exp e, List<Exp> es) {
         this.e = e;
         this.es = es;
@@ -456,6 +463,8 @@ class FunDef {
     final Type type;
     final List<Id> args;
     final Exp e;
+
+    List<Id> free=null;
 
     FunDef(Id id, Type t, List<Id> args, Exp e) {
         this.id = id;
