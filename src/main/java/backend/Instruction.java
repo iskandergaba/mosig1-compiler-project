@@ -11,6 +11,7 @@ public class Instruction {
     private int indent;
     private String label;
     private String comment;
+    private boolean finalInstruction;
 
     private static final int instrSize = 6;
     private static final int argsSize = 24;
@@ -19,6 +20,7 @@ public class Instruction {
         this.args = new ArrayList<String>();
         this.label = null;
         this.comment = null;
+        this.finalInstruction = false;
     }
 
     @Override
@@ -35,8 +37,8 @@ public class Instruction {
         if (comment != null) {
             result += " @ " + comment;
         }
-        
-        return result + "\n";
+
+        return result + (finalInstruction ? "\n\n" : "\n");
     }
     
     /**
@@ -73,6 +75,18 @@ public class Instruction {
 
     public Instruction comment(String comment) {
         this.comment = comment;
+        return this;
+    }
+
+    public Instruction replaceArgument(int arg, String value) {
+        if (this.args.size() > arg) {
+            this.args.set(arg, value);
+        }
+        return this;
+    }
+
+    public Instruction setFinal() {
+        this.finalInstruction = true;
         return this;
     }
 }
