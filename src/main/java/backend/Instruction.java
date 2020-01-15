@@ -6,16 +6,19 @@ import java.util.*;
  * Represents an ARM instruction, with eventually a label before it.
  */
 public class Instruction {
-    protected String name;
-    protected List<String> args;
-    protected int indent;
-    protected String label;
+    private String name;
+    private List<String> args;
+    private int indent;
+    private String label;
+    private String comment;
 
-    protected static final int instrSize = 6;
+    private static final int instrSize = 6;
+    private static final int argsSize = 24;
 
     public Instruction() {
         this.args = new ArrayList<String>();
         this.label = null;
+        this.comment = null;
     }
 
     @Override
@@ -24,9 +27,15 @@ public class Instruction {
         if (label != null) {
             result += label + ":";
         }
-        String format = "%" + indent + "s%-" + instrSize + "s ";
-        result += String.format(format, " ", name);
-        result += String.join(", ", args);
+        String format = "%" + indent + "s%-" + instrSize + "s %-" + argsSize + "s";
+        
+        String formattedArgs = String.join(", ", args);
+        result += String.format(format, " ", name, formattedArgs);
+        
+        if (comment != null) {
+            result += " @ " + comment;
+        }
+        
         return result + "\n";
     }
     
@@ -60,5 +69,10 @@ public class Instruction {
      */
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public Instruction comment(String comment) {
+        this.comment = comment;
+        return this;
     }
 }

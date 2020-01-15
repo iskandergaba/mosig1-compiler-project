@@ -66,12 +66,12 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
     }
 
     private String prologue(int size) {
-        return factory.instr("PUSH", "{r0-r3,r14}").toString()
+        return factory.instr("PUSH", "{r0-r3,r14}").comment("Prologue for function " + currentFunction).toString()
             + factory.instr("ADD", "r13", "r13", "#-" + (4 * size));
     }
 
     private String exit() {
-        return factory.instr("MOV", "r0", "#0").toString()
+        return factory.instr("MOV", "r0", "#0").comment("Exit syscall").toString()
             + factory.instr("MOV", "r7", "#1")
             + factory.instr("SWI", "#0");
     }
@@ -331,14 +331,17 @@ public class CodeGenerationVisitor implements ObjVisitor<String> {
         if (functionLabel == null) { 
             functionLabel = e.f.label;
         }
+
+        String saveLr = factory.instr("PUSH", "LR").toString();
+        String loadLr = factory.instr("POP", "LR").toString();
         
-        result += factory.instr("BL", functionLabel);
-        return result;
+        return result + saveLr
+            + factory.instr("BL", functionLabel)
+            + loadLr;
     }
 
     @Override
     public String visit(New e) {
-
         return "";
     }
 
