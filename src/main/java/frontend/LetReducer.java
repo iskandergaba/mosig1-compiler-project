@@ -107,6 +107,10 @@ class LetReducer implements ObjVisitor<Exp> {
     }
 
     private Exp insert(Let outerLet, Exp e) throws Exception {
+        if(e instanceof App) {
+            App app = (App)e;
+            return new App(insert(outerLet, app.e), app.es);
+        }
         if (e instanceof Let) {
             Let let = (Let)e;
             return new Let(let.id, let.t, let.e1, insert(outerLet, let.e2));
