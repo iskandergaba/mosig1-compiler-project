@@ -40,10 +40,12 @@ public class Program {
     public String toString() {
         return 
               ".data\n"
-            + "heap_start_addr: .word 0\n\n"
+            + "heap_start_addr: .word 0\n"
+            + "heap_offset_addr: .word 0\n\n"
             + ".text\n"
             + ".global _start\n\n"
             + text
-            + "heap_start: .word heap_start_addr";
+            + "heap_start: .word heap_start_addr\n"
+            + "heap_offset: .word heap_offset_addr\n";
     }
 }

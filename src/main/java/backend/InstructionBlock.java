@@ -45,6 +45,11 @@ public class InstructionBlock {
         return this;
     }
 
+    public InstructionBlock commentFirst(String comment) {
+        instructions.get(0).comment(comment);
+        return this;
+    }
+
     public InstructionBlock label(String label) {
         lastInstruction().setLabel(label);
         return this;
