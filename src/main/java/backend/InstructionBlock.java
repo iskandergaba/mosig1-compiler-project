@@ -5,10 +5,12 @@ import java.util.*;
 public class InstructionBlock {
     private List<Instruction> instructions;
     private List<Integer> usedRegisters;
+    public String lastFunctionLabel;
 
     public InstructionBlock() {
         this.instructions = new ArrayList<Instruction>();
         this.usedRegisters = new ArrayList<Integer>();
+        this.lastFunctionLabel = "";
     }
 
     public InstructionBlock(Instruction instr) {
@@ -34,6 +36,7 @@ public class InstructionBlock {
 
     public InstructionBlock chain(InstructionBlock block) {
         this.instructions.addAll(block.instructions);
+        this.lastFunctionLabel = block.lastFunctionLabel;
         return this;
     }
 
@@ -53,7 +56,12 @@ public class InstructionBlock {
     }
 
     public InstructionBlock setReturn(String register) {
-        lastInstruction().replaceArgument(1, register);
+        lastInstruction().replaceArgument(0, register);
+        return this;
+    }
+
+    public InstructionBlock setFunctionLabel(String label) {
+        this.lastFunctionLabel = label;
         return this;
     }
 

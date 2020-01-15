@@ -9,7 +9,10 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      System.out.println(expression.accept(new CodeGenerationVisitor()));
+      InstructionBlock text = expression.accept(new CodeGenerationVisitor());
+      Program prog = new Program(text);
+      prog.generateHeapAllocationCode();
+      System.out.println(prog);
 
     } catch (Exception e) {
       e.printStackTrace();

@@ -56,25 +56,12 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     }
 
     private InstructionBlock prologue(int size) {
-        return new InstructionBlock(factory.instr("PUSH", "{r0-r3,r14}"))
-            .comment("Prologue for function " + currentFunction)
-            .add(factory.instr("ADD", "sp", "sp", "#-" + (4 * size)));
-    }
-
-    private InstructionBlock exit() {
-        return new InstructionBlock(factory.instr("MOV", "r0", "#0"))
-            .comment("Exit syscall")
-            .add(factory.instr("MOV", "r7", "#1"))
-            .add(factory.instr("SWI", "#0"));
+        return new InstructionBlock(factory.instr("ADD", "sp", "sp", "#-" + (4 * size)))
+            .comment("Prologue for function " + currentFunction);
     }
 
     private InstructionBlock epilogue(int size) {
-        return new InstructionBlock(factory.instr("POP", "{r0-r3,r14}"))
-            .add(factory.instr("ADD", "sp", "sp", "#" + (4 * size)));
-    }
-
-    private String header() {
-        return ".text\n.global _start\n\n";
+        return new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 * size)));
     }
 
     // Used for generating arithmetic operations like ADD, SUB, ...
@@ -258,18 +245,17 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         memory.UpdateScope(e.fd.fun.l);
         this.currentFunction = e.fd.fun.l.label;
 
-        String functionLabel = currentFunction == "_" ? "_start" : this.labelGenerator.getLabel();
+        String functionLabel = this.labelGenerator.getLabel();
+        functionLabels.put(currentFunction, functionLabel);
+
         factory.setLabel(functionLabel);
 
         InstructionBlock result = prologue(size)
-            .chain(e.e.accept(this))
-            .chain(epilogue(size));
+            .chain(e.e.accept(this)).setReturn("r0")
+            .chain(epilogue(size))
+            .add(factory.instr("BX", "lr"));
 
-        if (currentFunction == "_") {
-            result.chain(exit());
-        }
-
-        return result.setReturn("r0");
+        return result.setFunctionLabel(functionLabel);
     }   
 
     @Override
@@ -296,9 +282,10 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         }
 
         return result
-            .add(factory.instr("PUSH", "lr"))
+            .add(factory.instr("PUSH", "{lr}"))
             .add(factory.instr("BL", functionLabel))
-            .add(factory.instr("POP", "lr"));
+            .add(factory.instr("POP", "{lr}"))
+            .add(factory.instr("MOV", "$", "r0"));
             
     }
 
