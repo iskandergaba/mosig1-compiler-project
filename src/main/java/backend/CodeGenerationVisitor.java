@@ -303,6 +303,14 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int heapBaseRegister = getNextAvailableRegister();
         int heapOffsetRegister = getNextAvailableRegister();
 
+        /*
+         *  The strategy here for creating a new array is the following:
+         *  - Load the heap start address and the current heap offset
+         *  - Add the current offset to the heap address to get the array address
+         *  - Add the array size to the current offset
+         *  - Store the new offset
+         *  - Return the address + old
+         */
         size
             .add(factory.instr("LDR", "r" + heapBaseAddr, "heap_start"))
             .add(factory.instr("LDR", "r" + heapOffsetAddr, "heap_offset"))
