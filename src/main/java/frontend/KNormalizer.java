@@ -153,7 +153,31 @@ class KNormalizer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(If e) throws Exception {
-        return new If(e.e1.accept(this), e.e2.accept(this), e.e3.accept(this));
+        if (e.e1 instanceof Eq) {
+            Eq eq = (Eq) e.e1;
+            Var vx = Var.gen();
+            Var vy = Var.gen();
+            Exp eq_ = new Eq(vx, vy);
+            If if_ = new If(eq_, e.e2.accept(this), e.e3.accept(this));
+            Let y = new Let(vy.id, Type.gen(), eq.e2.accept(this), if_);
+            Let x = new Let(vx.id, Type.gen(), eq.e1.accept(this), y);
+            return x;
+        } else if (e.e1 instanceof LE) {
+            LE le = (LE) e.e1;
+            Var vx = Var.gen();
+            Var vy = Var.gen();
+            Exp le_ = new LE(vx, vy);
+            If if_ = new If(le_, e.e2.accept(this), e.e3.accept(this));
+            Let y = new Let(vy.id, Type.gen(), le.e2.accept(this), if_);
+            Let x = new Let(vx.id, Type.gen(), le.e1.accept(this), y);
+            return x;
+        }
+        Not not = (Not) e.e1;
+        Var v = Var.gen();
+        Not not_ = new Not(v);
+        If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
+        Exp exp = new Let(v.id, Type.gen(), not.e.accept(this), if_);
+        return exp;
     }
 
     public Exp visit(Let e) throws Exception {
@@ -172,7 +196,7 @@ class KNormalizer implements ObjVisitor<Exp> {
 
     public Exp visit(App e) throws Exception {
         boolean normalize = false;
-        if(!(e.e instanceof Var)) {
+        if (!(e.e instanceof Var)) {
             normalize = true;
         }
         for (Exp exp : e.es) {
@@ -184,15 +208,13 @@ class KNormalizer implements ObjVisitor<Exp> {
             }
         }
         if (normalize) {
-            Exp applyExp = e.e.accept(this);
             List<Exp> vars = new ArrayList<>();
-            Var fun = Var.gen();
             for (int i = 0; i < e.es.size(); i++) {
                 vars.add(Var.gen());
             }
 
-            Exp exp = new App(applyExp, vars);
-            exp = new Let(fun.id, Type.gen(), e.e.accept(this), new App(fun, vars));
+            Var fun = Var.gen();
+            Exp exp = new Let(fun.id, Type.gen(), e.e.accept(this), new App(fun, vars));
 
             for (int i = e.es.size() - 1; i >= 0; i--) {
                 exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
