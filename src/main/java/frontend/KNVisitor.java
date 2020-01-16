@@ -24,7 +24,7 @@ class KNVisitor implements ObjVisitor<Exp> {
     public Exp visit(Not e) throws Exception {
         if (!(e.e instanceof Var)) {
             Var v = Var.gen();
-            Exp bExp = new Not(e);
+            Exp bExp = new Not(v);
             return new Let(v.id, Type.gen(), e.e.accept(this), bExp);
         }
         return e;
@@ -33,7 +33,7 @@ class KNVisitor implements ObjVisitor<Exp> {
     public Exp visit(Neg e) throws Exception {
         if (!(e.e instanceof Var)) {
             Var v = Var.gen();
-            Exp aExp = new Neg(e);
+            Exp aExp = new Neg(v);
             return new Let(v.id, Type.gen(), e.e.accept(this), aExp);
         }
         return e;
@@ -68,7 +68,7 @@ class KNVisitor implements ObjVisitor<Exp> {
     public Exp visit(FNeg e) throws Exception {
         if (!(e.e instanceof Var)) {
             Var v = Var.gen();
-            Exp aExp = new FNeg(e);
+            Exp aExp = new FNeg(v);
             return new Let(v.id, Type.gen(), e.e.accept(this), aExp);
         }
         return e;
@@ -183,20 +183,27 @@ class KNVisitor implements ObjVisitor<Exp> {
 
     public Exp visit(App e) throws Exception {
         boolean normalize = false;
+        if(!(e.e instanceof Var)) {
+            normalize = true;
+        }
         for (Exp exp : e.es) {
+            if (normalize) {
+                break;
+            }
             if (!(exp instanceof Var)) {
                 normalize = true;
-                break;
             }
         }
         if (normalize) {
             Exp applyExp = e.e.accept(this);
             List<Exp> vars = new ArrayList<>();
+            Var fun = Var.gen();
             for (int i = 0; i < e.es.size(); i++) {
                 vars.add(Var.gen());
             }
 
             Exp exp = new App(applyExp, vars);
+            exp = new Let(fun.id, Type.gen(), e.e.accept(this), new App(fun, vars));
 
             for (int i = e.es.size() - 1; i >= 0; i--) {
                 exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
