@@ -153,18 +153,7 @@ class KNormalizer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(If e) throws Exception {
-        if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var) || !(e.e3 instanceof Var)) {
-            Var v1 = Var.gen();
-            Var v2 = Var.gen();
-            Var v3 = Var.gen();
-            Exp exp = new If(v1, v2, v3);
-            Let let2 = new Let(v3.id, Type.gen(), e.e3, exp);
-            Let let1 = new Let(v2.id, Type.gen(), e.e2, let2);
-            Exp e1 = e.e1.accept(this);
-            Exp e2 = let1.accept(this);
-            return new Let(v1.id, Type.gen(), e1, e2);
-        }
-        return e;
+        return new If(e.e1.accept(this), e.e2.accept(this), e.e3.accept(this));
     }
 
     public Exp visit(Let e) throws Exception {

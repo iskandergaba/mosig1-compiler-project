@@ -1,10 +1,6 @@
 package frontend;
 
-import java.util.Stack;
-
 class LetReducer implements ObjVisitor<Exp> {
-
-    Stack<Let> letStack = new Stack<>();
 
     public Exp visit(Unit e) {
         return e;
