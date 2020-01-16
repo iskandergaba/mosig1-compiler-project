@@ -114,7 +114,7 @@ public class Main {
       System.out.println("------ Type checking DONE ------");
       
       System.out.println("------ K-Normalization ------");
-      expression = expression.accept(new KNVisitor());
+      expression = expression.accept(new KNormalizer());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ K-Normalization DONE------");

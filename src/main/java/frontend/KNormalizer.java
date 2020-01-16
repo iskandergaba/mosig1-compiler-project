@@ -3,7 +3,7 @@ package frontend;
 import java.util.ArrayList;
 import java.util.List;
 
-class KNVisitor implements ObjVisitor<Exp> {
+class KNormalizer implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {
         return e;
