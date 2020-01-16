@@ -73,11 +73,22 @@ public class Instruction {
         this.label = label;
     }
 
+    /**
+     * Adds a comment at the end of the instruction
+     * @param comment the comment to add
+     * @return this instruction
+     */
     public Instruction comment(String comment) {
         this.comment = comment;
         return this;
     }
 
+    /**
+     * Replace the argument at position {@code arg}
+     * @param arg The argument number (begins at 0)
+     * @param value The new argument
+     * @return This instruction
+     */
     public Instruction replaceArgument(int arg, String value) {
         if (this.args.size() > arg) {
             this.args.set(arg, value);
@@ -85,6 +96,13 @@ public class Instruction {
         return this;
     }
 
+    /**
+     * Sets the instruction as "final", which will add an extra newline
+     * character at the end of the instruction, used to separate functions
+     * in the program. This is not necessary, but it makes the generated
+     * code more readable
+     * @return This instruction
+     */
     public Instruction setFinal() {
         this.finalInstruction = true;
         return this;

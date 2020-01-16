@@ -1,9 +1,16 @@
 package backend;
 
+/**
+ * Represents an ARM assembly program, with different sections
+ */
 public class Program {
+    // The text block, essentially the program's code
     private InstructionBlock text;
+
+    // Factory used for creating instructions
     private InstructionFactory factory;
 
+    // The size of the heap, in bytes
     private static final int HEAP_SIZE = 4096;
 
     public Program(InstructionBlock text) {
@@ -11,6 +18,7 @@ public class Program {
         this.factory = new InstructionFactory();
     }
 
+    // Shorthand for producing an exit syscall
     private InstructionBlock exit() {
         return new InstructionBlock(factory.instr("MOV", "r0", "#0"))
             .comment("Exit syscall")
@@ -18,14 +26,18 @@ public class Program {
             .add(factory.instr("SVC", "#0"));
     }
 
+    /**
+     * Produces the instructions necessary for initializing
+     * the heap in our program, by calling mmap2().
+     */
     public void generateHeapAllocationCode() {
         factory.setLabel("_start");
 
         text
             .add(factory.instr("MOV", "r0", "#0")).comment("Heap allocation")
             .add(factory.instr("MOV", "r1", "#" + HEAP_SIZE))
-            .add(factory.instr("MOV", "r2", "#0x2"))
-            .add(factory.instr("MOV", "r3", "#0x22"))
+            .add(factory.instr("MOV", "r2", "#0x3"))  // PROT_READ | PROT_WRITE
+            .add(factory.instr("MOV", "r3", "#0x22")) // MAP_PRIVATE | MAP_ANONYMOUS
             .add(factory.instr("MOV", "r4", "#-1"))
             .add(factory.instr("MOV", "r5", "#0"))
             .add(factory.instr("MOV", "r7", "#0xc0")).comment("mmap2() syscall number")
