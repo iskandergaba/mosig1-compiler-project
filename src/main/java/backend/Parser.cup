@@ -51,7 +51,6 @@ ident_or_imm ::= INT:i    {: RESULT = new Int(i); :}
                | IDENT:id {: RESULT = new Var(id); :}
 ;
 
-// TODO: Ask the teachers about the %self construct in memory accesses.
 exp ::= NOP                 {: RESULT = new Nop(); :}
       | LPAREN exp:e RPAREN {: RESULT = e; :}
       | INT:i               {: RESULT = new Int(i); :}

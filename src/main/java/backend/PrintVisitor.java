@@ -22,6 +22,7 @@ class PrintVisitor implements Visitor {
     public void visit(Add e) {
         System.out.print("(add ");
         System.out.print(e.id);
+        System.out.print(" ");
         e.e.accept(this);
         System.out.print(")");
     }
@@ -30,6 +31,7 @@ class PrintVisitor implements Visitor {
     public void visit(Sub e) {
         System.out.print("(sub ");
         System.out.print(e.id);
+        System.out.print(" ");
         e.e.accept(this);
         System.out.print(")");
     }
