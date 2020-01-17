@@ -219,7 +219,9 @@ class KNormalizer implements ObjVisitor<Exp> {
             for (int i = e.es.size() - 1; i >= 0; i--) {
                 exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
             }
-            return exp;
+            Var v=Var.gen();
+            Let l=new Let(v.id,Type.gen(),exp,v);
+            return l;
         }
         return e;
     }

@@ -104,32 +104,49 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      System.out.println("------ AST generation ------");
+      System.out.println("------ AST Generation ------");
       expression.accept(new PrintVisitor());
       System.out.println();
-      System.out.println("------ AST generation DONE ------");
-      
+      System.out.println("------ AST Generation DONE ------");
+
       System.out.println("------ Type checking ------");
       expression.accept(new TypeVisitor());
       System.out.println("------ Type checking DONE ------");
-      
+
       System.out.println("------ K-Normalization ------");
       expression = expression.accept(new KNormalizer());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ K-Normalization DONE------");
-      
-      System.out.println("------ Alpha-conversion ------");
+
+      System.out.println("------ Alpha-Conversion ------");
       expression.accept(new ACVisitor());
       expression.accept(new PrintVisitor());
       System.out.println();
-      System.out.println("------ Alpha-conversion DONE ------");
-
+      System.out.println("------ Alpha-Conversion DONE ------");
+      
       System.out.println("------ Let-Reduction ------");
       expression = expression.accept(new LetReducer());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Let-Reduction DONE ------");
+      
+      System.out.println("------ Free Variable Computation ------");
+      FreeVarVisitor v1 = new FreeVarVisitor();
+      expression.accept(v1);
+      System.out.println(v1.free);
+      System.out.println();
+      System.out.println("------ Free Variable Computation DONE ------");
+
+      System.out.println("------ Closure Conversion ------");
+      CCVisitor v2 = new CCVisitor(v1);
+      expression = expression.accept(v2);
+      expression = v2.join(expression);
+      expression.accept(new PrintVisitor());
+      System.out.println(v2.retClosure);
+      System.out.println(v2.isClosure);
+      System.out.println();
+      System.out.println("------ Closure Conversion DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();

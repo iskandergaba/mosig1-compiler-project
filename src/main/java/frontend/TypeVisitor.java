@@ -231,7 +231,9 @@ class TypeVisitor implements ObjVisitor<Type> {
     }
 
     public Type visit(Let e) throws Exception {
+        Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
         Type res1 = e.e1.accept(this);
+        env = env_;
         env.put(e.id.id, res1);
         Type res2 = e.e2.accept(this);
         return res2;
@@ -240,7 +242,7 @@ class TypeVisitor implements ObjVisitor<Type> {
     public Type visit(Var e) throws Exception {
         Type res = env.get(e.id.id);
         if (res == null)
-            throw new TypingException("VAR exception : " + e.id.id + " is undeclared");
+            throw new TypingException("VAR error : " + e.id.id + " is undeclared in this scope");
         return res;
     }
 
@@ -274,6 +276,7 @@ class TypeVisitor implements ObjVisitor<Type> {
                 }
                 return ((TFun) res).extern_ret;
             }
+            //Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
             int i = 0;
             if (e.es.size() != ((TFun) res).args.size())
                 throw new TypingException("In expression : " + e.accept(new StringVisitor())
@@ -296,6 +299,7 @@ class TypeVisitor implements ObjVisitor<Type> {
             } else {
                 res__ = new TAssumeOK();
             }
+            //env = env_;
             return res__;
         }
         throw new TypingException(
