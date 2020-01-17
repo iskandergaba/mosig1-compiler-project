@@ -1,3 +1,5 @@
-let rec f x =
-   let rec g y = x + y in g
-in print_int ((f 0) 0)
+let x = 
+   let y = 1 + 2 in y
+in let rec succ x = x + 1 
+in let rec double x = x + x 
+in print_int (succ (double x))
