@@ -34,17 +34,43 @@ dependencies {
     implementation name: 'java-cup-11b'
 }
 
-task generateLexer(type:Exec) {
-    workingDir './'
-    commandLine './jflex', 'src/main/java/Lexer.flex'
+task generateLexer {
+    doLast {
+        exec {
+            workingDir './'
+            commandLine './jflex', 'src/main/java/frontend/Lexer.flex'
+        }
+        exec {
+            workingDir './'
+            commandLine './jflex', 'src/main/java/backend/Lexer.flex'
+        }
+    }
 }
 
 task generateParser(type:Exec) {
     dependsOn generateLexer
-    workingDir 'src/main/java'
+    workingDir 'src/main/java/'
     commandLine '../../../cup', 'Parser.cup'
 }
 
 compileJava {
     dependsOn generateParser
+}
+
+clean.doFirst {
+    delete "src/main/java/backend/Lexer.java"
+    delete "src/main/java/backend/Parser.java"
+    delete "src/main/java/backend/sym.java"
+    delete "src/main/java/frontend/Lexer.java"
+    delete "src/main/java/frontend/Parser.java"
+    delete "src/main/java/frontend/sym.java"
+}
+
+javadoc {
+    exclude "backend/Lexer.java"
+    exclude "backend/Parser.java"
+    exclude "backend/sym.java"
+    exclude "frontend/Lexer.java"
+    exclude "frontend/Parser.java"
+    exclude "frontend/sym.java"
 }
