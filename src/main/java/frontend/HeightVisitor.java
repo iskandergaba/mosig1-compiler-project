@@ -1,7 +1,5 @@
 package frontend;
 
-import java.util.*;
-
 class HeightVisitor implements ObjVisitor<Integer> {
 
     public Integer visit(Unit e) {

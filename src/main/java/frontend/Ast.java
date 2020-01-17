@@ -3,6 +3,11 @@ package frontend;
 import java.util.*;
 
 abstract class Exp {
+
+    Boolean retClosureFlag=false;
+    Boolean isClosureFlag=false;
+
+
     abstract void accept(Visitor v);
 
     abstract <E> E accept(ObjVisitor<E> v) throws Exception;
@@ -301,10 +306,15 @@ class Let extends Exp {
 }
 
 class Var extends Exp {
+    private static int count = 0;
     final Id id;
 
     Var(Id id) {
         this.id = id;
+    }
+
+    static Var gen() {
+        return new Var(new Id("$" + count++));
     }
 
     <E> E accept(ObjVisitor<E> v) throws Exception {
@@ -337,6 +347,8 @@ class LetRec extends Exp {
 class App extends Exp {
     final Exp e;
     final List<Exp> es;
+
+    boolean closureFlag=false;
 
     App(Exp e, List<Exp> es) {
         this.e = e;
@@ -451,6 +463,8 @@ class FunDef {
     final Type type;
     final List<Id> args;
     final Exp e;
+
+    List<Id> free=null;
 
     FunDef(Id id, Type t, List<Id> args, Exp e) {
         this.id = id;
