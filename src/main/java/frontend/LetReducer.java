@@ -1,10 +1,6 @@
 package frontend;
 
-import java.util.Stack;
-
 class LetReducer implements ObjVisitor<Exp> {
-
-    Stack<Let> letStack = new Stack<>();
 
     public Exp visit(Unit e) {
         return e;
@@ -67,7 +63,7 @@ class LetReducer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(If e) throws Exception {
-        return e;
+        return new If(e.e1.accept(this), e.e2.accept(this), e.e3.accept(this));
     }
 
     public Exp visit(Let e) throws Exception {
@@ -79,7 +75,8 @@ class LetReducer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(LetRec e) throws Exception {
-        return new LetRec(e.fd, e.e.accept(this));
+        FunDef fun = new FunDef(e.fd.id, e.fd.type, e.fd.args, e.fd.e.accept(this));
+        return new LetRec(fun, e.e.accept(this));
     }
 
     public Exp visit(App e) throws Exception {
@@ -108,13 +105,13 @@ class LetReducer implements ObjVisitor<Exp> {
 
     private Exp insert(Let outerLet, Exp e) throws Exception {
         if (e instanceof Let) {
-            Let let = (Let)e;
+            Let let = (Let) e;
             return new Let(let.id, let.t, let.e1, insert(outerLet, let.e2));
         } else if (e instanceof LetRec) {
-            LetRec letRec = (LetRec)e;
+            LetRec letRec = (LetRec) e;
             return new LetRec(letRec.fd, insert(outerLet, letRec.e));
         } else if (e instanceof LetTuple) {
-            LetTuple letTuple = (LetTuple)e;
+            LetTuple letTuple = (LetTuple) e;
             return new LetTuple(letTuple.ids, letTuple.ts, letTuple.e1, insert(outerLet, letTuple.e2));
         }
         return new Let(outerLet.id, outerLet.t, e, outerLet.e2.accept(this));

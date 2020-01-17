@@ -3,7 +3,7 @@ package frontend;
 import java.util.ArrayList;
 import java.util.List;
 
-class KNVisitor implements ObjVisitor<Exp> {
+class KNormalizer implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {
         return e;
@@ -24,7 +24,7 @@ class KNVisitor implements ObjVisitor<Exp> {
     public Exp visit(Not e) throws Exception {
         if (!(e.e instanceof Var)) {
             Var v = Var.gen();
-            Exp bExp = new Not(e);
+            Exp bExp = new Not(v);
             return new Let(v.id, Type.gen(), e.e.accept(this), bExp);
         }
         return e;
@@ -33,7 +33,7 @@ class KNVisitor implements ObjVisitor<Exp> {
     public Exp visit(Neg e) throws Exception {
         if (!(e.e instanceof Var)) {
             Var v = Var.gen();
-            Exp aExp = new Neg(e);
+            Exp aExp = new Neg(v);
             return new Let(v.id, Type.gen(), e.e.accept(this), aExp);
         }
         return e;
@@ -68,7 +68,7 @@ class KNVisitor implements ObjVisitor<Exp> {
     public Exp visit(FNeg e) throws Exception {
         if (!(e.e instanceof Var)) {
             Var v = Var.gen();
-            Exp aExp = new FNeg(e);
+            Exp aExp = new FNeg(v);
             return new Let(v.id, Type.gen(), e.e.accept(this), aExp);
         }
         return e;
@@ -153,18 +153,31 @@ class KNVisitor implements ObjVisitor<Exp> {
     }
 
     public Exp visit(If e) throws Exception {
-        if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var) || !(e.e3 instanceof Var)) {
-            Var v1 = Var.gen();
-            Var v2 = Var.gen();
-            Var v3 = Var.gen();
-            Exp exp = new If(v1, v2, v3);
-            Let let2 = new Let(v3.id, Type.gen(), e.e3, exp);
-            Let let1 = new Let(v2.id, Type.gen(), e.e2, let2);
-            Exp e1 = e.e1.accept(this);
-            Exp e2 = let1.accept(this);
-            return new Let(v1.id, Type.gen(), e1, e2);
+        if (e.e1 instanceof Eq) {
+            Eq eq = (Eq) e.e1;
+            Var vx = Var.gen();
+            Var vy = Var.gen();
+            Exp eq_ = new Eq(vx, vy);
+            If if_ = new If(eq_, e.e2.accept(this), e.e3.accept(this));
+            Let y = new Let(vy.id, Type.gen(), eq.e2.accept(this), if_);
+            Let x = new Let(vx.id, Type.gen(), eq.e1.accept(this), y);
+            return x;
+        } else if (e.e1 instanceof LE) {
+            LE le = (LE) e.e1;
+            Var vx = Var.gen();
+            Var vy = Var.gen();
+            Exp le_ = new LE(vx, vy);
+            If if_ = new If(le_, e.e2.accept(this), e.e3.accept(this));
+            Let y = new Let(vy.id, Type.gen(), le.e2.accept(this), if_);
+            Let x = new Let(vx.id, Type.gen(), le.e1.accept(this), y);
+            return x;
         }
-        return e;
+        Not not = (Not) e.e1;
+        Var v = Var.gen();
+        Not not_ = new Not(v);
+        If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
+        Exp exp = new Let(v.id, Type.gen(), not.e.accept(this), if_);
+        return exp;
     }
 
     public Exp visit(Let e) throws Exception {
@@ -183,20 +196,25 @@ class KNVisitor implements ObjVisitor<Exp> {
 
     public Exp visit(App e) throws Exception {
         boolean normalize = false;
+        if (!(e.e instanceof Var)) {
+            normalize = true;
+        }
         for (Exp exp : e.es) {
+            if (normalize) {
+                break;
+            }
             if (!(exp instanceof Var)) {
                 normalize = true;
-                break;
             }
         }
         if (normalize) {
-            Exp applyExp = e.e.accept(this);
             List<Exp> vars = new ArrayList<>();
             for (int i = 0; i < e.es.size(); i++) {
                 vars.add(Var.gen());
             }
 
-            Exp exp = new App(applyExp, vars);
+            Var fun = Var.gen();
+            Exp exp = new Let(fun.id, Type.gen(), e.e.accept(this), new App(fun, vars));
 
             for (int i = e.es.size() - 1; i >= 0; i--) {
                 exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
