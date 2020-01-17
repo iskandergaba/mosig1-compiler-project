@@ -124,13 +124,13 @@ public class Main {
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Alpha-Conversion DONE ------");
-      
+
       System.out.println("------ Let-Reduction ------");
       expression = expression.accept(new LetReducer());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Let-Reduction DONE ------");
-      
+
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
       expression.accept(v1);
@@ -150,7 +150,7 @@ public class Main {
       System.out.println("Error: file not found: " + argv[0]);
     } catch (AssertionError e) {
       System.out.print("");
-    }catch (Exception e) {
+    } catch (Exception e) {
       System.out.println("Usage: ./mincamlc <options> <source files>");
       System.out.println("Compilation terminated");
     }
