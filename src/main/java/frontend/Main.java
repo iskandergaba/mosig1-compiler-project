@@ -134,8 +134,6 @@ public class Main {
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
       expression.accept(v1);
-      System.out.println(v1.free);
-      System.out.println();
       System.out.println("------ Free Variable Computation DONE ------");
 
       System.out.println("------ Closure Conversion ------");
@@ -143,8 +141,6 @@ public class Main {
       expression = expression.accept(v2);
       expression = v2.join(expression);
       expression.accept(new PrintVisitor());
-      System.out.println(v2.retClosure);
-      System.out.println(v2.isClosure);
       System.out.println();
       System.out.println("------ Closure Conversion DONE ------");
     } catch (TypingException e) {
