@@ -5,18 +5,18 @@ import java.util.*;
 /**
  * Visitor used for alpha conversion (also checks scope)
  */
-public class ACVisitor implements Visitor {
+public class AlphaConverter implements Visitor {
 
     private Hashtable<String, String> changes;
     private static int varCount = 0;
     private static int funCount = 0;
     private static int argCount = 0;
 
-    public ACVisitor() {
+    public AlphaConverter() {
         changes = new Hashtable<String, String>();
     }
 
-    public ACVisitor(Hashtable<String, String> changes) {
+    public AlphaConverter(Hashtable<String, String> changes) {
         this.changes = changes;
     }
 
@@ -95,7 +95,7 @@ public class ACVisitor implements Visitor {
         newChanges.put(e.id.id, "var" + varCount);
         e.id.id = "var" + varCount;
         varCount++;
-        ACVisitor v = new ACVisitor(newChanges);
+        AlphaConverter v = new AlphaConverter(newChanges);
         e.e1.accept(this);
         e.e2.accept(v);
     }
@@ -117,8 +117,8 @@ public class ACVisitor implements Visitor {
             arg.id = "arg" + argCount;
             argCount++;
         }
-        e.fd.e.accept(new ACVisitor(newChangesFun));
-        e.e.accept(new ACVisitor(newChanges));
+        e.fd.e.accept(new AlphaConverter(newChangesFun));
+        e.e.accept(new AlphaConverter(newChanges));
     }
 
     public void visit(App e) {
@@ -142,7 +142,7 @@ public class ACVisitor implements Visitor {
             varCount++;
         }
         e.e1.accept(this);
-        e.e2.accept(new ACVisitor(newChanges));
+        e.e2.accept(new AlphaConverter(newChanges));
     }
 
     public void visit(Array e) {

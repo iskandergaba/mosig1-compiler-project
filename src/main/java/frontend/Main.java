@@ -124,7 +124,7 @@ public class Main {
       System.out.println("------ K-Normalization DONE------");
 
       System.out.println("------ Alpha-Conversion ------");
-      expression.accept(new ACVisitor());
+      expression.accept(new AlphaConverter());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Alpha-Conversion DONE ------");
@@ -141,7 +141,7 @@ public class Main {
       System.out.println("------ Free Variable Computation DONE ------");
 
       System.out.println("------ Closure Conversion ------");
-      CCVisitor v2 = new CCVisitor(v1);
+      ClosureConverter v2 = new ClosureConverter(v1);
       expression = expression.accept(v2);
       expression = v2.join(expression);
       expression.accept(new PrintVisitor());

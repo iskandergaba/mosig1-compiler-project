@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Visitor used for closure conversion
  */
-public class CCVisitor implements ObjVisitor<Exp> {
+public class ClosureConverter implements ObjVisitor<Exp> {
 
     private Hashtable<String, List<Id>> free;
     private List<String> retClosure = new ArrayList<>();
@@ -20,7 +20,7 @@ public class CCVisitor implements ObjVisitor<Exp> {
     private Var app_closure = new Var(new Id("_apply_closure_"));
     private Var mk_closure = new Var(new Id("_make_closure_"));
 
-    public CCVisitor(FreeVarVisitor v) {
+    public ClosureConverter(FreeVarVisitor v) {
         free = v.free;
     }
 
