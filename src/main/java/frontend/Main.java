@@ -146,6 +146,9 @@ public class Main {
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
+    } catch (EnvironmentException e) {
+      System.out.print("(TYPING ERROR) ");
+      e.printStackTrace();
     } catch (FileNotFoundException e) {
       System.out.println("Error: file not found: " + argv[0]);
     } catch (AssertionError e) {

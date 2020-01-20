@@ -2,9 +2,12 @@ package frontend;
 
 import java.util.*;
 
-class TypeVisitor implements ObjVisitor<Type> {
+/**
+ * Visitor used for type checking
+ */
+public class TypeVisitor implements ObjVisitor<Type> {
 
-    public Hashtable<String, Type> env = new Hashtable<>();
+    private Hashtable<String, Type> env = new Hashtable<>();
 
     public TypeVisitor() {
         TFun t = new TFun();
@@ -242,7 +245,7 @@ class TypeVisitor implements ObjVisitor<Type> {
     public Type visit(Var e) throws Exception {
         Type res = env.get(e.id.id);
         if (res == null)
-            throw new TypingException("VAR error : " + e.id.id + " is undeclared in this scope");
+            throw new EnvironmentException("VAR error : " + e.id.id + " is undeclared in this scope");
         return res;
     }
 
@@ -276,7 +279,7 @@ class TypeVisitor implements ObjVisitor<Type> {
                 }
                 return ((TFun) res).extern_ret;
             }
-            //Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+            // Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
             int i = 0;
             if (e.es.size() != ((TFun) res).args.size())
                 throw new TypingException("In expression : " + e.accept(new StringVisitor())
@@ -299,7 +302,7 @@ class TypeVisitor implements ObjVisitor<Type> {
             } else {
                 res__ = new TAssumeOK();
             }
-            //env = env_;
+            // env = env_;
             return res__;
         }
         throw new TypingException(

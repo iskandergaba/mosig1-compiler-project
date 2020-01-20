@@ -2,11 +2,19 @@ package frontend;
 
 import java.util.*;
 
-class FreeVarVisitor implements Visitor {
+/**
+ * Visitor used to compute free variables
+ */
+public class FreeVarVisitor implements Visitor {
 
-    List<String> env = new ArrayList<>();
-    Hashtable<String, List<Id>> free = new Hashtable<>();
-    Id currentFun = null;
+    private List<String> env = new ArrayList<>();
+    private Id currentFun = null;
+
+    /**
+     * Hashtable containing a list of free variables for every function (the
+     * function labels are used as keys)
+     */
+    public Hashtable<String, List<Id>> free = new Hashtable<>();
 
     public void visit(Unit e) {
     }
