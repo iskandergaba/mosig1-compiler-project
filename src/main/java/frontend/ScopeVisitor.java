@@ -121,6 +121,9 @@ public class ScopeVisitor implements ObjVisitor<Void> {
     public Void visit(LetRec e) throws Exception {
         env.add(e.fd.id.id);
         List<String> env_ = new ArrayList<String>(env);
+        for(Id id : e.fd.args){
+            env_.add(id.id);
+        }
         e.e.accept(this);
         e.fd.e.accept(new ScopeVisitor(env_));
         return null;
