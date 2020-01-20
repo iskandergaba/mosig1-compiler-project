@@ -19,16 +19,12 @@ class Height {
     static int computeHeight(Exp exp) {
         int res = 0;
         if (exp instanceof Unit) {
-            Unit e = (Unit) exp;
             res = 0;
         } else if (exp instanceof Bool) {
-            Bool e = (Bool) exp;
             res = 0;
         } else if (exp instanceof Int) {
-            Int e = (Int) exp;
             res = 0;
         } else if (exp instanceof Bool) {
-            Bool e = (Bool) exp;
             res = 0;
         } else if (exp instanceof Not) {
             Not e = (Not) exp;
@@ -70,7 +66,6 @@ class Height {
             Let e = (Let) exp;
             res = Math.max(computeHeight(e.e1), computeHeight(e.e2)) + 1;
         } else if (exp instanceof Var) {
-            Var e = (Var) exp;
             res = 0;
         } else if (exp instanceof LetRec) {
             LetRec e = (LetRec) exp;

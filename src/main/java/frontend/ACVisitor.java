@@ -109,7 +109,7 @@ public class ACVisitor implements ObjVisitor<Void> {
     }
 
     public Void visit(Let e) throws Exception {
-        Hashtable<String, String> newChanges = (Hashtable<String, String>) changes.clone();
+        Hashtable<String, String> newChanges = new Hashtable<String, String>(changes);
         newChanges.put(e.id.id, "var" + varCount);
         e.id.old = e.id.id;
         e.id.id = "var" + varCount;
@@ -139,12 +139,12 @@ public class ACVisitor implements ObjVisitor<Void> {
     }
 
     public Void visit(LetRec e) throws Exception {
-        Hashtable<String, String> newChanges = (Hashtable<String, String>) changes.clone();
+        Hashtable<String, String> newChanges = new Hashtable<String, String>(changes);
         newChanges.put(e.fd.id.id, "fun" + funCount);
         e.fd.id.old = e.fd.id.id;
         e.fd.id.id = "fun" + funCount;
         funCount++;
-        Hashtable<String, String> newChangesFun = (Hashtable<String, String>) newChanges.clone();
+        Hashtable<String, String> newChangesFun = new Hashtable<String, String>(newChanges);
         for (Id arg : e.fd.args) {
             newChangesFun.put(arg.id, "arg" + argCount);
             arg.old = arg.id;
@@ -172,7 +172,7 @@ public class ACVisitor implements ObjVisitor<Void> {
     }
 
     public Void visit(LetTuple e) throws Exception {
-        Hashtable<String, String> newChanges = (Hashtable<String, String>) changes.clone();
+        Hashtable<String, String> newChanges = new Hashtable<String, String>(changes);
         for (Id v : e.ids) {
             newChanges.put(v.id, "var" + varCount);
             v.id = "var" + varCount;

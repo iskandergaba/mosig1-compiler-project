@@ -234,7 +234,7 @@ public class TypeVisitor implements ObjVisitor<Type> {
     }
 
     public Type visit(Let e) throws Exception {
-        Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+        Hashtable<String, Type> env_ = new Hashtable<String, Type>(env);
         Type res1 = e.e1.accept(this);
         env = env_;
         env.put(e.id.id, res1);
