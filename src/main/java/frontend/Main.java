@@ -109,6 +109,10 @@ public class Main {
       System.out.println();
       System.out.println("------ AST Generation DONE ------");
 
+      System.out.println("------ Scope checking ------");
+      expression.accept(new ScopeVisitor());
+      System.out.println("------ Scope checking DONE ------");
+
       System.out.println("------ Type checking ------");
       expression.accept(new TypeVisitor());
       System.out.println("------ Type checking DONE ------");
@@ -147,7 +151,7 @@ public class Main {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
     } catch (EnvironmentException e) {
-      System.out.print("(TYPING ERROR) ");
+      System.out.print("(SCOPE ERROR) ");
       e.printStackTrace();
     } catch (FileNotFoundException e) {
       System.out.println("Error: file not found: " + argv[0]);
