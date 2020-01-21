@@ -112,7 +112,7 @@ public class InstructionBlock {
     }
 
     /**
-     * Replaces the first argument of the last instruction,
+     * Replaces the first argument of the last instruction with a placeholder,
      * essentially used for specifying the register in which
      * to move the result of the sub-expression, which cannot be
      * known at the time of the parsing of the sub-expression.
@@ -120,7 +120,11 @@ public class InstructionBlock {
      * @return The updated block
      */
     public InstructionBlock setReturn(String register) {
-        lastInstruction().replaceArgument(0, register);
+        instructions.forEach(i -> {
+            if (i.hasPlaceholder()) {
+                i.replaceArgument(register);
+            }
+        });
         return this;
     }
 
