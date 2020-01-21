@@ -48,6 +48,10 @@ public class InstructionFactory {
 
         result.setName(name);
 
+        if (args.length > 0 && args[0] == "$") {
+            result.setArgumentToReplace(0);
+        }
+
         for (String arg: args) {
             result.addArgument(arg);
         }
