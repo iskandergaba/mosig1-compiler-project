@@ -23,6 +23,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     // with the correct indentation and form.
     private InstructionFactory factory;
 
+    private Boolean[] isRegisterPushed;
+
     private int getOffset(Id id) {
         return memory.idOffMap.get(this.currentFunction + "." + (id.id));
     }
@@ -31,19 +33,34 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     // Currently, if there are no registers available for retrieval, the
     // function prints an error and returns a -1 register, effectively producing
     // an erroneous assembly output.
-    private int getNextAvailableRegister() {
+    private InstructionBlock getNextAvailableRegister() {
         for(int i = 4; i <= 12; i++) {
             if (memory.regIsFree[i]) {
                 memory.regIsFree[i] = false;
-                return i;
+                return new InstructionBlock().useRegister(i);
             }
         }
-        System.err.println("Warning: no more available register found.");
-        return -1;
+        
+        // At this point, we will check if we can use a used register by
+        // pushing it on the stack and popping it afterwards
+        for(int i = 4; i <= 12; i++) {
+            if (!isRegisterPushed[i]) {
+                isRegisterPushed[i] = true;
+                return new InstructionBlock(factory.instr("PUSH", "{r" + i + "}"))
+                    .useRegister(i);
+            }
+        }
+        return null;
     }
 
-    private void freeRegister(int reg) {
-        memory.regIsFree[reg] = true;
+    private InstructionBlock freeRegister(int reg) {
+        if (isRegisterPushed[reg]) {
+            isRegisterPushed[reg] = false;
+            return new InstructionBlock(factory.instr("POP", "{r" + reg + "}"));
+        } else {
+            memory.regIsFree[reg] = true;
+            return new InstructionBlock();
+        }
     }
 
     private InstructionBlock retrieveVariable(Id id, int reg) {
@@ -67,23 +84,33 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     private InstructionBlock arithmeticOperation(String op, Id id, Exp e) {
         memory.allocate(id);
 
-        int leftOperandRegister = getNextAvailableRegister();
+        InstructionBlock leftOperandBlock = getNextAvailableRegister();
+        int leftOperandRegister = leftOperandBlock.getUsedRegisters().get(0);
+
         InstructionBlock leftOperand = retrieveVariable(id, leftOperandRegister);
         InstructionBlock rightOperand = e.accept(this);
         int rightOperandRegister = rightOperand.getUsedRegisters().get(0);
 
         InstructionBlock operation = new InstructionBlock(factory.instr(op, "$", "r" + leftOperandRegister, "r" + rightOperandRegister));
-        freeRegister(leftOperandRegister);
-        freeRegister(rightOperandRegister);
+        
+        InstructionBlock freeLeftOperand = freeRegister(leftOperandRegister);
+        InstructionBlock freeRightOperand = freeRegister(rightOperandRegister);
 
-        return leftOperand.chain(rightOperand).chain(operation);
+        return leftOperandBlock
+            .chain(leftOperand)
+            .chain(rightOperand)
+            .chain(operation)
+            .chain(freeRightOperand)
+            .chain(freeLeftOperand);
     }
 
     // Used for generating condition checking, like =, >, ...
     private InstructionBlock conditionOperation(String condition, Id id, Exp e) {
         memory.allocate(id);
         
-        int leftOperandRegister = getNextAvailableRegister();
+        InstructionBlock leftOperandBlock = getNextAvailableRegister();
+        int leftOperandRegister = leftOperandBlock.getUsedRegisters().get(0);
+
         InstructionBlock leftOperand = retrieveVariable(id, leftOperandRegister);
         InstructionBlock rightOperand = e.accept(this);
         int rightOperandRegister = rightOperand.getUsedRegisters().get(0);
@@ -91,10 +118,15 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock operation = new InstructionBlock(factory.instr("CMP", "r" + leftOperandRegister, "r" + rightOperandRegister))
             .add(factory.instr(condition, "$"));
         
-        freeRegister(leftOperandRegister);
-        freeRegister(rightOperandRegister);
+        InstructionBlock freeLeftOperand = freeRegister(leftOperandRegister);
+        InstructionBlock freeRightOperand = freeRegister(rightOperandRegister);
 
-        return leftOperand.chain(rightOperand).chain(operation);
+        return leftOperandBlock
+            .chain(leftOperand)
+            .chain(rightOperand)
+            .chain(operation)
+            .chain(freeRightOperand)
+            .chain(freeLeftOperand);
     }
 
     public CodeGenerationVisitor() {
@@ -102,12 +134,19 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         this.currentFunction = "";
         this.functionLabels = new HashMap<String, String>();
         this.factory = new InstructionFactory();
+        this.isRegisterPushed = new Boolean[16];
+
+        for (int i = 0; i < 16; i++) {
+            this.isRegisterPushed[i] = false;
+        }
     }
 
     @Override
     public InstructionBlock visit(Int e) {
-        int reg = getNextAvailableRegister();
-        return new InstructionBlock(factory.instr("MOV", "r" + reg, "#" + e.i))
+        InstructionBlock block = getNextAvailableRegister();
+        int reg = block.getUsedRegisters().get(0);
+
+        return block.add(factory.instr("MOV", "r" + reg, "#" + e.i))
             .useRegister(reg);
     }
 
@@ -119,13 +158,14 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     @Override
     public InstructionBlock visit(Neg e) {
         memory.allocate(e.id);
-        int reg = getNextAvailableRegister();
+        InstructionBlock registerBlock = getNextAvailableRegister();
+        int reg = registerBlock.getUsedRegisters().get(0);
         
         InstructionBlock b = new InstructionBlock(factory.instr("RSB", "$", "#0", "r" + reg));
         
         freeRegister(reg);
         
-        return b;
+        return registerBlock.chain(b);
     }
 
     @Override
@@ -213,30 +253,56 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     public InstructionBlock visit(Let e) {
         memory.allocate(e.id);
         
-        int reg = getNextAvailableRegister();
-        InstructionBlock letExpression = e.e1.accept(this)
-        .commentFirst("let " + e.id + " = ? in...");
-        freeRegister(reg);
+        // Allocation of the register for spilling the result of the
+        // let expression (not the in expression)
+        InstructionBlock registerBlock = getNextAvailableRegister();
+        int reg = registerBlock.getUsedRegisters().get(0);
 
+        InstructionBlock letExpression = e.e1.accept(this)
+            .commentFirst("let " + e.id + " = ? in...");
+        
+        List<InstructionBlock> freedRegisters = new ArrayList<InstructionBlock>();
+        
+        // Aggregating the list of registers that were eventually
+        // pushed on the stack and then freed.
         for (int register: letExpression.getUsedRegisters()) {
-            freeRegister(register);
+            freedRegisters.add(freeRegister(register));
+        }
+        
+        // Spill result of let expression to its variable in the stack
+        InstructionBlock saveVariable = spillVariable(e.id, reg);
+
+        // Eventually popping the freed registers of the let expression
+        for (InstructionBlock b: freedRegisters) {
+            saveVariable.chain(b);
         }
 
-        InstructionBlock saveVariable = spillVariable(e.id, reg);
+        // Eventually popping the register used for spilling the result of
+        // the let expression
+        InstructionBlock freeReg = freeRegister(reg);
+
+        // `in` part of the expression
         InstructionBlock inBlock = e.e2.accept(this);
 
         letExpression.setReturn("r" + reg);
 
-        return letExpression.chain(saveVariable).chain(inBlock);
+        return registerBlock
+            .chain(letExpression)
+            .chain(saveVariable)
+            .chain(freeReg)
+            .chain(inBlock);
     }
 
     @Override
     public InstructionBlock visit(Var e) {
         memory.allocate(e.id);
 
-        int reg = getNextAvailableRegister();
+        InstructionBlock registerBlock = getNextAvailableRegister();
+        int reg = registerBlock.getUsedRegisters().get(0);
         
-        return retrieveVariable(e.id, reg).useRegister(reg);
+        return registerBlock
+            .chain(retrieveVariable(e.id, reg))
+            .useRegister(reg);
     }
 
     @Override
@@ -298,10 +364,15 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock size = e.size.accept(this);
         int sizeRegister = size.getUsedRegisters().get(0);
 
-        int heapBaseAddr = getNextAvailableRegister();
-        int heapOffsetAddr = getNextAvailableRegister();
-        int heapBaseRegister = getNextAvailableRegister();
-        int heapOffsetRegister = getNextAvailableRegister();
+        InstructionBlock heapBaseAddrBlock = getNextAvailableRegister();
+        InstructionBlock heapOffsetAddrBlock = getNextAvailableRegister();
+        InstructionBlock heapBaseRegisterBlock = getNextAvailableRegister();
+        InstructionBlock heapOffsetRegisterBlock = getNextAvailableRegister();
+
+        int heapBaseAddr = heapBaseAddrBlock.getUsedRegisters().get(0);
+        int heapOffsetAddr = heapOffsetAddrBlock.getUsedRegisters().get(0);
+        int heapBaseRegister = heapBaseRegisterBlock.getUsedRegisters().get(0);
+        int heapOffsetRegister = heapOffsetRegisterBlock.getUsedRegisters().get(0);
 
         /*
          *  The strategy here for creating a new array is the following:
@@ -322,18 +393,29 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("MOV", "$", "r" + heapBaseRegister));
 
 
-        freeRegister(sizeRegister);
-        freeRegister(heapBaseAddr);
-        freeRegister(heapOffsetAddr);
-        freeRegister(heapBaseRegister);
-        freeRegister(heapOffsetRegister);
+        InstructionBlock freeSize = freeRegister(sizeRegister);
+        InstructionBlock freeHeapBaseAddr = freeRegister(heapBaseAddr);
+        InstructionBlock freeHeapOffsetAddr = freeRegister(heapOffsetAddr);
+        InstructionBlock freeHeapBaseRegister = freeRegister(heapBaseRegister);
+        InstructionBlock freeHeapOffsetRegister = freeRegister(heapOffsetRegister);
 
-        return size;
+        return heapBaseAddrBlock
+            .chain(heapOffsetAddrBlock)
+            .chain(heapBaseRegisterBlock)
+            .chain(heapOffsetRegisterBlock)
+            .chain(size)
+            .chain(freeSize)
+            .chain(freeHeapOffsetRegister)
+            .chain(freeHeapBaseRegister)
+            .chain(freeHeapOffsetAddr)
+            .chain(freeHeapBaseAddr);
     }
 
     @Override
     public InstructionBlock visit(Get e) {
-        int baseRegister = getNextAvailableRegister();
+        InstructionBlock baseRegisterBlock = getNextAvailableRegister();
+        int baseRegister = baseRegisterBlock.getUsedRegisters().get(0);
+
         InstructionBlock base = retrieveVariable(e.base, baseRegister);
         InstructionBlock offset = e.offset.accept(this);
         int offsetRegister = offset.getUsedRegisters().get(0);
@@ -342,22 +424,31 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("ADD", "r"+baseRegister, "r"+baseRegister, "r"+offsetRegister))
             .add(factory.instr("LDR", "$", "[r"+baseRegister+"]"));
 
-        freeRegister(offsetRegister);
-        freeRegister(baseRegister);
+        InstructionBlock freeOffsetRegister = freeRegister(offsetRegister);
+        InstructionBlock freeBaseRegister = freeRegister(baseRegister);
 
-        return base;
+        return baseRegisterBlock
+            .chain(offset)
+            .chain(freeOffsetRegister)
+            .chain(freeBaseRegister);
     }
 
     @Override
     public InstructionBlock visit(Put e) {
-        int baseRegister = getNextAvailableRegister();
+        InstructionBlock baseRegisterBlock = getNextAvailableRegister();
+        int baseRegister = baseRegisterBlock.getUsedRegisters().get(0);
+
         InstructionBlock base = retrieveVariable(e.base, baseRegister);
         InstructionBlock offset = e.offset.accept(this);
         int offsetRegister = offset.getUsedRegisters().get(0);
 
-        int valueRegister = getNextAvailableRegister();
+        InstructionBlock valueRegisterBlock = getNextAvailableRegister();
+        int valueRegister = valueRegisterBlock.getUsedRegisters().get(0);
+
         InstructionBlock value = retrieveVariable(e.dest, valueRegister);
-        int oldValueRegister = getNextAvailableRegister();
+
+        InstructionBlock oldValueRegisterBlock = getNextAvailableRegister();
+        int oldValueRegister = oldValueRegisterBlock.getUsedRegisters().get(0);
 
         base.chain(offset)
             .chain(value)
@@ -366,12 +457,19 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("STR", "r"+valueRegister, "[r"+baseRegister+"]"))
             .add(factory.instr("MOV", "$", "r"+oldValueRegister));
 
-        freeRegister(offsetRegister);
-        freeRegister(baseRegister);
-        freeRegister(valueRegister);
-        freeRegister(oldValueRegister);
+        InstructionBlock freeOffsetRegister = freeRegister(offsetRegister);
+        InstructionBlock freeBaseRegister = freeRegister(baseRegister);
+        InstructionBlock freeValueRegister = freeRegister(valueRegister);
+        InstructionBlock freeOldValueRegister = freeRegister(oldValueRegister);
 
-        return base;
+        return baseRegisterBlock
+            .chain(valueRegisterBlock)
+            .chain(oldValueRegisterBlock)
+            .chain(base)
+            .chain(freeOffsetRegister)
+            .chain(freeOldValueRegister)
+            .chain(freeValueRegister)
+            .chain(freeBaseRegister);
     }
 
     @Override
