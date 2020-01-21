@@ -3,6 +3,8 @@ package frontend;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.type.Type;
+
 class KNormalizer implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {

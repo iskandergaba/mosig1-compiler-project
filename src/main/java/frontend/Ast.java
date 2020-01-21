@@ -2,6 +2,8 @@ package frontend;
 
 import java.util.*;
 
+import common.type.Type;
+
 abstract class Exp {
 
     Boolean retClosureFlag=false;
