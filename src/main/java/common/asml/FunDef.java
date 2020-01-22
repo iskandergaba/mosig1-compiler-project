@@ -10,7 +10,7 @@ public class FunDef {
     final List<Id> args;
     final Exp e;
 
-    FunDef(Fun fun, Type t, List<Id> args, Exp e) {
+    public FunDef(Fun fun, Type t, List<Id> args, Exp e) {
         this.fun = fun;
         this.type = t;
         this.args = args;

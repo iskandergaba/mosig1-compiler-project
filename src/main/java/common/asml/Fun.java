@@ -5,15 +5,15 @@ import common.visitor.*;
 public class Fun extends Exp {
     final Label l;
 
-    Fun(Label l) {
+    public Fun(Label l) {
         this.l = l;
     }
 
-    <E> E accept(ObjVisitor<E> v) {
+    public <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
 
-    void accept(Visitor v) {
+    public void accept(Visitor v) {
         v.visit(this);
     }
 }

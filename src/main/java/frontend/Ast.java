@@ -9,7 +9,6 @@ abstract class Exp {
     Boolean retClosureFlag=false;
     Boolean isClosureFlag=false;
 
-
     abstract void accept(Visitor v);
 
     abstract <E> E accept(ObjVisitor<E> v) throws Exception;
@@ -232,6 +231,7 @@ class FDiv extends Exp {
 class Eq extends Exp {
     final Exp e1;
     final Exp e2;
+    Type t;
 
     Eq(Exp e1, Exp e2) {
         this.e1 = e1;
@@ -250,6 +250,7 @@ class Eq extends Exp {
 class LE extends Exp {
     final Exp e1;
     final Exp e2;
+    Type t;
 
     LE(Exp e1, Exp e2) {
         this.e1 = e1;

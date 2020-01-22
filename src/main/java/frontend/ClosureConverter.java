@@ -108,13 +108,17 @@ public class ClosureConverter implements ObjVisitor<Exp> {
     public Exp visit(Eq e) throws Exception {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
-        return new Eq(res1, res2);
+        Eq exp = new Eq(res1, res2);
+        exp.t=e.t;
+        return exp;
     }
 
     public Exp visit(LE e) throws Exception {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
-        return new LE(res1, res2);
+        LE exp = new LE(res1, res2);
+        exp.t=e.t;
+        return exp;
     }
 
     public Exp visit(If e) throws Exception {

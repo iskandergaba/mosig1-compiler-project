@@ -196,6 +196,11 @@ public class TypeVisitor implements ObjVisitor<Type> {
         Type res2 = e.e2.accept(this);
         if ((res1 != null && res2 != null && res1.getClass().getName().equals(res2.getClass().getName()))
                 || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK) {
+            if(res1 instanceof TAssumeOK){
+                e.t=res2;
+            } else {
+                e.t=res1;
+            }
             return new TBool();
         }
         throw new TypingException(
@@ -209,6 +214,11 @@ public class TypeVisitor implements ObjVisitor<Type> {
         if (((res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK))
                 || ((res1 instanceof TFloat || res1 instanceof TAssumeOK)
                         && (res2 instanceof TFloat || res2 instanceof TAssumeOK))) {
+            if(res1 instanceof TAssumeOK){
+                e.t=res2;
+            } else {
+                e.t=res1;
+            }
             return new TBool();
         }
         throw new TypingException("In expression : " + e.accept(new StringVisitor()) + " :\nLE error : wrong type (has "
