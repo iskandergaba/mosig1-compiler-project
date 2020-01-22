@@ -5,7 +5,7 @@ import java.util.*;
 import common.visitor.*;
 
 public class FunDefs extends Exp {
-    List<Exp> funs;
+    public List<Exp> funs;
 
     FunDefs(List<Exp> funs) {
         this.funs = funs;
@@ -15,7 +15,7 @@ public class FunDefs extends Exp {
         return v.visit(this);
     }
 
-    void accept(Visitor v) {
+    public void accept(Visitor v) {
         v.visit(this);
     }
 }

@@ -3,8 +3,8 @@ package common.asml;
 import common.visitor.*;
 
 public class Get extends Exp {
-    final Id base;
-    final Exp offset;
+    public final Id base;
+    public final Exp offset;
 
     public Get(Id base, Exp offset) {
         this.base = base;

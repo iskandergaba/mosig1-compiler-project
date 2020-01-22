@@ -3,7 +3,7 @@ package common.asml;
 import common.visitor.*;
 
 public class New extends Exp {
-    final Exp size;
+    public final Exp size;
 
     public New(Exp size) {
         this.size = size;

@@ -5,8 +5,8 @@ import java.util.List;
 import common.visitor.*;
 
 public class AppClosure extends Exp {
-    final Id id;
-    final List<Id> args;
+    public final Id id;
+    public final List<Id> args;
 
     public AppClosure(Id id, List<Id> args) {
         this.id = id;

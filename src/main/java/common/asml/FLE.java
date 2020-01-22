@@ -3,8 +3,8 @@ package common.asml;
 import common.visitor.*;
 
 public class FLE extends Exp {
-    final Id id1;
-    final Id id2;
+    public final Id id1;
+    public final Id id2;
 
     public FLE(Id id1, Id id2) {
         this.id1 = id1;

@@ -5,8 +5,8 @@ import java.util.List;
 import common.visitor.*;
 
 public class Call extends Exp {
-    final Label f;
-    final List<Id> args;
+    public final Label f;
+    public final List<Id> args;
 
     public Call(Label f, List<Id> args) {
         this.f = f;

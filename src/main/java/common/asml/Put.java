@@ -3,9 +3,9 @@ package common.asml;
 import common.visitor.*;
 
 public class Put extends Exp {
-    final Id base;
-    final Exp offset;
-    final Id dest;
+    public final Id base;
+    public final Exp offset;
+    public final Id dest;
 
     public Put(Id base, Exp offset, Id dest) {
         this.base = base;

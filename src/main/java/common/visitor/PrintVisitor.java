@@ -3,7 +3,7 @@ package common.visitor;
 import common.asml.*;
 import common.asml.Float;
 
-class PrintVisitor implements Visitor {
+public class PrintVisitor implements Visitor {
     @Override
     public void visit(Int e) {
         System.out.print(e.i);

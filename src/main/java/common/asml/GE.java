@@ -3,8 +3,8 @@ package common.asml;
 import common.visitor.*;
 
 public class GE extends Exp {
-    final Id id;
-    final Exp e;
+    public final Id id;
+    public final Exp e;
 
     GE(Id id, Exp e) {
         this.id = id;
@@ -14,7 +14,8 @@ public class GE extends Exp {
     <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
-    void accept(Visitor v) {
+    
+    public void accept(Visitor v) {
         v.visit(this);
     }
 }

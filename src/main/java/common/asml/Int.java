@@ -3,7 +3,7 @@ package common.asml;
 import common.visitor.*;
 
 public class Int extends Exp {
-    final int i;
+    public final int i;
 
     public Int(int i) {
         this.i = i;

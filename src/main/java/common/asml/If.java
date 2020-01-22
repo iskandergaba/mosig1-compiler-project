@@ -3,9 +3,9 @@ package common.asml;
 import common.visitor.*;
 
 public class If extends Exp {
-    final Exp cond;
-    final Exp e1;
-    final Exp e2;
+    public final Exp cond;
+    public final Exp e1;
+    public final Exp e2;
 
     public If(Exp cond, Exp e1, Exp e2) {
         this.cond = cond;

@@ -3,7 +3,7 @@ package common.asml;
 import common.visitor.*;
 
 public class Fun extends Exp {
-    final Label l;
+    public final Label l;
 
     public Fun(Label l) {
         this.l = l;

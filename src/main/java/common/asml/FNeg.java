@@ -3,7 +3,7 @@ package common.asml;
 import common.visitor.*;
 
 public class FNeg extends Exp {
-    final Id id;
+    public final Id id;
 
     public FNeg(Id id) {
         this.id = id;

@@ -3,7 +3,7 @@ package common.asml;
 import common.visitor.*;
 
 public class Neg extends Exp {
-    final Id id;
+    public final Id id;
 
     public Neg(Id id) {
         this.id = id;

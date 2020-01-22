@@ -147,6 +147,12 @@ public class Main {
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Closure Conversion DONE ------");
+
+      System.out.println("------ ASML Generation ------");
+      common.asml.Exp result = expression.accept(new AsmlGenerator());
+      result.accept(new common.visitor.PrintVisitor());
+      System.out.println();
+      System.out.println("------ ASML Generation DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();

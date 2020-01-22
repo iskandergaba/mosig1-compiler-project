@@ -3,7 +3,7 @@ package common.asml;
 import common.visitor.*;
 
 public class Float extends Exp {
-    float f;
+    public float f;
     Label l;
 
     public Float(float f, Label l) {

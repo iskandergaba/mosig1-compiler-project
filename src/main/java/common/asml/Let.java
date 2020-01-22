@@ -4,10 +4,10 @@ import common.type.Type;
 import common.visitor.*;
 
 public class Let extends Exp {
-    final Id id;
+    public final Id id;
     final Type t;
-    final Exp e1;
-    final Exp e2;
+    public final Exp e1;
+    public final Exp e2;
 
     public Let(Id id, Type t, Exp e1, Exp e2) {
         this.id = id;
