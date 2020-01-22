@@ -161,12 +161,11 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         }
         Exp res2 = e.e.accept(this);
         Id label = Id.gen();
-        label.id = e.fd.id.id;
+        label.id = "_" + e.fd.id.id;
         FunDef fun = new FunDef(label, e.fd.type, e.fd.args, res1);
         fun.free = free.get(e.fd.id.id);
         funs.add(fun);
         if (fun.free.size() > 0) {
-            label.id = "_" + e.fd.id;
             List<Exp> args = new ArrayList<>();
             args.add(new Var(fun.id));
             for (Id id : fun.free) {
@@ -187,8 +186,8 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             args.add(exp.accept(this));
         }
         Exp exp = e.e.accept(this);
-        args.add(0, exp);
         if (exp.isClosureFlag) {
+            args.add(0, exp);
             return new App(app_closure, args);
         }
         App a = new App(apply, args);
