@@ -66,22 +66,23 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     }
 
     private InstructionBlock retrieveVariable(Id id, int reg) {
-        return new InstructionBlock(factory.instr("LDR", "r" + reg, "[sp,#" + getOffset(id) + "]"));
+        return new InstructionBlock(factory.instr("LDR", "r" + reg, "[fp, #" + getOffset(id) + "]"));
     }
 
     private InstructionBlock spillVariable(Id id, int reg) {
-        return new InstructionBlock(factory.instr("STR", "r" + reg, "[sp,#" + getOffset(id) + "]"));
+        return new InstructionBlock(factory.instr("STR", "r" + reg, "[fp, #" + getOffset(id) + "]"));
     }
 
     private InstructionBlock prologue(int size) {
         return new InstructionBlock()
             .add(factory.instr("MOV", "ip", "sp"))
             .add(factory.instr("PUSH", "{fp, ip, lr, pc}"))
-            .add(factory.instr("SUB", "fp", "ip", "#4"))
+            .add(factory.instr("MOV", "fp", "ip"))
+            .add(factory.instr("ADD", "sp", "ip", "#-" + (4 * size)))
             .commentFirst("Function " + currentFunction);
     }
 
-    private InstructionBlock epilogue(int size) {
+    private InstructionBlock epilogue() {
         return new InstructionBlock()
             .add(factory.instr("LDM", "sp", "{fp, sp, lr}"));
     }
@@ -258,14 +259,21 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     @Override
     public InstructionBlock visit(Let e) {
         memory.allocate(e.id);
-        
+    
         // Allocation of the register for spilling the result of the
         // let expression (not the in expression)
-        InstructionBlock registerBlock = getNextAvailableRegister();
-        int reg = registerBlock.getUsedRegisters().get(0);
-
         InstructionBlock letExpression = e.e1.accept(this)
             .commentFirst("let " + e.id + " = ? in...");
+
+        int reg;
+
+        if (letExpression.getUsedRegisters().size() == 0) {
+            InstructionBlock registerBlock = getNextAvailableRegister();
+            reg = registerBlock.getUsedRegisters().get(0);
+            letExpression = registerBlock.chain(letExpression);
+        } else {
+            reg = letExpression.getUsedRegisters().get(0);
+        }
         
         List<InstructionBlock> freedRegisters = new ArrayList<InstructionBlock>();
         
@@ -292,8 +300,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         letExpression.setReturn("r" + reg);
 
-        return registerBlock
-            .chain(letExpression)
+        return letExpression
             .chain(saveVariable)
             .chain(freeReg)
             .chain(inBlock);
@@ -318,6 +325,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int size = e.accept(new SizeVisitor());
         
         memory.memInit();
+
         memory.UpdateScope(e.fd.fun.l);
         this.currentFunction = e.fd.fun.l.label;
 
@@ -328,7 +336,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         InstructionBlock result = prologue(size)
             .chain(e.e.accept(this)).setReturn("r0")
-            .chain(epilogue(size))
+            .chain(epilogue())
             .add(factory.instr("BX", "lr")).comment("Return");
 
         return result.setFunctionLabel(functionLabel);
@@ -463,8 +471,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock freeValueRegister = freeRegister(valueRegister);
         InstructionBlock freeOldValueRegister = freeRegister(oldValueRegister);
 
-        return base
-            .chain(valueRegisterBlock)
+        return valueRegisterBlock
             .chain(oldValueRegisterBlock)
             .chain(base)
             .chain(freeOffsetRegister)
@@ -527,7 +534,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .chain(closureArray)
             .chain(closureAddr)
             .add(factory.instr("PUSH", "{r" + closureArrayRegister + "}"))
-            .add(factory.instr("BX", "r" + closureAddrRegister))
+            .add(factory.instr("BX", "r" + closureAddrRegister)).comment("Apply closure")
+            .add(factory.instr("POP", "{r" + closureArrayRegister + "}"))
             .chain(freeClosureArray)
             .chain(freeClosureAddr);
     }
@@ -547,7 +555,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int reg = regBlock.getUsedRegisters().get(0);
 
         return new InstructionBlock()
-            .add(factory.instr("LDR", "r" + reg, "[fp, #-4]"))
+            .add(factory.instr("LDR", "r" + reg, "[fp, #20]"))
             .useRegister(reg);
     }
 }
