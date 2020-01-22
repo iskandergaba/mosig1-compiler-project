@@ -11,7 +11,7 @@ public class PrintVisitor implements Visitor {
 
     @Override
     public void visit(Float e) {
-        System.out.print(String.format("%.2f", e.f));
+        System.out.print("let " + e.l.label + " = " + String.format("%.2f", e.f));
     }
 
     @Override
@@ -25,6 +25,7 @@ public class PrintVisitor implements Visitor {
     public void visit(Add e) {
         System.out.print("(add ");
         System.out.print(e.id);
+        System.out.print(" ");
         e.e.accept(this);
         System.out.print(")");
     }
@@ -33,6 +34,7 @@ public class PrintVisitor implements Visitor {
     public void visit(Sub e) {
         System.out.print("(sub ");
         System.out.print(e.id);
+        System.out.print(" ");
         e.e.accept(this);
         System.out.print(")");
     }
@@ -155,20 +157,19 @@ public class PrintVisitor implements Visitor {
     public void visit(LetRec e) {
         System.out.print("let ");
         System.out.print(e.fd.fun.l);
-        for (Id id: e.fd.args) {
+        for (Id id : e.fd.args) {
             System.out.print(" ");
             System.out.print(id);
         }
         System.out.print(" =\n");
-        e.e.accept(this);
-        System.out.print("");
+        e.fd.e.accept(this);
     }
 
     @Override
     public void visit(Call e) {
         System.out.print("(");
         System.out.print(e.f);
-        for (Id id: e.args) {
+        for (Id id : e.args) {
             System.out.print(" ");
             System.out.print(id);
         }
@@ -214,7 +215,7 @@ public class PrintVisitor implements Visitor {
     public void visit(AppClosure e) {
         System.out.print("appclo ");
         System.out.print(e.id);
-        for (Id id: e.args) {
+        for (Id id : e.args) {
             System.out.print(" ");
             System.out.print(id);
         }
@@ -222,7 +223,7 @@ public class PrintVisitor implements Visitor {
 
     @Override
     public void visit(FunDefs e) {
-        for (Exp exp: e.funs) {
+        for (Exp exp : e.funs) {
             exp.accept(this);
             System.out.println("\n");
         }

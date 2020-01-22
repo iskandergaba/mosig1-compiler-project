@@ -8,9 +8,24 @@ import java.util.*;
 public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
 
     List<common.asml.Float> floatDefs = new ArrayList<>();
+    List<common.asml.FunDef> funDefs = new ArrayList<>();
     int floatCount = 0;
     int tempCount = 0;
     int tupleCount = 0;
+
+    public common.asml.FunDefs join(common.asml.Exp exp) {
+        List<common.asml.Exp> defs = new ArrayList<>();
+        for (common.asml.Float f : floatDefs) {
+            defs.add(f);
+        }
+        for (common.asml.FunDef fd : funDefs) {
+            defs.add(new common.asml.LetRec(fd, null));
+        }
+        common.asml.FunDef main = new common.asml.FunDef(new common.asml.Fun(new common.asml.Label("_")),
+                common.type.Type.gen(), new ArrayList<common.asml.Id>(), exp);
+        defs.add(new common.asml.LetRec(main, null));
+        return new common.asml.FunDefs(defs);
+    }
 
     public common.asml.Exp visit(Unit e) {
         return new common.asml.Nop();
@@ -195,7 +210,8 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
             args.add(new common.asml.Id(id_.id));
         }
         common.asml.FunDef fd = new common.asml.FunDef(new common.asml.Fun(id), e.fd.type, args, e.fd.e.accept(this));
-        return new common.asml.LetRec(fd, e.e.accept(this));
+        funDefs.add(fd);
+        return e.e.accept(this);
     }
 
     public common.asml.Exp visit(App e) throws Exception {

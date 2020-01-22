@@ -149,7 +149,9 @@ public class Main {
       System.out.println("------ Closure Conversion DONE ------");
 
       System.out.println("------ ASML Generation ------");
-      common.asml.Exp result = expression.accept(new AsmlGenerator());
+      AsmlGenerator v = new AsmlGenerator();
+      common.asml.Exp result = expression.accept(v);
+      result = v.join(result);
       result.accept(new common.visitor.PrintVisitor());
       System.out.println();
       System.out.println("------ ASML Generation DONE ------");

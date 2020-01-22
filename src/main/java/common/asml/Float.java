@@ -4,7 +4,7 @@ import common.visitor.*;
 
 public class Float extends Exp {
     public float f;
-    Label l;
+    public Label l;
 
     public Float(float f, Label l) {
         this.f = f;

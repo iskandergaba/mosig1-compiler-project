@@ -7,11 +7,11 @@ import common.visitor.*;
 public class FunDefs extends Exp {
     public List<Exp> funs;
 
-    FunDefs(List<Exp> funs) {
+    public FunDefs(List<Exp> funs) {
         this.funs = funs;
     }
 
-    <E> E accept(ObjVisitor<E> v) {
+    public <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
 

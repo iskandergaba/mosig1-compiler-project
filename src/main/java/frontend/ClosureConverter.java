@@ -109,7 +109,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
         Eq exp = new Eq(res1, res2);
-        exp.t=e.t;
+        exp.t = e.t;
         return exp;
     }
 
@@ -117,7 +117,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
         LE exp = new LE(res1, res2);
-        exp.t=e.t;
+        exp.t = e.t;
         return exp;
     }
 
@@ -172,8 +172,8 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             for (Id id : fun.free) {
                 args.add(new Var(id));
             }
-            App app=new App(mk_closure, args);
-            app.isClosureFlag=true;
+            App app = new App(mk_closure, args);
+            app.isClosureFlag = true;
             res2 = new Let(e.fd.id, fun.type, app, res2);
             res2.retClosureFlag = true;
             e.fd.id.retClosureFlag = true;

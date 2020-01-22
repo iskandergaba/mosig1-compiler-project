@@ -1,7 +1,7 @@
 package common.asml;
 
 public class Label {
-    String label;
+    public String label;
     public Label(String label) {
         this.label = label;
     }

@@ -8,7 +8,7 @@ public class FunDef {
     public final Fun fun;
     final Type type;
     public final List<Id> args;
-    final Exp e;
+    public final Exp e;
 
     public FunDef(Fun fun, Type t, List<Id> args, Exp e) {
         this.fun = fun;
