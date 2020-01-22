@@ -152,36 +152,33 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
             common.asml.New n = new common.asml.New(new common.asml.Int(((Int) a.e1).i * 4));
             exp = new common.asml.Let(array, common.type.Type.gen(), n, exp);
             return exp;
-        } else if (e.e1.isClosureFlag) {
+        } else if (e.e1 instanceof App && ((App) e.e1).e instanceof Var
+                && ((Var) ((App) e.e1).e).id.id.equals("_make_closure_")) {
             common.asml.Id closure = new common.asml.Id(e.id.id);
-            if (e.e1 instanceof App && ((App) e.e1).e instanceof Var
-                    && ((Var) ((App) e.e1).e).id.id.equals("_make_closure_")) {
-                App a = ((App) e.e1);
-                common.asml.Exp exp = e.e2.accept(this);
-                for (int off = 4 * (a.es.size() - 1); off >= 0; off -= 4) {
-                    Exp arg = a.es.get(off / 4);
-                    if (!(arg instanceof Var)) {
-                        throw new AsmlTranslationException("error : expected Var as argument to _make_closure_");
-                    }
-                    if (off == 0) {
-                        common.asml.Id funId = new common.asml.Id("addr" + ((Var) arg).id.id);
-                        common.asml.Put p = new common.asml.Put(closure, new common.asml.Int(off), funId);
-                        exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p,
-                                exp);
-                        tempCount++;
-                        exp = new common.asml.Let(funId, common.type.Type.gen(),
-                                new common.asml.Fun(new common.asml.Label(((Var) arg).id.id)), exp);
-                        break;
-                    }
-                    common.asml.Put p = new common.asml.Put(closure, new common.asml.Int(off),
-                            new common.asml.Id(((Var) arg).id.id));
+            App a = ((App) e.e1);
+            common.asml.Exp exp = e.e2.accept(this);
+            for (int off = 4 * (a.es.size() - 1); off >= 0; off -= 4) {
+                Exp arg = a.es.get(off / 4);
+                if (!(arg instanceof Var)) {
+                    throw new AsmlTranslationException("error : expected Var as argument to _make_closure_");
+                }
+                if (off == 0) {
+                    common.asml.Id funId = new common.asml.Id("addr" + ((Var) arg).id.id);
+                    common.asml.Put p = new common.asml.Put(closure, new common.asml.Int(off), funId);
                     exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp);
                     tempCount++;
+                    exp = new common.asml.Let(funId, common.type.Type.gen(),
+                            new common.asml.Fun(new common.asml.Label(((Var) arg).id.id)), exp);
+                    break;
                 }
-                common.asml.New n = new common.asml.New(new common.asml.Int(4 * a.es.size()));
-                exp = new common.asml.Let(closure, common.type.Type.gen(), n, exp);
-                return exp;
+                common.asml.Put p = new common.asml.Put(closure, new common.asml.Int(off),
+                        new common.asml.Id(((Var) arg).id.id));
+                exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp);
+                tempCount++;
             }
+            common.asml.New n = new common.asml.New(new common.asml.Int(4 * a.es.size()));
+            exp = new common.asml.Let(closure, common.type.Type.gen(), n, exp);
+            return exp;
         }
         return new common.asml.Let(new common.asml.Id(e.id.id), common.type.Type.gen(), e.e1.accept(this),
                 e.e2.accept(this));
@@ -211,7 +208,12 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
                     throw new AsmlTranslationException("error : expected Var as function in Call");
                 }
                 List<common.asml.Id> args = new ArrayList<>();
+                boolean first = true;
                 for (Exp exp : e.es) {
+                    if (first) {
+                        first = false;
+                        continue;
+                    }
                     if (exp instanceof Var) {
                         args.add(new common.asml.Id(((Var) exp).id.id));
                     } else {
@@ -227,7 +229,12 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
                     throw new AsmlTranslationException("error : expected Var as function in Call");
                 }
                 List<common.asml.Id> args = new ArrayList<>();
+                boolean first = true;
                 for (Exp exp : e.es) {
+                    if (first) {
+                        first = false;
+                        continue;
+                    }
                     if (exp instanceof Var) {
                         args.add(new common.asml.Id(((Var) exp).id.id));
                     } else {

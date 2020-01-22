@@ -172,7 +172,9 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             for (Id id : fun.free) {
                 args.add(new Var(id));
             }
-            res2 = new Let(e.fd.id, fun.type, new App(mk_closure, args), res2);
+            App app=new App(mk_closure, args);
+            app.isClosureFlag=true;
+            res2 = new Let(e.fd.id, fun.type, app, res2);
             res2.retClosureFlag = true;
             e.fd.id.retClosureFlag = true;
         }

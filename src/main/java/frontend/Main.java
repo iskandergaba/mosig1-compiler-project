@@ -159,6 +159,9 @@ public class Main {
     } catch (EnvironmentException e) {
       System.out.print("(SCOPE ERROR) ");
       e.printStackTrace();
+    } catch (AsmlTranslationException e) {
+      System.out.print("(ASML GENERATION ERROR) ");
+      e.printStackTrace();
     } catch (FileNotFoundException e) {
       System.out.println("Error: file not found: " + argv[0]);
     } catch (AssertionError e) {
