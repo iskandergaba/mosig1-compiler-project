@@ -31,4 +31,5 @@ public interface Visitor {
     void visit(Let e);
     void visit(LetRec e);
     void visit(Float e);
+    void visit(Self e);
 }

@@ -4,7 +4,7 @@ let _add_x y =
 
 let _apply_to_zero u =
     let t = 0 in
-    call_closure u t
+    apply_closure u t
 
 let _ = 
     let x0 = 1 in
