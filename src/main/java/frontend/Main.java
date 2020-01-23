@@ -147,11 +147,22 @@ public class Main {
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Closure Conversion DONE ------");
+
+      System.out.println("------ ASML Generation ------");
+      AsmlGenerator v = new AsmlGenerator();
+      common.asml.Exp result = expression.accept(v);
+      result = v.join(result);
+      result.accept(new common.visitor.PrintVisitor());
+      System.out.println();
+      System.out.println("------ ASML Generation DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
     } catch (EnvironmentException e) {
       System.out.print("(SCOPE ERROR) ");
+      e.printStackTrace();
+    } catch (AsmlTranslationException e) {
+      System.out.print("(ASML GENERATION ERROR) ");
       e.printStackTrace();
     } catch (FileNotFoundException e) {
       System.out.println("Error: file not found: " + argv[0]);

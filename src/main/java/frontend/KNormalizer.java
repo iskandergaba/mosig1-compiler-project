@@ -3,6 +3,8 @@ package frontend;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.type.Type;
+
 class KNormalizer implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {
@@ -130,7 +132,8 @@ class KNormalizer implements ObjVisitor<Exp> {
         if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var)) {
             Var v1 = Var.gen();
             Var v2 = Var.gen();
-            Exp bExp = new Eq(v1, v2);
+            Eq bExp = new Eq(v1, v2);
+            bExp.t=e.t;
             Let letExp = new Let(v2.id, Type.gen(), e.e2, bExp);
             Exp e1 = e.e1.accept(this);
             Exp e2 = letExp.accept(this);
@@ -143,7 +146,8 @@ class KNormalizer implements ObjVisitor<Exp> {
         if (!(e.e1 instanceof Var) || !(e.e2 instanceof Var)) {
             Var v1 = Var.gen();
             Var v2 = Var.gen();
-            Exp bExp = new LE(v1, v2);
+            LE bExp = new LE(v1, v2);
+            bExp.t=e.t;
             Let letExp = new Let(v2.id, Type.gen(), e.e2, bExp);
             Exp e1 = e.e1.accept(this);
             Exp e2 = letExp.accept(this);
