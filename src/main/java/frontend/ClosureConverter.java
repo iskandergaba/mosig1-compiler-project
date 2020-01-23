@@ -35,7 +35,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
      */
     public Exp join(Exp body) {
         Exp top = body;
-        for (int i=funs.size()-1;i>=0;i--) {
+        for (int i = funs.size() - 1; i >= 0; i--) {
             top = new LetRec(funs.get(i), top);
         }
         return top;
@@ -158,7 +158,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
     }
 
     public Exp visit(LetRec e) throws Exception {
-        if(free.get(e.fd.id.id).size()==0){
+        if (free.get(e.fd.id.id).size() == 0) {
             directFuns.add(e.fd.id.id);
         }
         Exp res1 = e.fd.e.accept(this);
@@ -179,10 +179,10 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             App app = new App(mk_closure, args);
             app.isClosureFlag = true;
             isClosure.add(e.fd.id.id);
-            Exp res2=e.e.accept(this);
-            Exp closure = new Let(e.fd.id,fun.type,app,res2);
-            closure.isClosureFlag=res2.isClosureFlag;
-            closure.retClosureFlag=res2.retClosureFlag;
+            Exp res2 = e.e.accept(this);
+            Exp closure = new Let(e.fd.id, fun.type, app, res2);
+            closure.isClosureFlag = res2.isClosureFlag;
+            closure.retClosureFlag = res2.retClosureFlag;
             return closure;
         }
         return e.e.accept(this);
@@ -196,7 +196,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         Exp exp = e.e.accept(this);
         args.add(0, exp);
         if (exp.isClosureFlag) {
-            App a =new App(app_closure, args);
+            App a = new App(app_closure, args);
             if (exp.retClosureFlag) {
                 a.isClosureFlag = true;
             }
