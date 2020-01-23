@@ -146,10 +146,10 @@ public class Main {
       expression.accept(new PrintVisitor());
       System.out.println("------ Constant folding DONE ------");
 
-      System.out.println("------ Unnecessary definitions suppression ------");
+      System.out.println("------ Elemenation of Unnecessary Definitions ------");
       expression = expression.accept(new UnnecessaryDefRemover());
       expression.accept(new PrintVisitor());
-      System.out.println("------ Unnecessary definitions suppression DONE ------");
+      System.out.println("------ Elemenation of Unnecessary Definitions DONE ------");
 
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
