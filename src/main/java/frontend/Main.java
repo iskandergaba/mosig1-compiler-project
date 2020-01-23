@@ -141,6 +141,16 @@ public class Main {
       System.out.println();
       System.out.println("------ Beta-Reduction DONE ------");
 
+      System.out.println("------ Constant folding ------");
+      expression = expression.accept(new ConstantFolder());
+      expression.accept(new PrintVisitor());
+      System.out.println("------ Constant folding DONE ------");
+
+      System.out.println("------ Unnecessary definitions suppression ------");
+      expression = expression.accept(new UnnecessaryDefRemover());
+      expression.accept(new PrintVisitor());
+      System.out.println("------ Unnecessary definitions suppression DONE ------");
+
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
       expression.accept(v1);
@@ -176,6 +186,7 @@ public class Main {
       System.out.print("");
     } catch (Exception e) {
       System.out.println("Usage: ./mincamlc <options> <source files>");
+      e.printStackTrace();
       System.out.println("Compilation terminated");
     }
   }

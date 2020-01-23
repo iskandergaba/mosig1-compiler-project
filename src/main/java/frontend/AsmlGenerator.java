@@ -155,18 +155,21 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
             Array a = (Array) e.e1;
             common.asml.Id array = new common.asml.Id(e.id.id);
             common.asml.Exp exp = e.e2.accept(this);
-            for (int i = ((Int) a.e1).i - 1; i >= 0; i--) {
-                if (a.e2 instanceof Var) {
-                    common.asml.Put p = new common.asml.Put(array, new common.asml.Int(i * 4),
-                            new common.asml.Id(((Var) a.e2).id.id));
-                    exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp);
-                } else {
-                    throw new AsmlTranslationException("error : expected Var in array initialization");
-                }
-            }
-            common.asml.New n = new common.asml.New(new common.asml.Int(((Int) a.e1).i * 4));
-            exp = new common.asml.Let(array, common.type.Type.gen(), n, exp);
-            return exp;
+            /*
+             * for (int i = ((Int) a.e1).i - 1; i >= 0; i--) { if (a.e2 instanceof Var) {
+             * common.asml.Put p = new common.asml.Put(array, new common.asml.Int(i * 4),
+             * new common.asml.Id(((Var) a.e2).id.id)); exp = new common.asml.Let(new
+             * common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp); } else {
+             * throw new
+             * AsmlTranslationException("error : expected Var in array initialization"); } }
+             * common.asml.New n = new common.asml.New(new common.asml.Int(((Int) a.e1).i *
+             * 4)); exp = new common.asml.Let(array, common.type.Type.gen(), n, exp);
+             */
+            List<common.asml.Id> args = new ArrayList<>();
+            args.add(new common.asml.Id(((Var) a.e1).id.id));
+            args.add(new common.asml.Id(((Var) a.e2).id.id));
+            common.asml.Call c = new common.asml.Call(new common.asml.Label("_min_caml_create_array"), args);
+            return new common.asml.Let(array, common.type.Type.gen(), c, exp);
         } else if (e.e1 instanceof App && ((App) e.e1).e instanceof Var
                 && ((Var) ((App) e.e1).e).id.id.equals("_make_closure_")) {
             common.asml.Id closure = new common.asml.Id(e.id.id);
