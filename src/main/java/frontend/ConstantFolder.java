@@ -2,8 +2,6 @@ package frontend;
 
 import java.util.*;
 
-import common.type.Type;
-
 /**
  * Visitor used for constant folding
  */
@@ -142,7 +140,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(App e) throws Exception {
-        replaceVars=false;
+        replaceVars = false;
         List<Exp> args = new ArrayList<>();
         for (Exp arg : e.es) {
             args.add(arg.accept(this));
@@ -164,17 +162,17 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Array e) throws Exception {
-        replaceVars=false;
+        replaceVars = false;
         return new Array(e.e1.accept(this), e.e2.accept(this));
     }
 
     public Exp visit(Get e) throws Exception {
-        replaceVars=false;
+        replaceVars = false;
         return new Get(e.e1.accept(this), e.e2.accept(this));
     }
 
     public Exp visit(Put e) throws Exception {
-        replaceVars=false;
+        replaceVars = false;
         return new Put(e.e1, e.e2.accept(this), e.e3.accept(this));
     }
 }

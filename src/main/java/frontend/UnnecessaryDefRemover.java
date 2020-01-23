@@ -2,8 +2,6 @@ package frontend;
 
 import java.util.*;
 
-import common.type.Type;
-
 /**
  * Visitor used for removing unnecessary definitions
  */
