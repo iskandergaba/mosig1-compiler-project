@@ -145,15 +145,15 @@ public class ClosureConverter implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Var e) {
-        if (directFuns.contains(e.id.id)) {
-            e.id.id = "_" + e.id.id;
-        }
         e.retClosureFlag = e.id.retClosureFlag;
         if (retClosure.contains(e.id.id)) {
             e.retClosureFlag = true;
         }
         if (isClosure.contains(e.id.id)) {
             e.isClosureFlag = true;
+        }
+        if (directFuns.contains(e.id.id)) {
+            e.id.id = "_" + e.id.id;
         }
         return e;
     }
@@ -193,8 +193,8 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             args.add(exp.accept(this));
         }
         Exp exp = e.e.accept(this);
+        args.add(0, exp);
         if (exp.isClosureFlag) {
-            args.add(0, exp);
             return new App(app_closure, args);
         }
         App a = new App(apply, args);
