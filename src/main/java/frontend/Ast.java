@@ -6,8 +6,8 @@ import common.type.Type;
 
 abstract class Exp {
 
-    Boolean retClosureFlag=false;
-    Boolean isClosureFlag=false;
+    Boolean retClosureFlag = false;
+    Boolean isClosureFlag = false;
 
     abstract void accept(Visitor v);
 
@@ -351,7 +351,7 @@ class App extends Exp {
     final Exp e;
     final List<Exp> es;
 
-    boolean closureFlag=false;
+    boolean closureFlag = false;
 
     App(Exp e, List<Exp> es) {
         this.e = e;
@@ -467,7 +467,7 @@ class FunDef {
     final List<Id> args;
     final Exp e;
 
-    List<Id> free=null;
+    List<Id> free = null;
 
     FunDef(Id id, Type t, List<Id> args, Exp e) {
         this.id = id;

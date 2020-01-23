@@ -129,11 +129,17 @@ public class Main {
       System.out.println();
       System.out.println("------ Alpha-Conversion DONE ------");
 
-      System.out.println("------ Let-Reduction ------");
+      System.out.println("------ Beta-Reduction ------");
+      expression = expression.accept(new BetaReducer());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ Beta-Reduction DONE ------");
+
+      System.out.println("------ Nested Let-Reduction ------");
       expression = expression.accept(new LetReducer());
       expression.accept(new PrintVisitor());
       System.out.println();
-      System.out.println("------ Let-Reduction DONE ------");
+      System.out.println("------ Nested Let-Reduction DONE ------");
 
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
