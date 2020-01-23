@@ -35,8 +35,8 @@ public class ClosureConverter implements ObjVisitor<Exp> {
      */
     public Exp join(Exp body) {
         Exp top = body;
-        for (FunDef fun : funs) {
-            top = new LetRec(fun, top);
+        for (int i=funs.size()-1;i>=0;i--) {
+            top = new LetRec(funs.get(i), top);
         }
         return top;
     }
@@ -145,7 +145,6 @@ public class ClosureConverter implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Var e) {
-        e.retClosureFlag = e.id.retClosureFlag;
         if (retClosure.contains(e.id.id)) {
             e.retClosureFlag = true;
         }
@@ -163,10 +162,9 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             directFuns.add(e.fd.id.id);
         }
         Exp res1 = e.fd.e.accept(this);
-        if (res1.retClosureFlag) {
+        if (res1.isClosureFlag || res1.retClosureFlag) {
             retClosure.add(e.fd.id.id);
         }
-        Exp res2 = e.e.accept(this);
         Id label = Id.gen();
         label.id = "_" + e.fd.id.id;
         FunDef fun = new FunDef(label, e.fd.type, e.fd.args, res1);
@@ -180,11 +178,14 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             }
             App app = new App(mk_closure, args);
             app.isClosureFlag = true;
-            res2 = new Let(e.fd.id, fun.type, app, res2);
-            res2.retClosureFlag = true;
-            e.fd.id.retClosureFlag = true;
+            isClosure.add(e.fd.id.id);
+            Exp res2=e.e.accept(this);
+            Exp closure = new Let(e.fd.id,fun.type,app,res2);
+            closure.isClosureFlag=res2.isClosureFlag;
+            closure.retClosureFlag=res2.retClosureFlag;
+            return closure;
         }
-        return res2;
+        return e.e.accept(this);
     }
 
     public Exp visit(App e) throws Exception {
@@ -195,7 +196,11 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         Exp exp = e.e.accept(this);
         args.add(0, exp);
         if (exp.isClosureFlag) {
-            return new App(app_closure, args);
+            App a =new App(app_closure, args);
+            if (exp.retClosureFlag) {
+                a.isClosureFlag = true;
+            }
+            return a;
         }
         App a = new App(apply, args);
         if (exp.retClosureFlag) {

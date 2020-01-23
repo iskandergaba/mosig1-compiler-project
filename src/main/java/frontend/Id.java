@@ -2,8 +2,6 @@ package frontend;
 
 class Id {
     String id;
-    Boolean retClosureFlag = false;
-    Boolean isClosureFlag = false;
 
     Id(String id) {
         this.id = id;
