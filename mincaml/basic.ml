@@ -1,6 +1,6 @@
-let x = 1 in
-let y = x + 2 in
-let z = x + y in
-let x = 2.0 in
-let a = x +. 1.0 in
+let rec f x = 
+   let y = x in
+   let z = y in
+   y in
+let z = f 1 in
 print_int z
