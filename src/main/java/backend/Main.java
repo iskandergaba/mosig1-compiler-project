@@ -9,11 +9,17 @@ public class Main {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      InstructionBlock text = expression.accept(new CodeGenerationVisitor());
+      LinearScanVisitor v = new LinearScanVisitor();
+      expression.accept(v);
+      v.linearScanRegisterAllocation();
+
+      CodeGenerationVisitor cgv = new CodeGenerationVisitor(v.registers, v.locations);
+      
+      InstructionBlock text = expression.accept(cgv);
       Program prog = new Program(text);
       prog.generateHeapAllocationCode();
       System.out.println(prog);
-
+      
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -318,7 +318,8 @@ class LinearScanVisitor implements Visitor {
     public void visit(Get e) {
         // currentBlock.addGen(e.base);
         updatePosition();
-        updateInterval(e.base.id);
+
+        e.base.accept(this);
 
         System.out.print("mem (");
         System.out.print(e.base);
@@ -332,7 +333,9 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.base);
         // currentBlock.addGen(e.dest);
         updatePosition();
-        updateInterval(e.base.id);
+
+        e.base.accept(this);
+
         updateInterval(e.dest.id);
 
         System.out.print("mem (");
@@ -446,6 +449,7 @@ class LinearScanVisitor implements Visitor {
 
         System.out.print("appclo ");
         System.out.print(e.id);
+        updateInterval(e.id.id);
         for (Id id: e.args) {
             System.out.print(" ");
             System.out.print(id);
@@ -508,5 +512,10 @@ class LinearScanVisitor implements Visitor {
     @Override
     public void visit(Float e) {
         System.out.print(String.format("%.2f", e.f));
+    }
+
+    @Override
+    public void visit(Self e) {
+
     }
 }

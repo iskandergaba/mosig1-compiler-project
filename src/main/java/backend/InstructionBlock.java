@@ -107,7 +107,9 @@ public class InstructionBlock {
      * @return The updated block
      */
     public InstructionBlock useRegister(int register) {
-        this.usedRegisters.add(register);
+        if (!this.usedRegisters.contains(register)) {
+            this.usedRegisters.add(register);
+        }
         return this;
     }
 
