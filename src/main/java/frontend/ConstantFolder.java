@@ -32,6 +32,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Neg e) throws Exception {
+        replaceVars = false;
         return new Neg(e.e.accept(this));
     }
 
