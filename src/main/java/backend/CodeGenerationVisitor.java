@@ -1,6 +1,7 @@
 package backend;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Visits the ASML AST and generates ARM assembly code.
@@ -352,11 +353,20 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock result = new InstructionBlock();
         int callParameterRegister = 0;
 
+        List<String> argumentRegisterList = new ArrayList<String>();
+
         for (Id id: e.args) {
             if (callParameterRegister < 4) { // Don't put more than 4 parameters
                 result.chain(retrieveVariable(id, callParameterRegister++));
+                argumentRegisterList.add("r" + callParameterRegister);
             }
         }
+
+        String argumentRegisters = argumentRegisterList
+            .stream()
+            .collect(Collectors.joining(", "));
+        InstructionBlock pushArguments = new InstructionBlock(factory.instr("PUSH", "{" + argumentRegisters + "}"));
+        InstructionBlock popArguments = new InstructionBlock(factory.instr("POP", "{" + argumentRegisters + "}"));
 
         String functionLabel = functionLabels.get(e.f.label);
         
@@ -366,7 +376,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         }
 
         return result
+            .chain(pushArguments)
             .add(factory.instr("BL", functionLabel)).comment("call " + e.f.label)
+            .chain(popArguments)
             .add(factory.instr("MOV", "$", "r0"));
     }
 
@@ -508,34 +520,45 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock result = new InstructionBlock();
         int callParameterRegister = 0;
 
+        List<String> argumentRegisterList = new ArrayList<String>();
+
         for (Id id: e.args) {
             if (callParameterRegister < 4) { // Don't put more than 4 parameters
                 result.chain(retrieveVariable(id, callParameterRegister++));
+                argumentRegisterList.add("r" + callParameterRegister);
             }
         }
 
         // Retrieve closure address
         InstructionBlock closureAddrRegBlock = getNextAvailableRegister();
         int closureAddrRegister = closureAddrRegBlock.getUsedRegisters().get(0);
-
+        
         InstructionBlock closureArrayRegBlock = getNextAvailableRegister();
         int closureArrayRegister = closureArrayRegBlock.getUsedRegisters().get(0);
-
+        
         InstructionBlock closureArray = retrieveVariable(e.id, closureArrayRegister);
         InstructionBlock closureAddr = new InstructionBlock()
-            .add(factory.instr("LDR", "r" + closureAddrRegister, "[r" + closureArrayRegister + "]"));
-
+        .add(factory.instr("LDR", "r" + closureAddrRegister, "[r" + closureArrayRegister + "]"));
+        
         InstructionBlock freeClosureArray = freeRegister(closureArrayRegister);
         InstructionBlock freeClosureAddr = freeRegister(closureAddrRegister);
         
+        argumentRegisterList.add("r" + closureArrayRegister);
+
+        String argumentRegisters = argumentRegisterList
+        .stream()
+        .collect(Collectors.joining(", "));
+        InstructionBlock pushArguments = new InstructionBlock(factory.instr("PUSH", "{" + argumentRegisters + "}"));
+        InstructionBlock popArguments = new InstructionBlock(factory.instr("POP", "{" + argumentRegisters + "}"));
+
         return result
             .chain(closureAddrRegBlock)
             .chain(closureArrayRegBlock)
             .chain(closureArray)
             .chain(closureAddr)
-            .add(factory.instr("PUSH", "{r" + closureArrayRegister + "}"))
+            .chain(pushArguments)
             .add(factory.instr("BX", "r" + closureAddrRegister)).comment("Apply closure")
-            .add(factory.instr("POP", "{r" + closureArrayRegister + "}"))
+            .chain(popArguments)
             .chain(freeClosureArray)
             .chain(freeClosureAddr);
     }
