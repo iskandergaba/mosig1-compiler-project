@@ -219,15 +219,17 @@ public class ClosureConverter implements ObjVisitor<Exp> {
 
     public Exp visit(LetTuple e) throws Exception {
         Exp res1 = e.e1.accept(this);
-        int i = 0;
-        for (Exp exp : ((Tuple) res1).es) {
-            if (exp.retClosureFlag) {
-                retClosure.add(e.ids.get(i).id);
+        if (res1 instanceof Tuple) {
+            int i = 0;
+            for (Exp exp : ((Tuple) res1).es) {
+                if (exp.retClosureFlag) {
+                    retClosure.add(e.ids.get(i).id);
+                }
+                if (exp.isClosureFlag) {
+                    isClosure.add(e.ids.get(i).id);
+                }
+                i++;
             }
-            if (exp.isClosureFlag) {
-                isClosure.add(e.ids.get(i).id);
-            }
-            i++;
         }
         Exp res2 = e.e2.accept(this);
         return new LetTuple(e.ids, e.ts, res1, res2);

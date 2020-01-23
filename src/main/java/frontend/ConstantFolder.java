@@ -39,20 +39,32 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     public Exp visit(Add e) throws Exception {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
-        if (res1 instanceof Int && res2 instanceof Int) {
-            return new Int(((Int) res1).i + ((Int) res2).i);
-        } else {
+        if (res1 instanceof Int) {
+            if (res2 instanceof Int) {
+                return new Int(((Int) res1).i + ((Int) res2).i);
+            } else {
+                return new Add(res2, res1);
+            }
+        } else if (res2 instanceof Int) {
             return new Add(res1, res2);
+        } else {
+            return e;
         }
     }
 
     public Exp visit(Sub e) throws Exception {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
-        if (res1 instanceof Int && res2 instanceof Int) {
-            return new Int(((Int) res1).i - ((Int) res2).i);
+        if (res1 instanceof Int) {
+            if (res2 instanceof Int) {
+                return new Int(((Int) res1).i - ((Int) res2).i);
+            } else {
+                return new Add(res2, res1);
+            }
+        } else if (res2 instanceof Int) {
+            return new Add(res1, res2);
         } else {
-            return new Sub(res1, res2);
+            return e;
         }
     }
 
@@ -67,7 +79,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
         if (res1 instanceof Float && res2 instanceof Float) {
             return new Float(((Float) res1).f + ((Float) res2).f);
         } else {
-            return new FAdd(res1, res2);
+            return e;
         }
     }
 
@@ -77,7 +89,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
         if (res1 instanceof Float && res2 instanceof Float) {
             return new Float(((Float) res1).f - ((Float) res2).f);
         } else {
-            return new FSub(res1, res2);
+            return e;
         }
     }
 
@@ -87,7 +99,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
         if (res1 instanceof Float && res2 instanceof Float) {
             return new Float(((Float) res1).f * ((Float) res2).f);
         } else {
-            return new FMul(res1, res2);
+            return e;
         }
     }
 
@@ -97,7 +109,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
         if (res1 instanceof Float && res2 instanceof Float) {
             return new Float(((Float) res1).f / ((Float) res2).f);
         } else {
-            return new FDiv(res1, res2);
+            return e;
         }
     }
 
@@ -151,6 +163,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Tuple e) throws Exception {
+        replaceVars = false;
         List<Exp> Exps = new ArrayList<>();
         for (Exp exp : e.es) {
             Exp res = exp.accept(this);

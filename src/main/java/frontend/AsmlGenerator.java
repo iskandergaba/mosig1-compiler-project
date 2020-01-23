@@ -151,7 +151,23 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
     }
 
     public common.asml.Exp visit(Let e) throws Exception {
-        if (e.e1 instanceof Array) {
+        if (e.e1 instanceof Tuple) {
+            Tuple t = (Tuple) e.e1;
+            common.asml.Exp exp = e.e2.accept(this);
+            common.asml.Id tid = new common.asml.Id(e.id.id);
+            for (int i = t.es.size() - 1; i >= 0; i--) {
+                if (t.es.get(i) instanceof Var) {
+                    common.asml.Put p = new common.asml.Put(tid, new common.asml.Int(i * 4),
+                            new common.asml.Id(((Var) t.es.get(i)).id.id));
+                    exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp);
+                    tempCount++;
+                } else {
+                    throw new AsmlTranslationException("error : expected Var in tuple");
+                }
+            }
+            common.asml.New n = new common.asml.New(new common.asml.Int(4 * t.es.size()));
+            return new common.asml.Let(tid, common.type.Type.gen(), n, exp);
+        } else if (e.e1 instanceof Array) {
             Array a = (Array) e.e1;
             common.asml.Id array = new common.asml.Id(e.id.id);
             common.asml.Exp exp = e.e2.accept(this);

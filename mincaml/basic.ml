@@ -1,6 +1,3 @@
-let rec f x = 
-   let y = x in
-   let z = y in
-   y in
-let z = f 1 in
-print_int z
+let rec f x y z = (x,y,z) in
+let (x,y,z)=(f 1 2 3) in
+print_int x
