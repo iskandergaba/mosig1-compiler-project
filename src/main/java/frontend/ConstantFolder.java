@@ -57,6 +57,7 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(FNeg e) throws Exception {
+        replaceVars = false;
         return new FNeg(e.e.accept(this));
     }
 

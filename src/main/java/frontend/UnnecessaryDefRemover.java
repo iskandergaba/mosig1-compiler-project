@@ -95,6 +95,9 @@ public class UnnecessaryDefRemover implements ObjVisitor<Exp> {
     public Exp visit(Let e) throws Exception {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
+        if (e.e1 instanceof App) {
+            usedVars.add(e.id.id);
+        }
         if (usedVars.contains(e.id.id)) {
             return new Let(e.id, e.t, res1, res2);
         } else {
