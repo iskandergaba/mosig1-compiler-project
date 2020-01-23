@@ -211,10 +211,10 @@ class Sub extends Exp {
 }
 
 class Get extends Exp {
-    final Id base;
+    final Exp base;
     final Exp offset;
 
-    Get(Id base, Exp offset) {
+    Get(Exp base, Exp offset) {
         this.base = base;
         this.offset = offset;
     }
@@ -229,11 +229,11 @@ class Get extends Exp {
 }
 
 class Put extends Exp {
-    final Id base;
+    final Exp base;
     final Exp offset;
     final Id dest;
 
-    Put(Id base, Exp offset, Id dest) {
+    Put(Exp base, Exp offset, Id dest) {
         this.base = base;
         this.offset = offset;
         this.dest = dest;
@@ -461,6 +461,20 @@ class FunDefs extends Exp {
 
     FunDefs(List<Exp> funs) {
         this.funs = funs;
+    }
+
+    <E> E accept(ObjVisitor<E> v) {
+        return v.visit(this);
+    }
+
+    void accept(Visitor v) {
+        v.visit(this);
+    }
+}
+
+class Self extends Exp {
+    Self() {
+
     }
 
     <E> E accept(ObjVisitor<E> v) {

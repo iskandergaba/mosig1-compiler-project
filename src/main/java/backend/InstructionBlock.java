@@ -138,6 +138,11 @@ public class InstructionBlock {
         return this;
     }
 
+    public InstructionBlock reverse() {
+        Collections.reverse(instructions);
+        return this;
+    }
+
     /**
      * Returns the list of used registers of this block
      * @return the list of used registers of this block

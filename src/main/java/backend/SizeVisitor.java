@@ -146,4 +146,9 @@ public class SizeVisitor implements ObjVisitor<Integer> {
         }
         return result;
     }
+
+    @Override
+    public Integer visit(Self e) {
+        return 0;
+    }
 }

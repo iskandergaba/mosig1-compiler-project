@@ -37,6 +37,7 @@ terminal LPAREN, RPAREN, PLUS, EQUAL, FEQUAL, LE, FLE, GE, IF,
 terminal prec_let, prec_if, prec_unary_minus, prec_app;
 
 non terminal Exp ident_or_imm;
+non terminal Exp ident_or_self;
 non terminal Exp exp;
 non terminal Exp asmt;
 non terminal List<Id> formal_args;
@@ -49,6 +50,10 @@ start with toplevel;
 
 ident_or_imm ::= INT:i    {: RESULT = new Int(i); :}
                | IDENT:id {: RESULT = new Var(id); :}
+;
+
+ident_or_self ::= IDENT:id {: RESULT = new Var(id); :}
+                | SELF     {: RESULT = new Self(); :}
 ;
 
 exp ::= NOP                 {: RESULT = new Nop(); :}
@@ -65,9 +70,9 @@ exp ::= NOP                 {: RESULT = new Nop(); :}
       | NEW ident_or_imm:size       {: RESULT = new New(size); :}
       | ADD IDENT:id ident_or_imm:e {: RESULT = new Add(id, e); :}
       | SUB IDENT:id ident_or_imm:e {: RESULT = new Sub(id, e); :}
-      | MEM LPAREN IDENT:base PLUS ident_or_imm:offset RPAREN
+      | MEM LPAREN ident_or_self:base PLUS ident_or_imm:offset RPAREN
             {: RESULT = new Get(base, offset); :}
-      | MEM LPAREN IDENT:base PLUS ident_or_imm:offset RPAREN ASSIGN IDENT:dest
+      | MEM LPAREN ident_or_self:base PLUS ident_or_imm:offset RPAREN ASSIGN IDENT:dest
             {: RESULT = new Put(base, offset, dest); :}
       | IF IDENT:id EQUAL ident_or_imm:e THEN asmt:e1 ELSE asmt:e2
             {: RESULT = new If(new Eq(id, e), e1, e2); :}
