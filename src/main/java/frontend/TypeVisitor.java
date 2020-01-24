@@ -196,10 +196,10 @@ public class TypeVisitor implements ObjVisitor<Type> {
         Type res2 = e.e2.accept(this);
         if ((res1 != null && res2 != null && res1.getClass().getName().equals(res2.getClass().getName()))
                 || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK) {
-            if(res1 instanceof TAssumeOK){
-                e.t=res2;
+            if (res1 instanceof TAssumeOK) {
+                e.t = res2;
             } else {
-                e.t=res1;
+                e.t = res1;
             }
             return new TBool();
         }
@@ -214,10 +214,10 @@ public class TypeVisitor implements ObjVisitor<Type> {
         if (((res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK))
                 || ((res1 instanceof TFloat || res1 instanceof TAssumeOK)
                         && (res2 instanceof TFloat || res2 instanceof TAssumeOK))) {
-            if(res1 instanceof TAssumeOK){
-                e.t=res2;
+            if (res1 instanceof TAssumeOK) {
+                e.t = res2;
             } else {
-                e.t=res1;
+                e.t = res1;
             }
             return new TBool();
         }
@@ -267,6 +267,18 @@ public class TypeVisitor implements ObjVisitor<Type> {
         t.args = e.fd.args;
         env.put(e.fd.id.id, t);
         Type res2 = e.e.accept(this);
+        switch (e.fd.id.id) {
+        case "print_int":
+        case "print_newline":
+        case "truncate":
+        case "int_of_float":
+        case "float_of_int":
+        case "cos":
+        case "sin":
+        case "sqrt":
+        case "abs_float":
+            e.fd.id.id = "_min_caml_" + e.fd.id.id;
+        }
         return res2;
     }
 
@@ -288,6 +300,9 @@ public class TypeVisitor implements ObjVisitor<Type> {
                                 + ((TFun) res).extern_args.get(i).getClass().getName() + ")");
                     }
                     i++;
+                }
+                if (e.e instanceof Var) {
+                    ((Var) e.e).id.id = "_min_caml_" + ((Var) e.e).id.id;
                 }
                 return ((TFun) res).extern_ret;
             }
