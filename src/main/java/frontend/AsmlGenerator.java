@@ -114,7 +114,7 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
 
     public common.asml.Exp visit(Eq e) throws Exception {
         if (e.e1 instanceof Var) {
-            if (e.t instanceof TInt) {
+            if (e.e2 instanceof Int) {
                 common.asml.Exp res = e.e2.accept(this);
                 return new common.asml.Eq(new common.asml.Id(((Var) e.e1).id.id), res);
             } else if (e.e2 instanceof Var) {
@@ -129,7 +129,7 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
 
     public common.asml.Exp visit(LE e) throws Exception {
         if (e.e1 instanceof Var) {
-            if (e.t instanceof TInt) {
+            if (e.e2 instanceof Int) {
                 common.asml.Exp res = e.e2.accept(this);
                 return new common.asml.LE(new common.asml.Id(((Var) e.e1).id.id), res);
             } else if (e.e2 instanceof Var) {
@@ -232,7 +232,7 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
         }
         common.asml.Exp body = e.fd.e.accept(this);
         for (int i = e.fd.free.size() - 1; i >= 0; i--) {
-            common.asml.Get g = new common.asml.Get(new common.asml.Self(), new common.asml.Int((i+1) * 4));
+            common.asml.Get g = new common.asml.Get(new common.asml.Self(), new common.asml.Int((i + 1) * 4));
             body = new common.asml.Let(new common.asml.Id(e.fd.free.get(i).id), common.type.Type.gen(), g, body);
         }
         common.asml.FunDef fd = new common.asml.FunDef(new common.asml.Fun(id), e.fd.type, args, body);

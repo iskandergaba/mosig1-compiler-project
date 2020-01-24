@@ -88,7 +88,11 @@ class BetaReducer implements ObjVisitor<Exp> {
         if (e1 instanceof Var) {
             Var v = (Var) e.e1;
             Map<String, String> subs = new HashMap<>(substitutions);
-            subs.put(e.id.id, v.id.id);
+            if (substitutions.containsKey(v.id.id)) {
+                subs.put(e.id.id, substitutions.get(v.id.id));
+            } else {
+                subs.put(e.id.id, v.id.id);
+            }
             return e.e2.accept(new BetaReducer(subs));
         }
         return new Let(e.id, Type.gen(), e.e1.accept(this), e.e2.accept(this));
