@@ -185,7 +185,7 @@ public class PrintVisitor implements Visitor {
     @Override
     public void visit(Get e) {
         System.out.print("mem (");
-        System.out.print(e.base);
+        e.base.accept(this);
         System.out.print(" + ");
         e.offset.accept(this);
         System.out.print(")");
@@ -194,7 +194,7 @@ public class PrintVisitor implements Visitor {
     @Override
     public void visit(Put e) {
         System.out.print("mem (");
-        System.out.print(e.base);
+        e.base.accept(this);
         System.out.print(" + ");
         e.offset.accept(this);
         System.out.print(") <- ");
@@ -231,6 +231,6 @@ public class PrintVisitor implements Visitor {
 
     @Override
     public void visit(Self e) {
-        System.out.println("%self");
+        System.out.print("%self");
     }
  }

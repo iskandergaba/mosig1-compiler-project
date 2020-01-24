@@ -230,7 +230,12 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
         for (Id id_ : e.fd.args) {
             args.add(new common.asml.Id(id_.id));
         }
-        common.asml.FunDef fd = new common.asml.FunDef(new common.asml.Fun(id), e.fd.type, args, e.fd.e.accept(this));
+        common.asml.Exp body = e.fd.e.accept(this);
+        for (int i = e.fd.free.size() - 1; i >= 0; i--) {
+            common.asml.Get g = new common.asml.Get(new common.asml.Self(), new common.asml.Int((i+1) * 4));
+            body = new common.asml.Let(new common.asml.Id(e.fd.free.get(i).id), common.type.Type.gen(), g, body);
+        }
+        common.asml.FunDef fd = new common.asml.FunDef(new common.asml.Fun(id), e.fd.type, args, body);
         funDefs.add(fd);
         return e.e.accept(this);
     }
