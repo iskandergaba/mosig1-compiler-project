@@ -36,4 +36,5 @@ public interface ObjVisitor<E> {
     E visit(Let e);
     E visit(LetRec e);
     E visit(Float e);
+    E visit(Self e);
 }

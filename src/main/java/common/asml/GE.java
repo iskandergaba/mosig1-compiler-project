@@ -6,12 +6,12 @@ public class GE extends Exp {
     public final Id id;
     public final Exp e;
 
-    GE(Id id, Exp e) {
+    public GE(Id id, Exp e) {
         this.id = id;
         this.e = e;
     }
 
-    <E> E accept(ObjVisitor<E> v) {
+    public <E> E accept(ObjVisitor<E> v) {
         return v.visit(this);
     }
     

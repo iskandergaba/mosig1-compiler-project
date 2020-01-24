@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import common.asml.*;
+import common.asml.Float;
+import common.visitor.*;
+
 class LinearScanVisitor implements Visitor {
     Integer position = 0;
     String scope;

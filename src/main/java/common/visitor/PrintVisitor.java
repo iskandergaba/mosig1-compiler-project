@@ -228,4 +228,9 @@ public class PrintVisitor implements Visitor {
             System.out.println("\n");
         }
     }
-}
+
+    @Override
+    public void visit(Self e) {
+        System.out.println("%self");
+    }
+ }

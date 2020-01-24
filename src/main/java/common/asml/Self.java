@@ -2,13 +2,9 @@ package common.asml;
 
 import common.visitor.*;
 
-public class Get extends Exp {
-    public final Exp base;
-    public final Exp offset;
+public class Self extends Exp {
+    public Self() {
 
-    public Get(Exp base, Exp offset) {
-        this.base = base;
-        this.offset = offset;
     }
 
     public <E> E accept(ObjVisitor<E> v) {

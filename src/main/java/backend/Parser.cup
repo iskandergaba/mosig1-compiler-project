@@ -2,6 +2,10 @@ package backend;
 
 import java_cup.runtime.*;
 import java.util.*;
+import common.asml.*;
+import common.asml.Float;
+import common.visitor.*;
+import common.type.*;
 
 parser code {:
     Lexer l;

@@ -1,10 +1,10 @@
 package backend;
 
-import java.lang.Object;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import common.asml.*;
 
 class Memory {
     // Boolean[] regIsFree = Collections.nCopies(16, true).toArray(new Boolean[16]);

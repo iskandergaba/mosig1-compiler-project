@@ -3,6 +3,10 @@ package backend;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import common.asml.*;
+import common.asml.Float;
+import common.visitor.*;
+
 /**
  * Visits the ASML AST and generates ARM assembly code.
  */

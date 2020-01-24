@@ -1,7 +1,7 @@
 package common.asml;
 
 public class Id {
-    String id;
+    public String id;
     public Id(String id) {
         this.id = id;
     }
