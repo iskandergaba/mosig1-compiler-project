@@ -8,6 +8,7 @@ import java.util.*;
 public class FreeVarVisitor implements Visitor {
 
     private List<String> env = new ArrayList<>();
+    private List<String> stdEnv = new ArrayList<>();
     private Id currentFun = null;
 
     /**
@@ -15,6 +16,18 @@ public class FreeVarVisitor implements Visitor {
      * function labels are used as keys)
      */
     public Hashtable<String, List<Id>> free = new Hashtable<>();
+
+    public FreeVarVisitor() {
+        stdEnv.add("_min_caml_print_int");
+        stdEnv.add("_min_caml_print_newline");
+        stdEnv.add("_min_caml_truncate");
+        stdEnv.add("_min_caml_int_of_float");
+        stdEnv.add("_min_caml_float_of_int");
+        stdEnv.add("_min_caml_sin");
+        stdEnv.add("_min_caml_cos");
+        stdEnv.add("_min_caml_sqrt");
+        stdEnv.add("_min_caml_abs_float");
+    }
 
     public void visit(Unit e) {
     }
@@ -93,7 +106,8 @@ public class FreeVarVisitor implements Visitor {
     }
 
     public void visit(Var e) {
-        if (currentFun != null && !env.contains(e.id.id) && !free.get(currentFun.id).contains(e.id)) {
+        if (currentFun != null && !env.contains(e.id.id) && !stdEnv.contains(e.id.id)
+                && !free.get(currentFun.id).contains(e.id)) {
             free.get(currentFun.id).add(e.id);
         }
     }

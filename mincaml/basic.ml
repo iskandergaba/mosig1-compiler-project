@@ -1,3 +1,5 @@
-let rec f x y z = (x,y,z) in
-let (x,y,z)=(f 1 2 3) in
-print_int x
+let rec compose f g =
+  let rec composed x = g+f in
+  composed in
+let h = compose 1 1 in
+print_int(h 1)
