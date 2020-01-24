@@ -2,18 +2,21 @@ package frontend;
 
 import java.util.*;
 
-class ACVisitor implements Visitor {
+/**
+ * Visitor used for alpha conversion (also checks scope)
+ */
+public class AlphaConverter implements Visitor {
 
-    public Hashtable<String, String> changes;
-    public static int varCount = 0;
-    public static int funCount = 0;
-    public static int argCount = 0;
+    private Hashtable<String, String> changes;
+    private static int varCount = 0;
+    private static int funCount = 0;
+    private static int argCount = 0;
 
-    public ACVisitor() {
+    public AlphaConverter() {
         changes = new Hashtable<String, String>();
     }
 
-    public ACVisitor(Hashtable<String, String> changes) {
+    public AlphaConverter(Hashtable<String, String> changes) {
         this.changes = changes;
     }
 
@@ -88,12 +91,12 @@ class ACVisitor implements Visitor {
     }
 
     public void visit(Let e) {
-        Hashtable<String, String> newChanges = (Hashtable<String, String>) changes.clone();
+        Hashtable<String, String> newChanges = new Hashtable<String, String>(changes);
         newChanges.put(e.id.id, "var" + varCount);
         e.id.id = "var" + varCount;
         varCount++;
-        ACVisitor v = new ACVisitor(newChanges);
-        e.e1.accept(v);
+        AlphaConverter v = new AlphaConverter(newChanges);
+        e.e1.accept(this);
         e.e2.accept(v);
     }
 
@@ -104,18 +107,18 @@ class ACVisitor implements Visitor {
     }
 
     public void visit(LetRec e) {
-        Hashtable<String, String> newChanges = (Hashtable<String, String>) changes.clone();
+        Hashtable<String, String> newChanges = new Hashtable<String, String>(changes);
         newChanges.put(e.fd.id.id, "fun" + funCount);
         e.fd.id.id = "fun" + funCount;
         funCount++;
-        Hashtable<String, String> newChangesFun = (Hashtable<String, String>) newChanges.clone();
+        Hashtable<String, String> newChangesFun = new Hashtable<String, String>(newChanges);
         for (Id arg : e.fd.args) {
             newChangesFun.put(arg.id, "arg" + argCount);
             arg.id = "arg" + argCount;
             argCount++;
         }
-        e.fd.e.accept(new ACVisitor(newChangesFun));
-        e.e.accept(new ACVisitor(newChanges));
+        e.fd.e.accept(new AlphaConverter(newChangesFun));
+        e.e.accept(new AlphaConverter(newChanges));
     }
 
     public void visit(App e) {
@@ -132,14 +135,14 @@ class ACVisitor implements Visitor {
     }
 
     public void visit(LetTuple e) {
-        Hashtable<String, String> newChanges = (Hashtable<String, String>) changes.clone();
+        Hashtable<String, String> newChanges = new Hashtable<String, String>(changes);
         for (Id v : e.ids) {
             newChanges.put(v.id, "var" + varCount);
             v.id = "var" + varCount;
             varCount++;
         }
         e.e1.accept(this);
-        e.e2.accept(new ACVisitor(newChanges));
+        e.e2.accept(new AlphaConverter(newChanges));
     }
 
     public void visit(Array e) {

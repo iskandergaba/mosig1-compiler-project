@@ -1,5 +1,3 @@
-let x = 
-   let y = 1 + 2 in y
-in let rec succ x = x + 1 
-in let rec double x = x + x 
-in print_int (succ (double x))
+let rec f x y z = (x,y,z) in
+let (x,y,z)=(f 1 2 3) in
+print_int x

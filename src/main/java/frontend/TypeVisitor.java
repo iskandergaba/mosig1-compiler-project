@@ -2,9 +2,14 @@ package frontend;
 
 import java.util.*;
 
-class TypeVisitor implements ObjVisitor<Type> {
+import common.type.Type;
 
-    public Hashtable<String, Type> env = new Hashtable<>();
+/**
+ * Visitor used for type checking
+ */
+public class TypeVisitor implements ObjVisitor<Type> {
+
+    private Hashtable<String, Type> env = new Hashtable<>();
 
     public TypeVisitor() {
         TFun t = new TFun();
@@ -191,6 +196,11 @@ class TypeVisitor implements ObjVisitor<Type> {
         Type res2 = e.e2.accept(this);
         if ((res1 != null && res2 != null && res1.getClass().getName().equals(res2.getClass().getName()))
                 || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK) {
+            if(res1 instanceof TAssumeOK){
+                e.t=res2;
+            } else {
+                e.t=res1;
+            }
             return new TBool();
         }
         throw new TypingException(
@@ -204,6 +214,11 @@ class TypeVisitor implements ObjVisitor<Type> {
         if (((res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK))
                 || ((res1 instanceof TFloat || res1 instanceof TAssumeOK)
                         && (res2 instanceof TFloat || res2 instanceof TAssumeOK))) {
+            if(res1 instanceof TAssumeOK){
+                e.t=res2;
+            } else {
+                e.t=res1;
+            }
             return new TBool();
         }
         throw new TypingException("In expression : " + e.accept(new StringVisitor()) + " :\nLE error : wrong type (has "
@@ -231,7 +246,7 @@ class TypeVisitor implements ObjVisitor<Type> {
     }
 
     public Type visit(Let e) throws Exception {
-        Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+        Hashtable<String, Type> env_ = new Hashtable<String, Type>(env);
         Type res1 = e.e1.accept(this);
         env = env_;
         env.put(e.id.id, res1);
@@ -242,7 +257,7 @@ class TypeVisitor implements ObjVisitor<Type> {
     public Type visit(Var e) throws Exception {
         Type res = env.get(e.id.id);
         if (res == null)
-            throw new TypingException("VAR error : " + e.id.id + " is undeclared in this scope");
+            throw new EnvironmentException("VAR error : " + e.id.id + " is undeclared in this scope");
         return res;
     }
 
@@ -276,7 +291,7 @@ class TypeVisitor implements ObjVisitor<Type> {
                 }
                 return ((TFun) res).extern_ret;
             }
-            //Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+            // Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
             int i = 0;
             if (e.es.size() != ((TFun) res).args.size())
                 throw new TypingException("In expression : " + e.accept(new StringVisitor())
@@ -299,7 +314,7 @@ class TypeVisitor implements ObjVisitor<Type> {
             } else {
                 res__ = new TAssumeOK();
             }
-            //env = env_;
+            // env = env_;
             return res__;
         }
         throw new TypingException(

@@ -109,6 +109,10 @@ public class Main {
       System.out.println();
       System.out.println("------ AST Generation DONE ------");
 
+      System.out.println("------ Scope checking ------");
+      expression.accept(new ScopeVisitor());
+      System.out.println("------ Scope checking DONE ------");
+
       System.out.println("------ Type checking ------");
       expression.accept(new TypeVisitor());
       System.out.println("------ Type checking DONE ------");
@@ -120,16 +124,32 @@ public class Main {
       System.out.println("------ K-Normalization DONE------");
 
       System.out.println("------ Alpha-Conversion ------");
-      expression.accept(new ACVisitor());
+      expression.accept(new AlphaConverter());
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Alpha-Conversion DONE ------");
 
-      System.out.println("------ Let-Reduction ------");
+      System.out.println("------ Nested Let-Reduction ------");
       expression = expression.accept(new LetReducer());
       expression.accept(new PrintVisitor());
       System.out.println();
-      System.out.println("------ Let-Reduction DONE ------");
+      System.out.println("------ Nested Let-Reduction DONE ------");
+
+      System.out.println("------ Beta-Reduction ------");
+      expression = expression.accept(new BetaReducer());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ Beta-Reduction DONE ------");
+
+      System.out.println("------ Constant folding ------");
+      expression = expression.accept(new ConstantFolder());
+      expression.accept(new PrintVisitor());
+      System.out.println("------ Constant folding DONE ------");
+
+      System.out.println("------ Elemenation of Unnecessary Definitions ------");
+      expression = expression.accept(new UnnecessaryDefRemover());
+      expression.accept(new PrintVisitor());
+      System.out.println("------ Elemenation of Unnecessary Definitions DONE ------");
 
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
@@ -137,14 +157,28 @@ public class Main {
       System.out.println("------ Free Variable Computation DONE ------");
 
       System.out.println("------ Closure Conversion ------");
-      CCVisitor v2 = new CCVisitor(v1);
+      ClosureConverter v2 = new ClosureConverter(v1);
       expression = expression.accept(v2);
       expression = v2.join(expression);
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Closure Conversion DONE ------");
+
+      System.out.println("------ ASML Generation ------");
+      AsmlGenerator v = new AsmlGenerator();
+      common.asml.Exp result = expression.accept(v);
+      result = v.join(result);
+      result.accept(new common.visitor.PrintVisitor());
+      System.out.println();
+      System.out.println("------ ASML Generation DONE ------");
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
+      e.printStackTrace();
+    } catch (EnvironmentException e) {
+      System.out.print("(SCOPE ERROR) ");
+      e.printStackTrace();
+    } catch (AsmlTranslationException e) {
+      System.out.print("(ASML GENERATION ERROR) ");
       e.printStackTrace();
     } catch (FileNotFoundException e) {
       System.out.println("Error: file not found: " + argv[0]);
@@ -152,6 +186,7 @@ public class Main {
       System.out.print("");
     } catch (Exception e) {
       System.out.println("Usage: ./mincamlc <options> <source files>");
+      e.printStackTrace();
       System.out.println("Compilation terminated");
     }
   }
