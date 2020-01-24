@@ -2,11 +2,12 @@ package frontend;
 
 import java.util.*;
 
+import common.type.Type;
+
 abstract class Exp {
 
-    Boolean retClosureFlag=false;
-    Boolean isClosureFlag=false;
-
+    Boolean retClosureFlag = false;
+    Boolean isClosureFlag = false;
 
     abstract void accept(Visitor v);
 
@@ -230,6 +231,7 @@ class FDiv extends Exp {
 class Eq extends Exp {
     final Exp e1;
     final Exp e2;
+    Type t;
 
     Eq(Exp e1, Exp e2) {
         this.e1 = e1;
@@ -248,6 +250,7 @@ class Eq extends Exp {
 class LE extends Exp {
     final Exp e1;
     final Exp e2;
+    Type t;
 
     LE(Exp e1, Exp e2) {
         this.e1 = e1;
@@ -348,7 +351,7 @@ class App extends Exp {
     final Exp e;
     final List<Exp> es;
 
-    boolean closureFlag=false;
+    boolean closureFlag = false;
 
     App(Exp e, List<Exp> es) {
         this.e = e;
@@ -464,7 +467,7 @@ class FunDef {
     final List<Id> args;
     final Exp e;
 
-    List<Id> free=null;
+    List<Id> free = null;
 
     FunDef(Id id, Type t, List<Id> args, Exp e) {
         this.id = id;

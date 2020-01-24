@@ -2,9 +2,14 @@ package frontend;
 
 import java.util.*;
 
-class TypeVisitor implements ObjVisitor<Type> {
+import common.type.Type;
 
-    public Hashtable<String, Type> env = new Hashtable<>();
+/**
+ * Visitor used for type checking
+ */
+public class TypeVisitor implements ObjVisitor<Type> {
+
+    private Hashtable<String, Type> env = new Hashtable<>();
 
     public TypeVisitor() {
         TFun t = new TFun();
@@ -13,6 +18,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t.extern_args.add(new TInt());
         t.extern_ret = new TUnit();
         env.put("print_int", t);
+        env.put("_min_caml_print_int", t);
 
         TFun t2 = new TFun();
         t2.extern = true;
@@ -20,6 +26,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t2.extern_args.add(new TUnit());
         t2.extern_ret = new TUnit();
         env.put("print_newline", t2);
+        env.put("_min_caml_print_newline", t2);
 
         TFun t3 = new TFun();
         t3.extern = true;
@@ -27,6 +34,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t3.extern_args.add(new TFloat());
         t3.extern_ret = new TInt();
         env.put("truncate", t3);
+        env.put("_min_caml_truncate", t3);
 
         TFun t4 = new TFun();
         t4.extern = true;
@@ -34,6 +42,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t4.extern_args.add(new TFloat());
         t4.extern_ret = new TInt();
         env.put("int_of_float", t4);
+        env.put("_min_caml_int_of_float", t4);
 
         TFun t5 = new TFun();
         t5.extern = true;
@@ -41,6 +50,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t5.extern_args.add(new TFloat());
         t5.extern_ret = new TFloat();
         env.put("sin", t5);
+        env.put("_min_caml_sin", t5);
 
         TFun t6 = new TFun();
         t6.extern = true;
@@ -48,6 +58,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t6.extern_args.add(new TFloat());
         t6.extern_ret = new TFloat();
         env.put("cos", t6);
+        env.put("_min_caml_cos", t6);
 
         TFun t7 = new TFun();
         t7.extern = true;
@@ -55,6 +66,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t7.extern_args.add(new TFloat());
         t7.extern_ret = new TFloat();
         env.put("sqrt", t7);
+        env.put("_min_caml_sqrt", t7);
 
         TFun t8 = new TFun();
         t8.extern = true;
@@ -62,6 +74,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t8.extern_args.add(new TFloat());
         t8.extern_ret = new TFloat();
         env.put("abs_float", t8);
+        env.put("_min_caml_abs_float", t8);
 
         TFun t9 = new TFun();
         t9.extern = true;
@@ -69,6 +82,7 @@ class TypeVisitor implements ObjVisitor<Type> {
         t9.extern_args.add(new TInt());
         t9.extern_ret = new TFloat();
         env.put("float_of_int", t9);
+        env.put("_min_caml_float_of_int", t9);
     }
 
     public Type visit(Unit e) {
@@ -191,6 +205,11 @@ class TypeVisitor implements ObjVisitor<Type> {
         Type res2 = e.e2.accept(this);
         if ((res1 != null && res2 != null && res1.getClass().getName().equals(res2.getClass().getName()))
                 || res1 instanceof TAssumeOK || res2 instanceof TAssumeOK) {
+            if (res1 instanceof TAssumeOK) {
+                e.t = res2;
+            } else {
+                e.t = res1;
+            }
             return new TBool();
         }
         throw new TypingException(
@@ -204,6 +223,11 @@ class TypeVisitor implements ObjVisitor<Type> {
         if (((res1 instanceof TInt || res1 instanceof TAssumeOK) && (res2 instanceof TInt || res2 instanceof TAssumeOK))
                 || ((res1 instanceof TFloat || res1 instanceof TAssumeOK)
                         && (res2 instanceof TFloat || res2 instanceof TAssumeOK))) {
+            if (res1 instanceof TAssumeOK) {
+                e.t = res2;
+            } else {
+                e.t = res1;
+            }
             return new TBool();
         }
         throw new TypingException("In expression : " + e.accept(new StringVisitor()) + " :\nLE error : wrong type (has "
@@ -231,8 +255,13 @@ class TypeVisitor implements ObjVisitor<Type> {
     }
 
     public Type visit(Let e) throws Exception {
-        Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+        Hashtable<String, Type> env_ = new Hashtable<String, Type>(env);
         Type res1 = e.e1.accept(this);
+        for(String key : env.keySet()){
+            if(env_.get(key)==null){
+                env_.put(key,env.get(key));
+            }
+        }
         env = env_;
         env.put(e.id.id, res1);
         Type res2 = e.e2.accept(this);
@@ -241,8 +270,10 @@ class TypeVisitor implements ObjVisitor<Type> {
 
     public Type visit(Var e) throws Exception {
         Type res = env.get(e.id.id);
-        if (res == null)
-            throw new TypingException("VAR error : " + e.id.id + " is undeclared in this scope");
+        if (res == null) {
+            System.out.println(env.keySet());
+            throw new EnvironmentException("VAR error : " + e.id.id + " is undeclared in this scope");
+        }
         return res;
     }
 
@@ -274,9 +305,12 @@ class TypeVisitor implements ObjVisitor<Type> {
                     }
                     i++;
                 }
+                if (e.e instanceof Var && ((Var) e.e).id.id.charAt(0) != '_') {
+                    ((Var) e.e).id.id = "_min_caml_" + ((Var) e.e).id.id;
+                }
                 return ((TFun) res).extern_ret;
             }
-            //Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
+            Hashtable<String, Type> env_ = (Hashtable<String, Type>) env.clone();
             int i = 0;
             if (e.es.size() != ((TFun) res).args.size())
                 throw new TypingException("In expression : " + e.accept(new StringVisitor())
@@ -299,7 +333,12 @@ class TypeVisitor implements ObjVisitor<Type> {
             } else {
                 res__ = new TAssumeOK();
             }
-            //env = env_;
+            for(String key : env.keySet()){
+                if(env_.get(key)==null){
+                    env_.put(key,env.get(key));
+                }
+            }
+            env = env_;
             return res__;
         }
         throw new TypingException(

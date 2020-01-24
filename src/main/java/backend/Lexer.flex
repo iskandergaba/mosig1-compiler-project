@@ -1,6 +1,10 @@
 package backend;
 
 import java_cup.runtime.*;
+import common.asml.*;
+import common.asml.Float;
+import common.visitor.*;
+import common.type.*;
 
 %%
 
@@ -108,6 +112,7 @@ comment =  "(*" [^*] ~"*)"
 "nop" { return symbol(sym.NOP); }
 "apply_closure" { return symbol(sym.APPCLO); }
 "_" { return symbol(sym.UNDERSC); }
+"%self" { return symbol(sym.SELF); }
 "_" ({digit}|{lower}|{upper}|"_")* { return symbol(sym.LABEL, new Label(yytext())); }
 {lower} ({digit}|{lower}|{upper}|"_")*   { return symbol(sym.IDENT, new Id(yytext())); }
 }

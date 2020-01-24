@@ -1,7 +1,11 @@
-package backend;
+package common.visitor;
+
+import common.asml.*;
+import common.asml.Float;
 
 /**
  * Provides an interface for visiting an AST and returning a value.
+ * 
  * @param <E> The return type when parsing an expression
  */
 public interface ObjVisitor<E> {
@@ -32,4 +36,5 @@ public interface ObjVisitor<E> {
     E visit(Let e);
     E visit(LetRec e);
     E visit(Float e);
+    E visit(Self e);
 }

@@ -1,5 +1,9 @@
 package backend;
 
+import common.asml.*;
+import common.asml.Float;
+import common.visitor.*;
+
 class PrintVisitor implements Visitor {
     @Override
     public void visit(Int e) {
@@ -225,5 +229,10 @@ class PrintVisitor implements Visitor {
             exp.accept(this);
             System.out.println("\n");
         }
+    }
+
+    @Override
+    public void visit(Self e) {
+        System.out.println("%self");
     }
 }

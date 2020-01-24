@@ -1,6 +1,8 @@
 package backend;
 
-import java.util.*;
+import common.asml.*;
+import common.asml.Float;
+import common.visitor.ObjVisitor;
 
 public class SizeVisitor implements ObjVisitor<Integer> {
 
@@ -100,7 +102,7 @@ public class SizeVisitor implements ObjVisitor<Integer> {
 
     @Override
     public Integer visit(LetRec e) {
-        return e.e.accept(this);
+        return e.fd.e.accept(this);
     }
 
     @Override
@@ -145,5 +147,10 @@ public class SizeVisitor implements ObjVisitor<Integer> {
             result += exp.accept(this);
         }
         return result;
+    }
+
+    @Override
+    public Integer visit(Self e) {
+        return 0;
     }
 }

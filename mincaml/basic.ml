@@ -1,5 +1,5 @@
-let x = 
-   let y = 1 + 2 in y
-in let rec succ x = x + 1 
-in let rec double x = x + x 
-in print_int (succ (double x))
+let rec compose f g =
+  let rec composed x = g+f in
+  composed in
+let h = compose 1 1 in
+print_int(h 1)

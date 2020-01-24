@@ -12,6 +12,7 @@ public class Instruction {
     private String label;
     private String comment;
     private boolean finalInstruction;
+    private Optional<Integer> argumentToReplace;
 
     private static final int instrSize = 6;
     private static final int argsSize = 24;
@@ -21,6 +22,7 @@ public class Instruction {
         this.label = null;
         this.comment = null;
         this.finalInstruction = false;
+        this.argumentToReplace = Optional.empty();
     }
 
     @Override
@@ -84,15 +86,29 @@ public class Instruction {
     }
 
     /**
-     * Replace the argument at position {@code arg}
-     * @param arg The argument number (begins at 0)
-     * @param value The new argument
-     * @return This instruction
+     * Replaces a placeholder argument with its real value
+     * @param value The replacement for the placeholder
+     * @return this instruction
      */
-    public Instruction replaceArgument(int arg, String value) {
-        if (this.args.size() > arg) {
-            this.args.set(arg, value);
+    public Instruction replaceArgument(String value) {
+        if (this.argumentToReplace.isPresent()) {
+            this.args.set(this.argumentToReplace.get(), value);
+            this.argumentToReplace = Optional.empty();
         }
+        return this;
+    }
+
+    public boolean hasPlaceholder() {
+        return this.argumentToReplace.isPresent();
+    }
+
+    /**
+     * Sets the position of the argument placeholder in the instruction
+     * @param instruction The position of the placeholder
+     * @return this instruction
+     */
+    public Instruction setArgumentToReplace(int instruction) {
+        this.argumentToReplace = Optional.of(instruction);
         return this;
     }
 

@@ -1,6 +1,9 @@
-package backend;
+package common.visitor;
 
-/** 
+import common.asml.*;
+import common.asml.Float;
+
+/**
  * Provides an interface for visiting an AST.
  */
 public interface Visitor {
@@ -31,4 +34,5 @@ public interface Visitor {
     void visit(Let e);
     void visit(LetRec e);
     void visit(Float e);
+    void visit(Self e);
 }
