@@ -1,12 +1,17 @@
 package frontend;
 
 import java.io.*;
+import java.util.Optional;
 
-public class Main {
-  static public void main(String argv[]) {
+public class Frontend {
+  public static String writer = null;
+
+  static public Optional<common.asml.Exp> execute(String argv[]) throws Exception {
     try {
-
       FileReader file = null;
+      boolean parseOnly = false;
+      boolean typeCheckOnly = false;
+      boolean asmlOnly = false;
 
       // Command Line Arguments
       if (argv.length == 0) {
@@ -54,11 +59,14 @@ public class Main {
           char c = argv[0].charAt(1);
           switch (c) {
           case 't':
+            typeCheckOnly = true;
             break;
           case 'p':
+            parseOnly = true;
             break;
           case 'a':
             // Output ASML
+            asmlOnly = true;
             break;
           case 'o':
             System.out.println("Error : No input files");
@@ -77,6 +85,7 @@ public class Main {
           switch (c) {
           case 'o':
             // Output to a specific file
+            Frontend.writer = argv[2];
             break;
           case 'h':
           case 'v':
@@ -92,6 +101,26 @@ public class Main {
         }
         // Check if 1st arg is a flag
         else if (argv[0].startsWith("-")) {
+          char c = argv[0].charAt(1);
+          switch (c) {
+          case 'o':
+            // Output to a specific file
+            Frontend.writer = argv[1];
+            break;
+          case 'h':
+          case 'v':
+          case 't':
+          case 'p':
+          case 'a':
+            System.out.println("Error : Too many arguments ");
+            throw new Exception();
+          default:
+            System.out.println("Error : Invalid flag: " + argv[0]);
+            throw new Exception();
+          }
+          file = new FileReader(argv[2]);
+        }
+        else if (argv[2].startsWith("-")) {
           System.out.println("Error : Too many arguments");
           throw new Exception();
         }
@@ -103,6 +132,10 @@ public class Main {
       Parser p = new Parser(new Lexer(file));
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
+
+      if (parseOnly) {
+        return Optional.empty();
+      }
 
       System.out.println("------ AST Generation ------");
       expression.accept(new PrintVisitor());
@@ -116,6 +149,10 @@ public class Main {
       System.out.println("------ Type checking ------");
       expression.accept(new TypeVisitor());
       System.out.println("------ Type checking DONE ------");
+
+      if (typeCheckOnly) {
+        return Optional.empty();
+      }
 
       System.out.println("------ K-Normalization ------");
       expression = expression.accept(new KNormalizer());
@@ -171,6 +208,13 @@ public class Main {
       result.accept(new common.visitor.PrintVisitor());
       System.out.println();
       System.out.println("------ ASML Generation DONE ------");
+
+      if (asmlOnly) {
+        result.accept(new common.visitor.PrintVisitor(new PrintStream(Frontend.writer)));
+        return Optional.empty();
+      }
+      return Optional.of(result);
+
     } catch (TypingException e) {
       System.out.print("(TYPING ERROR) ");
       e.printStackTrace();
@@ -189,5 +233,6 @@ public class Main {
       e.printStackTrace();
       System.out.println("Compilation terminated");
     }
+    return null;
   }
 }

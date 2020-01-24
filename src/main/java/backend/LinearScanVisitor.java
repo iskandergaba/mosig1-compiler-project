@@ -46,17 +46,19 @@ class LinearScanVisitor implements Visitor {
     }
 
     void updateInterval(String vname) {
-        if (registers.get(fullPath(vname)) == null)
-            this.intervalsMap.get(fullPath(vname)).update(this.position);
+        if (locations.get(fullPath(vname)) == null)
+            if (this.intervalsMap.get(fullPath(vname)) != null) {
+                this.intervalsMap.get(fullPath(vname)).update(this.position);
+            }
     }
 
     void addParams(List<Id> params) {
         int i = 0;
         for (Id id: params) {
             if (i >= this.regStart) {
-                this.registers.put(fullPath(id.id), -1);
+                this.locations.put(fullPath(id.id), -1);
             } else {
-                this.registers.put(fullPath(id.id), i);
+                this.locations.put(fullPath(id.id), (i + 1) * 4);
             }
             i++;
         }
@@ -508,7 +510,7 @@ class LinearScanVisitor implements Visitor {
         }
         System.out.print(" =\n");
         // updatePosition();
-        e.e.accept(this);
+        e.fd.e.accept(this);
         System.out.print("");
         endBlock();
     }

@@ -350,7 +350,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         factory.setLabel(functionLabel);
 
         InstructionBlock result = prologue(size)
-            .chain(e.e.accept(this)).setReturn("r0")
+            .chain(e.fd.e.accept(this)).setReturn("r0")
             .chain(epilogue())
             .add(factory.instr("BX", "lr")).comment("Return");
 

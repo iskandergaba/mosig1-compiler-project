@@ -102,7 +102,7 @@ public class SizeVisitor implements ObjVisitor<Integer> {
 
     @Override
     public Integer visit(LetRec e) {
-        return e.e.accept(this);
+        return e.fd.e.accept(this);
     }
 
     @Override

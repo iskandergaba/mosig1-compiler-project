@@ -1,223 +1,235 @@
 package common.visitor;
 
+import java.io.PrintStream;
+
 import common.asml.*;
 import common.asml.Float;
 
 public class PrintVisitor implements Visitor {
+    PrintStream stream;
+
+    public PrintVisitor() {
+        this.stream = System.out;
+    }
+
+    public PrintVisitor(PrintStream s) {
+        this.stream = s;
+    }
+
     @Override
     public void visit(Int e) {
-        System.out.print(e.i);
+        stream.print(e.i);
     }
 
     @Override
     public void visit(Float e) {
-        System.out.print("let " + e.l.label + " = " + String.format("%.2f", e.f));
+        stream.print("let " + e.l.label + " = " + String.format("%.2f", e.f));
     }
 
     @Override
     public void visit(Neg e) {
-        System.out.print("(neg ");
-        System.out.print(e.id);
-        System.out.print(")");
+        stream.print("(neg ");
+        stream.print(e.id);
+        stream.print(")");
     }
 
     @Override
     public void visit(Add e) {
-        System.out.print("(add ");
-        System.out.print(e.id);
-        System.out.print(" ");
+        stream.print("(add ");
+        stream.print(e.id);
+        stream.print(" ");
         e.e.accept(this);
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(Sub e) {
-        System.out.print("(sub ");
-        System.out.print(e.id);
-        System.out.print(" ");
+        stream.print("(sub ");
+        stream.print(e.id);
+        stream.print(" ");
         e.e.accept(this);
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(FNeg e) {
-        System.out.print("(fneg ");
-        System.out.print(e.id);
-        System.out.print(")");
+        stream.print("(fneg ");
+        stream.print(e.id);
+        stream.print(")");
     }
 
     @Override
     public void visit(FAdd e) {
-        System.out.print("(fadd ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        stream.print("(fadd ");
+        stream.print(e.id1);
+        stream.print(" ");
+        stream.print(e.id2);
+        stream.print(")");
     }
 
     @Override
     public void visit(FSub e) {
-        System.out.print("(fsub ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        stream.print("(fsub ");
+        stream.print(e.id1);
+        stream.print(" ");
+        stream.print(e.id2);
+        stream.print(")");
     }
 
     @Override
     public void visit(FMul e) {
-        System.out.print("(fmul ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        stream.print("(fmul ");
+        stream.print(e.id1);
+        stream.print(" ");
+        stream.print(e.id2);
+        stream.print(")");
     }
 
     @Override
     public void visit(FDiv e) {
-        System.out.print("(fdiv ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        stream.print("(fdiv ");
+        stream.print(e.id1);
+        stream.print(" ");
+        stream.print(e.id2);
+        stream.print(")");
     }
 
     @Override
     public void visit(Eq e) {
-        System.out.print("(");
-        System.out.print(e.id);
-        System.out.print(" = ");
+        stream.print("(");
+        stream.print(e.id);
+        stream.print(" = ");
         e.e.accept(this);
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(LE e) {
-        System.out.print("(");
-        System.out.print(e.id);
-        System.out.print(" <= ");
+        stream.print("(");
+        stream.print(e.id);
+        stream.print(" <= ");
         e.e.accept(this);
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(GE e) {
-        System.out.print("(");
-        System.out.print(e.id);
-        System.out.print(" >= ");
+        stream.print("(");
+        stream.print(e.id);
+        stream.print(" >= ");
         e.e.accept(this);
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(FEq e) {
-        System.out.print("(");
-        System.out.print(e.id1);
-        System.out.print(" =. ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        stream.print("(");
+        stream.print(e.id1);
+        stream.print(" =. ");
+        stream.print(e.id2);
+        stream.print(")");
     }
 
     @Override
     public void visit(FLE e) {
-        System.out.print("(");
-        System.out.print(e.id1);
-        System.out.print(" <= ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        stream.print("(");
+        stream.print(e.id1);
+        stream.print(" <= ");
+        stream.print(e.id2);
+        stream.print(")");
     }
 
     @Override
     public void visit(If e) {
-        System.out.print("if ");
+        stream.print("if ");
         e.cond.accept(this);
-        System.out.print(" then\n");
+        stream.print(" then\n");
         e.e1.accept(this);
-        System.out.print(" else\n");
+        stream.print(" else\n");
         e.e2.accept(this);
     }
 
     @Override
     public void visit(Let e) {
-        System.out.print("let ");
-        System.out.print(e.id);
-        System.out.print(" = ");
+        stream.print("let ");
+        stream.print(e.id);
+        stream.print(" = ");
         e.e1.accept(this);
-        System.out.print(" in\n");
+        stream.print(" in\n");
         e.e2.accept(this);
-        System.out.print("");
+        stream.print("");
     }
 
     @Override
     public void visit(Var e) {
-        System.out.print(e.id);
+        stream.print(e.id);
     }
 
     @Override
     public void visit(LetRec e) {
-        System.out.print("let ");
-        System.out.print(e.fd.fun.l);
+        stream.print("let ");
+        stream.print(e.fd.fun.l);
         for (Id id : e.fd.args) {
-            System.out.print(" ");
-            System.out.print(id);
+            stream.print(" ");
+            stream.print(id);
         }
-        System.out.print(" =\n");
+        stream.print(" =\n");
         e.fd.e.accept(this);
     }
 
     @Override
     public void visit(Call e) {
-        System.out.print("(");
-        System.out.print(e.f);
+        stream.print("(");
+        stream.print(e.f);
         for (Id id : e.args) {
-            System.out.print(" ");
-            System.out.print(id);
+            stream.print(" ");
+            stream.print(id);
         }
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(New e) {
-        System.out.print("new ");
+        stream.print("new ");
         e.size.accept(this);
     }
 
     @Override
     public void visit(Get e) {
-        System.out.print("mem (");
+        stream.print("mem (");
         e.base.accept(this);
-        System.out.print(" + ");
+        stream.print(" + ");
         e.offset.accept(this);
-        System.out.print(")");
+        stream.print(")");
     }
 
     @Override
     public void visit(Put e) {
-        System.out.print("mem (");
+        stream.print("mem (");
         e.base.accept(this);
-        System.out.print(" + ");
+        stream.print(" + ");
         e.offset.accept(this);
-        System.out.print(") <- ");
-        System.out.print(e.dest);
+        stream.print(") <- ");
+        stream.print(e.dest);
     }
 
     @Override
     public void visit(Nop e) {
-        System.out.print("nop");
+        stream.print("nop");
     }
 
     @Override
     public void visit(Fun e) {
-        System.out.print(e.l);
+        stream.print(e.l);
     }
 
     @Override
     public void visit(AppClosure e) {
-        System.out.print("appclo ");
-        System.out.print(e.id);
+        stream.print("appclo ");
+        stream.print(e.id);
         for (Id id : e.args) {
-            System.out.print(" ");
-            System.out.print(id);
+            stream.print(" ");
+            stream.print(id);
         }
     }
 
@@ -225,12 +237,12 @@ public class PrintVisitor implements Visitor {
     public void visit(FunDefs e) {
         for (Exp exp : e.funs) {
             exp.accept(this);
-            System.out.println("\n");
+            stream.println("\n");
         }
     }
 
     @Override
     public void visit(Self e) {
-        System.out.print("%self");
+        stream.print("%self");
     }
  }
