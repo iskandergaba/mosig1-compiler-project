@@ -108,6 +108,7 @@ comment =  "(*" [^*] ~"*)"
 "nop" { return symbol(sym.NOP); }
 "apply_closure" { return symbol(sym.APPCLO); }
 "_" { return symbol(sym.UNDERSC); }
+"%self" { return symbol(sym.SELF); }
 "_" ({digit}|{lower}|{upper}|"_")* { return symbol(sym.LABEL, new Label(yytext())); }
 {lower} ({digit}|{lower}|{upper}|"_")*   { return symbol(sym.IDENT, new Id(yytext())); }
 }

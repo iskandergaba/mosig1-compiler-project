@@ -107,12 +107,14 @@ public class InstructionBlock {
      * @return The updated block
      */
     public InstructionBlock useRegister(int register) {
-        this.usedRegisters.add(register);
+        if (!this.usedRegisters.contains(register)) {
+            this.usedRegisters.add(register);
+        }
         return this;
     }
 
     /**
-     * Replaces the first argument of the last instruction,
+     * Replaces the first argument of the last instruction with a placeholder,
      * essentially used for specifying the register in which
      * to move the result of the sub-expression, which cannot be
      * known at the time of the parsing of the sub-expression.
@@ -120,7 +122,11 @@ public class InstructionBlock {
      * @return The updated block
      */
     public InstructionBlock setReturn(String register) {
-        lastInstruction().replaceArgument(0, register);
+        instructions.forEach(i -> {
+            if (i.hasPlaceholder()) {
+                i.replaceArgument(register);
+            }
+        });
         return this;
     }
 
@@ -131,6 +137,11 @@ public class InstructionBlock {
      */
     public InstructionBlock setFunctionLabel(String label) {
         this.lastFunctionLabel = label;
+        return this;
+    }
+
+    public InstructionBlock reverse() {
+        Collections.reverse(instructions);
         return this;
     }
 
