@@ -59,10 +59,10 @@ public class ConstantFolder implements ObjVisitor<Exp> {
             if (res2 instanceof Int) {
                 return new Int(((Int) res1).i - ((Int) res2).i);
             } else {
-                return new Add(res2, res1);
+                return new Sub(res2, res1);
             }
         } else if (res2 instanceof Int) {
-            return new Add(res1, res2);
+            return new Sub(res1, res2);
         } else {
             return e;
         }
