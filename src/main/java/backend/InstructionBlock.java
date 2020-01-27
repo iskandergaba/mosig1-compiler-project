@@ -15,10 +15,14 @@ public class InstructionBlock {
     // Label of the last function defined in the program
     public String lastFunctionLabel;
 
+    public boolean varInRegister;
+    public String storedLabel;
+
     public InstructionBlock() {
         this.instructions = new ArrayList<Instruction>();
         this.usedRegisters = new ArrayList<Integer>();
         this.lastFunctionLabel = "";
+        this.varInRegister = false;
     }
 
     public InstructionBlock(Instruction instr) {
@@ -66,6 +70,9 @@ public class InstructionBlock {
     public InstructionBlock chain(InstructionBlock block) {
         this.instructions.addAll(block.instructions);
         this.lastFunctionLabel = block.lastFunctionLabel;
+        this.varInRegister = block.varInRegister;
+        this.usedRegisters = block.usedRegisters;
+        this.storedLabel = block.storedLabel;
         return this;
     }
 
@@ -130,6 +137,15 @@ public class InstructionBlock {
         return this;
     }
 
+    public InstructionBlock replaceLabels(String toReplace, String newLabel) {
+        for (Instruction i: instructions) {
+            if (i.args.get(0) == toReplace && i.args.get(0) != storedLabel) {
+                i.args.set(0, newLabel);
+            }
+        }
+        return this;
+    }
+
     /**
      * Sets the label of the last defined function of the block
      * @param label The label of the last function block
@@ -143,6 +159,10 @@ public class InstructionBlock {
     public InstructionBlock reverse() {
         Collections.reverse(instructions);
         return this;
+    }
+
+    public int instructionCount() {
+        return this.instructions.size();
     }
 
     /**

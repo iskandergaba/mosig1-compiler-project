@@ -274,14 +274,28 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         
         factory.setLabel(labelElse);
         InstructionBlock elseBlock = e.e2.accept(this);
+        if (elseBlock.storedLabel == null) {
+            elseBlock.storedLabel = labelElse;
+        }
 
-
-        factory.setLabel(labelEnd);
-
-        return condition
+        
+        InstructionBlock result = condition
             .chain(thenBlock)
             .add(branchToEnd)
             .chain(elseBlock);
+        
+        if (elseBlock.varInRegister && elseBlock.instructionCount() == 0) {
+            factory.setLabelForce(labelEnd);
+        } else {
+            String maybeNewerLabel = factory.setLabel(labelEnd);
+                     
+            if (maybeNewerLabel != null) {
+                result.replaceLabels(labelEnd, maybeNewerLabel);
+            }
+        }
+
+        
+        return result;
     }
 
     @Override
@@ -332,6 +346,10 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
         
+        if (registerBlock.instructionCount() == 0) {
+            registerBlock.varInRegister = true;
+        }
+
         return registerBlock
             .useRegister(reg);
     }
@@ -349,9 +367,19 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         factory.setLabel(functionLabel);
 
-        InstructionBlock result = prologue(size)
-            .chain(e.fd.e.accept(this)).setReturn("r0")
-            .chain(epilogue())
+        InstructionBlock prologue = prologue(size);
+        InstructionBlock body = e.fd.e.accept(this);
+        InstructionBlock epilogue = epilogue();
+
+        if (body.varInRegister && body.storedLabel != null) {
+            factory.setLabel(body.storedLabel);
+            body.storedLabel = null;
+            body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
+        }
+
+        InstructionBlock result = prologue
+            .chain(body).setReturn("r0")
+            .chain(epilogue)
             .add(factory.instr("BX", "lr")).comment("Return");
 
         return result.setFunctionLabel(functionLabel);
