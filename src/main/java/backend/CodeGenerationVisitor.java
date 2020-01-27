@@ -274,7 +274,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         
         factory.setLabel(labelElse);
         InstructionBlock elseBlock = e.e2.accept(this);
-        if (elseBlock.storedLabel == null) {
+        if (elseBlock.storedLabel == null && elseBlock.instructionCount() == 0) {
             elseBlock.storedLabel = labelElse;
         }
 
