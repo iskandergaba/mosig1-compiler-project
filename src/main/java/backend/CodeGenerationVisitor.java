@@ -109,16 +109,16 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     private InstructionBlock prologue(int size) {
         return new InstructionBlock()
-            .add(factory.instr("MOV", "ip", "sp"))
-            .add(factory.instr("PUSH", "{fp, ip, lr, pc}"))
-            .add(factory.instr("MOV", "fp", "ip"))
-            .add(factory.instr("ADD", "sp", "ip", "#-" + (4 * size)))
+            .add(factory.instr("PUSH", "{r4-r11, lr}"))
+            .add(factory.instr("ADD", "r11", "sp", "#0"))
+            .add(factory.instr("SUB", "sp", "sp", "#" + (4 * size)))
             .commentFirst("Function " + currentFunction);
     }
 
     private InstructionBlock epilogue() {
         return new InstructionBlock()
-            .add(factory.instr("LDM", "sp", "{fp, sp, lr}"));
+            .add(factory.instr("SUB", "sp", "r11", "#0"))
+            .add(factory.instr("POP", "{r4-r11, lr}"));
     }
 
     // Used for generating arithmetic operations like ADD, SUB, ...
@@ -375,6 +375,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             factory.setLabel(body.storedLabel);
             body.storedLabel = null;
             body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
+        } else if (body.varInRegister) {
+            body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
         }
 
         InstructionBlock result = prologue
@@ -424,9 +426,11 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         return result
             .chain(pushArguments)
+            .add(factory.instr("SUB", "sp", "sp", "#4")).comment("Placeholder for closure info")
             .add(factory.instr("BL", functionLabel)).comment("call " + e.f.label)
-            .chain(popArguments)
-            .add(factory.instr("MOV", "$", "r0"));
+            .add(factory.instr("MOV", "$", "r0"))
+            .add(factory.instr("ADD", "sp", "sp", "#4"))
+            .chain(popArguments);
     }
 
     @Override
@@ -520,9 +524,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int oldValueRegister = oldValueRegisterBlock.getUsedRegisters().get(0);
 
         base.chain(offset)
-            .add(factory.instr("ADD", "r"+baseRegister, "r"+baseRegister, "r"+offsetRegister))
             .add(factory.instr("LDR", "r"+oldValueRegister, "[r"+baseRegister+"]"))
-            .add(factory.instr("STR", "r"+valueRegister, "[r"+baseRegister+"]"))
+            .add(factory.instr("STR", "r"+valueRegister, "[r"+baseRegister+", r" + offsetRegister + "]"))
             .add(factory.instr("MOV", "$", "r"+oldValueRegister));
 
         InstructionBlock freeOffsetRegister = freeRegister(offsetRegister);
@@ -591,7 +594,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock freeClosureArray = freeRegister(closureArrayRegister);
         InstructionBlock freeClosureAddr = freeRegister(closureAddrRegister);
         
-        argumentRegisterList.add("r" + closureArrayRegister);
+        //argumentRegisterList.add("r" + closureArrayRegister);
 
         String argumentRegisters = argumentRegisterList
         .stream()
@@ -604,7 +607,10 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .chain(closureArrayRegBlock)
             .chain(closureAddr)
             .chain(pushArguments)
-            .add(factory.instr("BX", "r" + closureAddrRegister)).comment("Apply closure")
+            .add(factory.instr("PUSH", "{r" + closureArrayRegister + "}")).comment("Closure info")
+            .add(factory.instr("BLX", "r" + closureAddrRegister)).comment("Apply closure")
+            .add(factory.instr("MOV", "$", "r0"))
+            .add(factory.instr("POP", "{r" + closureArrayRegister + "}"))
             .chain(popArguments)
             .chain(freeClosureArray)
             .chain(freeClosureAddr);
@@ -625,7 +631,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int reg = regBlock.getUsedRegisters().get(0);
 
         return new InstructionBlock()
-            .add(factory.instr("LDR", "r" + reg, "[fp, #20]"))
+            .add(factory.instr("LDR", "r" + reg, "[fp, #36]"))
             .useRegister(reg);
     }
 }
