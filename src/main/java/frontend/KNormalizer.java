@@ -133,7 +133,7 @@ class KNormalizer implements ObjVisitor<Exp> {
             Var v1 = Var.gen();
             Var v2 = Var.gen();
             Eq bExp = new Eq(v1, v2);
-            bExp.t=e.t;
+            bExp.t = e.t;
             Let letExp = new Let(v2.id, Type.gen(), e.e2, bExp);
             Exp e1 = e.e1.accept(this);
             Exp e2 = letExp.accept(this);
@@ -147,7 +147,7 @@ class KNormalizer implements ObjVisitor<Exp> {
             Var v1 = Var.gen();
             Var v2 = Var.gen();
             LE bExp = new LE(v1, v2);
-            bExp.t=e.t;
+            bExp.t = e.t;
             Let letExp = new Let(v2.id, Type.gen(), e.e2, bExp);
             Exp e1 = e.e1.accept(this);
             Exp e2 = letExp.accept(this);
@@ -157,8 +157,12 @@ class KNormalizer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(If e) throws Exception {
-        if (e.e1 instanceof Eq) {
-            Eq eq = (Eq) e.e1;
+        Exp cond = e.e1;
+        while (cond instanceof Not && ((Not) cond).e instanceof Not) {
+            cond = ((Not) ((Not) cond).e).e;
+        }
+        if (cond instanceof Eq) {
+            Eq eq = (Eq) cond;
             Var vx = Var.gen();
             Var vy = Var.gen();
             Exp eq_ = new Eq(vx, vy);
@@ -166,8 +170,8 @@ class KNormalizer implements ObjVisitor<Exp> {
             Let y = new Let(vy.id, Type.gen(), eq.e2.accept(this), if_);
             Let x = new Let(vx.id, Type.gen(), eq.e1.accept(this), y);
             return x;
-        } else if (e.e1 instanceof LE) {
-            LE le = (LE) e.e1;
+        } else if (cond instanceof LE) {
+            LE le = (LE) cond;
             Var vx = Var.gen();
             Var vy = Var.gen();
             Exp le_ = new LE(vx, vy);
@@ -176,12 +180,29 @@ class KNormalizer implements ObjVisitor<Exp> {
             Let x = new Let(vx.id, Type.gen(), le.e1.accept(this), y);
             return x;
         }
-        Not not = (Not) e.e1;
-        Var v = Var.gen();
-        Not not_ = new Not(v);
-        If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
-        Exp exp = new Let(v.id, Type.gen(), not.e.accept(this), if_);
-        return exp;
+        Not not = (Not) cond;
+        if (not.e instanceof Eq) {
+            Eq eq = (Eq) not.e;
+            Var vx = Var.gen();
+            Var vy = Var.gen();
+            Exp eq_ = new Eq(vx, vy);
+            Exp not_ = new Not(eq_);
+            If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
+            Let y = new Let(vy.id, Type.gen(), eq.e2.accept(this), if_);
+            Let x = new Let(vx.id, Type.gen(), eq.e1.accept(this), y);
+            return x;
+        } else if (not.e instanceof LE) {
+            LE le = (LE) not.e;
+            Var vx = Var.gen();
+            Var vy = Var.gen();
+            Exp le_ = new LE(vx, vy);
+            Not not_ = new Not(le_);
+            If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
+            Let y = new Let(vy.id, Type.gen(), le.e2.accept(this), if_);
+            Let x = new Let(vx.id, Type.gen(), le.e1.accept(this), y);
+            return x;
+        }
+        throw new Exception("invalid expression in if condition");
     }
 
     public Exp visit(Let e) throws Exception {
@@ -223,8 +244,8 @@ class KNormalizer implements ObjVisitor<Exp> {
             for (int i = e.es.size() - 1; i >= 0; i--) {
                 exp = new Let(((Var) (vars.get(i))).id, Type.gen(), e.es.get(i).accept(this), exp);
             }
-            Var v=Var.gen();
-            Let l=new Let(v.id,Type.gen(),exp,v);
+            Var v = Var.gen();
+            Let l = new Let(v.id, Type.gen(), exp, v);
             return l;
         }
         return e;
