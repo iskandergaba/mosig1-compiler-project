@@ -164,12 +164,13 @@ public class ClosureConverter implements ObjVisitor<Exp> {
 
     public Exp visit(LetRec e) throws Exception {
         String oldFun = currentFun;
-        String clos=e.fd.id.id+"_self_clos";
+        String clos = e.fd.id.id + "_self_clos";
         currentFun = e.fd.id.id;
         if (free.get(e.fd.id.id).size() == 0) {
             // directFuns.add(e.fd.id.id);
         }
         isClosure.add(clos);
+        isClosure.add(e.fd.id.id);
         Exp res1 = e.fd.e.accept(this);
         currentFun = oldFun;
         if (res1.isClosureFlag || res1.retClosureFlag) {
@@ -177,7 +178,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         }
         Id label = Id.gen();
         label.id = "_" + e.fd.id.id;
-        List<Id> args_=e.fd.args;
+        List<Id> args_ = e.fd.args;
         args_.add(new Id(clos));
         FunDef fun = new FunDef(label, e.fd.type, args_, res1);
         fun.free = free.get(e.fd.id.id);
@@ -186,6 +187,9 @@ public class ClosureConverter implements ObjVisitor<Exp> {
             List<Exp> args = new ArrayList<>();
             args.add(new Var(fun.id));
             for (Id id : fun.free) {
+                if (id.id.equals(currentFun)) {
+                    id.id += "_self_clos";
+                }
                 args.add(new Var(id));
             }
             App app = new App(mk_closure, args);
@@ -205,8 +209,8 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         for (Exp exp : e.es) {
             args.add(exp.accept(this));
         }
-        if(e.e instanceof Var && ((Var)e.e).id.id.equals(currentFun)){
-            ((Var)e.e).id.id=((Var)e.e).id.id+"_self_clos";
+        if (e.e instanceof Var && ((Var) e.e).id.id.equals(currentFun)) {
+            ((Var) e.e).id.id = ((Var) e.e).id.id + "_self_clos";
         }
         Exp exp = e.e.accept(this);
         args.add(0, exp);
@@ -255,8 +259,8 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
         Array a = new Array(res1, res2);
-        a.isClosureFlag=res2.isClosureFlag;
-        a.retClosureFlag=res2.retClosureFlag;
+        a.isClosureFlag = res2.isClosureFlag;
+        a.retClosureFlag = res2.retClosureFlag;
         return a;
     }
 
@@ -266,11 +270,11 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
         Get g = new Get(res1, res2);
-        if(res1 instanceof Var && isClosure.contains(((Var)res1).id.id)){
-            g.isClosureFlag=true;
+        if (res1 instanceof Var && isClosure.contains(((Var) res1).id.id)) {
+            g.isClosureFlag = true;
         }
-        if(res1 instanceof Var && retClosure.contains(((Var)res1).id.id)){
-            g.retClosureFlag=true;
+        if (res1 instanceof Var && retClosure.contains(((Var) res1).id.id)) {
+            g.retClosureFlag = true;
         }
         return g;
     }
