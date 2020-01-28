@@ -553,12 +553,13 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(Fun e) {
+        
+        /*
         InstructionBlock regBlock = getTemporaryRegister();
         int reg = regBlock.getUsedRegisters().get(0);
-
+        */
         return new InstructionBlock()
-            .add(factory.instr("LDR", "r" + reg, "=" + functionLabels.get(e.l.label)))
-            .useRegister(reg);
+            .add(factory.instr("LDR", "$", "=" + functionLabels.get(e.l.label)));
     }
 
     @Override
@@ -614,7 +615,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("PUSH", "{r" + closureArrayRegister + "}")).comment("Closure info")
             .add(factory.instr("BLX", "r" + closureAddrRegister)).comment("Apply closure")
             .add(factory.instr("MOV", "$", "r0"))
-            .add(factory.instr("POP", "{r" + closureArrayRegister + "}"))
+            .add(factory.instr("ADD", "sp", "sp", "#4"))
             .chain(popArguments)
             .chain(freeClosureArray)
             .chain(freeClosureAddr);
