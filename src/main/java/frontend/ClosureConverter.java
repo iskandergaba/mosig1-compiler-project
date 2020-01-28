@@ -159,7 +159,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
 
     public Exp visit(LetRec e) throws Exception {
         if (free.get(e.fd.id.id).size() == 0) {
-            directFuns.add(e.fd.id.id);
+            //directFuns.add(e.fd.id.id);
         }
         Exp res1 = e.fd.e.accept(this);
         if (res1.isClosureFlag || res1.retClosureFlag) {
@@ -170,7 +170,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         FunDef fun = new FunDef(label, e.fd.type, e.fd.args, res1);
         fun.free = free.get(e.fd.id.id);
         funs.add(fun);
-        if (fun.free.size() > 0) {
+        if (/*fun.free.size() > 0*/true) { //temporary : closures for every function call
             List<Exp> args = new ArrayList<>();
             args.add(new Var(fun.id));
             for (Id id : fun.free) {
