@@ -245,12 +245,12 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(LE e) {
-        return conditionOperation("BGE", e.id, e.e);
+        return conditionOperation("BGT", e.id, e.e);
     }
 
     @Override
     public InstructionBlock visit(GE e) {
-        return conditionOperation("BLE", e.id, e.e);
+        return conditionOperation("BLT", e.id, e.e);
     }
 
     @Override
