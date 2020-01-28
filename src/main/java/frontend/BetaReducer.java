@@ -89,7 +89,7 @@ class BetaReducer implements ObjVisitor<Exp> {
 
     public Exp visit(Let e) throws Exception {
         Exp e1 = e.e1.accept(this);
-        if (e1 instanceof Var && !((Var) (e.e1)).id.id.startsWith("fun")) {
+        if (e1 instanceof Var) {
             Var v = (Var) e.e1;
             Map<String, String> subs = new HashMap<>(substitutions);
             if (substitutions.containsKey(v.id.id)) {
@@ -97,7 +97,10 @@ class BetaReducer implements ObjVisitor<Exp> {
             } else {
                 subs.put(e.id.id, v.id.id);
             }
-            return e.e2.accept(new BetaReducer(subs));
+            if (!((Var) (e.e1)).id.id.startsWith("fun"))
+                return e.e2.accept(new BetaReducer(subs));
+            else
+                return new Let(e.id, Type.gen(), e.e1, e.e2.accept(new BetaReducer(subs)));
         }
         return new Let(e.id, Type.gen(), e.e1.accept(this), e.e2.accept(this));
     }
@@ -117,7 +120,12 @@ class BetaReducer implements ObjVisitor<Exp> {
     public Exp visit(App e) throws Exception {
         List<Exp> es = new ArrayList<>();
         for (Exp exp : e.es) {
-            es.add(exp.accept(this));
+            Exp arg = exp.accept(this);
+            if (arg instanceof Var && ((Var) arg).id.id.startsWith("fun")) {
+                es.add(exp);
+            } else {
+                es.add(arg);
+            }
         }
         return new App(e.e.accept(this), es);
     }
@@ -125,7 +133,12 @@ class BetaReducer implements ObjVisitor<Exp> {
     public Exp visit(Tuple e) throws Exception {
         List<Exp> es = new ArrayList<>();
         for (Exp exp : e.es) {
-            es.add(exp.accept(this));
+            Exp arg = exp.accept(this);
+            if (arg instanceof Var && ((Var) arg).id.id.startsWith("fun")) {
+                es.add(exp);
+            } else {
+                es.add(arg);
+            }
         }
         return new Tuple(es);
     }
@@ -135,6 +148,10 @@ class BetaReducer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Array e) throws Exception {
+        Exp init = e.e2.accept(this);
+        if (init instanceof Var && ((Var) init).id.id.startsWith("fun")) {
+            return new Array(e.e1.accept(this), e.e2);
+        }
         return new Array(e.e1.accept(this), e.e2.accept(this));
     }
 

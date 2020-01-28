@@ -221,6 +221,9 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
     }
 
     public common.asml.Exp visit(Var e) {
+        if(e.id.id.startsWith("_")) {
+            return new common.asml.Fun(new common.asml.Label(e.id.id));
+        }
         return new common.asml.Var(new common.asml.Id(e.id.id));
     }
 
