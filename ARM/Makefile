@@ -12,7 +12,7 @@ echo:
 	echo ${ASM}
 	echo ${PRG}
 
-%.o : %.s libmincaml.S
+%.o : %.s libmincaml.S libarray.S
 	${AS} -o $@ $^
 
 %.arm : %.o
