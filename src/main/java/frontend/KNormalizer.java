@@ -165,7 +165,8 @@ class KNormalizer implements ObjVisitor<Exp> {
             Eq eq = (Eq) cond;
             Var vx = Var.gen();
             Var vy = Var.gen();
-            Exp eq_ = new Eq(vx, vy);
+            Eq eq_ = new Eq(vx, vy);
+            eq_.t = eq.t;
             If if_ = new If(eq_, e.e2.accept(this), e.e3.accept(this));
             Let y = new Let(vy.id, Type.gen(), eq.e2.accept(this), if_);
             Let x = new Let(vx.id, Type.gen(), eq.e1.accept(this), y);
@@ -174,7 +175,8 @@ class KNormalizer implements ObjVisitor<Exp> {
             LE le = (LE) cond;
             Var vx = Var.gen();
             Var vy = Var.gen();
-            Exp le_ = new LE(vx, vy);
+            LE le_ = new LE(vx, vy);
+            le_.t = le.t;
             If if_ = new If(le_, e.e2.accept(this), e.e3.accept(this));
             Let y = new Let(vy.id, Type.gen(), le.e2.accept(this), if_);
             Let x = new Let(vx.id, Type.gen(), le.e1.accept(this), y);
@@ -185,7 +187,8 @@ class KNormalizer implements ObjVisitor<Exp> {
             Eq eq = (Eq) not.e;
             Var vx = Var.gen();
             Var vy = Var.gen();
-            Exp eq_ = new Eq(vx, vy);
+            Eq eq_ = new Eq(vx, vy);
+            eq_.t = eq.t;
             Exp not_ = new Not(eq_);
             If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
             Let y = new Let(vy.id, Type.gen(), eq.e2.accept(this), if_);
@@ -195,7 +198,8 @@ class KNormalizer implements ObjVisitor<Exp> {
             LE le = (LE) not.e;
             Var vx = Var.gen();
             Var vy = Var.gen();
-            Exp le_ = new LE(vx, vy);
+            LE le_ = new LE(vx, vy);
+            le_.t = le.t;
             Not not_ = new Not(le_);
             If if_ = new If(not_, e.e2.accept(this), e.e3.accept(this));
             Let y = new Let(vy.id, Type.gen(), le.e2.accept(this), if_);

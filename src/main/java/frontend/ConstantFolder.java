@@ -120,7 +120,9 @@ public class ConstantFolder implements ObjVisitor<Exp> {
         if (res instanceof Float) {
             res = e.e2.accept(this);
         }
-        return new Eq(e.e1.accept(this), res);
+        Eq res_ = new Eq(e.e1.accept(this), res);
+        res_.t = e.t;
+        return res_;
     }
 
     public Exp visit(LE e) throws Exception {
@@ -130,7 +132,9 @@ public class ConstantFolder implements ObjVisitor<Exp> {
         if (res instanceof Float) {
             res = e.e2.accept(this);
         }
-        return new LE(e.e1.accept(this), res);
+        LE res_ = new LE(e.e1.accept(this), res);
+        res_.t = e.t;
+        return res_;
     }
 
     public Exp visit(If e) throws Exception {

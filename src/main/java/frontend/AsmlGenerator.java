@@ -114,10 +114,10 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
 
     public common.asml.Exp visit(Eq e) throws Exception {
         if (e.e1 instanceof Var) {
-            if (e.e2 instanceof Int) {
+            if (e.t instanceof TInt) {
                 common.asml.Exp res = e.e2.accept(this);
                 return new common.asml.Eq(new common.asml.Id(((Var) e.e1).id.id), res);
-            } else if (e.e2 instanceof Var) {
+            } else if (e.t instanceof TFloat) {
                 return new common.asml.FEq(new common.asml.Id(((Var) e.e1).id.id),
                         new common.asml.Id(((Var) e.e2).id.id));
             } else {
@@ -129,10 +129,10 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
 
     public common.asml.Exp visit(LE e) throws Exception {
         if (e.e1 instanceof Var) {
-            if (e.e2 instanceof Int) {
+            if (e.t instanceof TInt) {
                 common.asml.Exp res = e.e2.accept(this);
                 return new common.asml.LE(new common.asml.Id(((Var) e.e1).id.id), res);
-            } else if (e.e2 instanceof Var) {
+            } else if (e.t instanceof TFloat) {
                 return new common.asml.FLE(new common.asml.Id(((Var) e.e1).id.id),
                         new common.asml.Id(((Var) e.e2).id.id));
             } else {

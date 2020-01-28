@@ -72,11 +72,15 @@ class BetaReducer implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Eq e) throws Exception {
-        return new Eq(e.e1.accept(this), e.e2.accept(this));
+        Eq res = new Eq(e.e1.accept(this), e.e2.accept(this));
+        res.t = e.t;
+        return res;
     }
 
     public Exp visit(LE e) throws Exception {
-        return new LE(e.e1.accept(this), e.e2.accept(this));
+        LE res = new LE(e.e1.accept(this), e.e2.accept(this));
+        res.t = e.t;
+        return res;
     }
 
     public Exp visit(If e) throws Exception {
