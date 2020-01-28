@@ -47,9 +47,7 @@ class LinearScanVisitor implements Visitor {
 
     void updateInterval(String vname) {
         if (locations.get(fullPath(vname)) == null)
-            if (this.intervalsMap.get(fullPath(vname)) != null) {
-                this.intervalsMap.get(fullPath(vname)).update(this.position);
-            }
+            this.intervalsMap.get(fullPath(vname)).update(this.position);
     }
 
     void addParams(List<Id> params) {
@@ -75,7 +73,7 @@ class LinearScanVisitor implements Visitor {
             List<LiveInterval> block = entry.getValue();
             System.out.println("GROUP '" + label + "': ");
             for (LiveInterval liveInterval : block) {
-                System.out.println("INTERVAL " + liveInterval.name +
+                System.out.println("  " + liveInterval.name +
                 " (" + liveInterval.startpoint + "," + liveInterval.endpoint + ") " +
                 liveInterval.length);
             }
@@ -114,13 +112,10 @@ class LinearScanVisitor implements Visitor {
             Integer offset = 0;
             this.scope = entry.getKey();
             List<LiveInterval> liveIntervals = entry.getValue();
-            // System.out.println("GROUP '" + this.scope + "': ");
             for (LiveInterval i : liveIntervals) {
-                // System.out.println("INTERVAL " + i.name +
-                //     " (" + i.startpoint + "," + i.endpoint + ") " +
-                //     i.length);
                 expireOldInterval(i);
                 if (this.active.size() == activeMax) {
+                    // use location
                     offset -= 4;
                     spillInterval(i, offset);
                 } else {
@@ -143,6 +138,7 @@ class LinearScanVisitor implements Visitor {
         for (Map.Entry<String, String> entry : this.memory.entrySet()) {
             System.out.println(entry.getKey() + ": " + entry.getValue());
         }
+        System.out.println("");
     }
 
     void expireOldInterval(LiveInterval i) {
@@ -150,8 +146,8 @@ class LinearScanVisitor implements Visitor {
         for (LiveInterval j : this.active) {
             if (j.endpoint >= i.startpoint)
                 break;
-            // System.out.println("expired: " + j.name);
-            System.out.println("r" + registers.get(j.name) + " -> ");
+            // expire
+            System.out.println("r" + registers.get(j.name) + " -> X");
             expired.add(j);
             // free register
             freeRegister(registers.get(j.name));
@@ -160,6 +156,12 @@ class LinearScanVisitor implements Visitor {
     }
 
     void spillInterval(LiveInterval i, Integer offset) {
+        if (this.active.size() == 0) {
+            // location
+            System.out.println("[r" + fp + ", " + offset + "]" + " <- " + i.name);
+            locations.put(i.name, offset);
+            return;
+        }
         int last = this.active.size() - 1;
         LiveInterval spill = this.active.get(last);
         if (spill.endpoint > i.endpoint) {
@@ -171,12 +173,12 @@ class LinearScanVisitor implements Visitor {
             // location
             locations.put(spill.name, offset);
             System.out.println("[r" + fp + ", " + locations.get(spill.name) + "]" + " <- " + spill.name);
-            // System.out.println("spilled: " + spill.name);
             this.active.remove(last);
             this.active.add(i);
             this.active.sort((i1, i2) -> i1.endpoint.compareTo(i2.endpoint));
         } else {
             // location
+            System.out.println("[r" + fp + ", " + offset + "]" + " <- " + i.name);
             locations.put(i.name, offset);
         }
     }

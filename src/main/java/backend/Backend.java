@@ -15,14 +15,15 @@ public class Backend {
 
       LinearScanVisitor v = new LinearScanVisitor();
       expression.accept(v);
+      v.printIntervals();
       v.linearScanRegisterAllocation();
 
       CodeGenerationVisitor cgv = new CodeGenerationVisitor(v.registers, v.locations);
-      
+
       InstructionBlock text = expression.accept(cgv);
       Program prog = new Program(text);
       prog.generateHeapAllocationCode();
-      
+
       System.out.println(writer);
       if (writer != null) {
         writer.write(prog.toString());
@@ -30,8 +31,8 @@ public class Backend {
       } else {
         System.out.println(prog);
       }
-      
-      
+
+
     } catch (Exception e) {
       e.printStackTrace();
     }
