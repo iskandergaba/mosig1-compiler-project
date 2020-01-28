@@ -270,6 +270,11 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         InstructionBlock condition = e.cond.accept(this).setReturn(labelElse);
         InstructionBlock thenBlock = e.e1.accept(this);
+
+        if (thenBlock.varInRegister)  {
+            thenBlock.add(factory.instr("MOV", "$", "r" + thenBlock.getUsedRegisters().get(0)));
+        }
+
         Instruction branchToEnd = factory.instr("B", labelEnd);
         
         factory.setLabel(labelElse);
@@ -277,7 +282,6 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         if (elseBlock.storedLabel == null && elseBlock.instructionCount() == 0) {
             elseBlock.storedLabel = labelElse;
         }
-
         
         InstructionBlock result = condition
             .chain(thenBlock)
@@ -294,7 +298,6 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             }
         }
 
-        
         return result;
     }
 
@@ -376,6 +379,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             body.storedLabel = null;
             body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
         } else if (body.varInRegister) {
+            System.out.println(body.getUsedRegisters().get(0));
             body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
         }
 
