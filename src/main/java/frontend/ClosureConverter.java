@@ -214,7 +214,7 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         }
         Exp exp = e.e.accept(this);
         args.add(0, exp);
-        if (exp.isClosureFlag) {
+        if (exp.isClosureFlag || (exp instanceof Var && ((Var) exp).id.id.startsWith("arg"))) {
             args.add(exp);
             App a = new App(app_closure, args);
             if (exp.retClosureFlag) {

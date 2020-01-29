@@ -5,53 +5,26 @@ heap_offset_addr: .word 0
 .text
 .global _start
 
-label1: PUSH   {r4-r11, lr}             @ Function _fun1
+label1: PUSH   {r4-r11, lr}             @ Function _fun4
         ADD    r11, sp, #0             
-        SUB    sp, sp, #4              
-        LDR    r4, [fp, #36]            @ let arg0 = ? in...
-        MOV    r5, #4                  
-        LSL    r5, #2                  
-        ADD    r4, r4, r5              
-        LDR    r4, [r4]                
-        LDR    r5, [fp, #40]           
-        ADD    r0, r4, r5              
+        SUB    sp, sp, #0              
+        LDR    r0, =#456               
         SUB    sp, r11, #0             
         POP    {r4-r11, lr}            
         BX     lr                       @ Return
 
-label2: PUSH   {r4-r11, lr}             @ Function _fun0
+label2: PUSH   {r4-r11, lr}             @ Function _fun5
         ADD    r11, sp, #0             
-        SUB    sp, sp, #16             
-        MOV    r4, #8                   @ let fun1 = ? in...
-        LDR    r5, heap_start          
-        LDR    r6, heap_offset         
-        LDR    r7, [r5]                
-        LDR    r8, [r6]                
-        ADD    r7, r7, r8              
-        ADD    r8, r8, r4              
-        STR    r8, [r6]                
-        MOV    r4, r7                  
-        LDR    r5, =label1              @ let addr_fun1 = ? in...
-        MOV    r6, #0                   @ let tmp1 = ? in...
-        LSL    r6, #2                  
-        LDR    r7, [r4]                
-        STR    r5, [r4, r6]            
-        MOV    r5, r7                  
-        LDR    r6, [fp, #40]            @ let tmp0 = ? in...
-        MOV    r7, #4                  
-        LSL    r7, #2                  
-        LDR    r8, [r4]                
-        STR    r6, [r4, r7]            
-        MOV    r5, r8                  
-        MOV    r0, r4                  
+        SUB    sp, sp, #0              
+        LDR    r0, =#789               
         SUB    sp, r11, #0             
         POP    {r4-r11, lr}            
         BX     lr                       @ Return
 
 label3: PUSH   {r4-r11, lr}             @ Function _
         ADD    r11, sp, #0             
-        SUB    sp, sp, #32             
-        MOV    r4, #4                   @ let fun0 = ? in...
+        SUB    sp, sp, #60             
+        MOV    r4, #4                   @ let fun4 = ? in...
         LDR    r5, heap_start          
         LDR    r6, heap_offset         
         LDR    r7, [r5]                
@@ -60,17 +33,34 @@ label3: PUSH   {r4-r11, lr}             @ Function _
         ADD    r8, r8, r4              
         STR    r8, [r6]                
         MOV    r4, r7                  
-        LDR    r5, =label2              @ let addr_fun0 = ? in...
-        MOV    r6, #0                   @ let tmp2 = ? in...
+        LDR    r5, =label1              @ let addr_fun4 = ? in...
+        MOV    r6, #0                   @ let tmp1 = ? in...
         LSL    r6, #2                  
         LDR    r7, [r4]                
         STR    r5, [r4, r6]            
         MOV    r5, r7                  
-        LDR    r6, [fp, #-4]            @ let var3 = ? in...
-        MOV    r6, #7                  
+        LDR    r6, [fp, #-4]            @ let fun5 = ? in...
+        MOV    r6, #4                  
+        LDR    r7, heap_start          
+        LDR    r8, heap_offset         
+        LDR    r9, [r7]                
+        LDR    r10, [r8]               
+        ADD    r9, r9, r10             
+        ADD    r10, r10, r6            
+        STR    r10, [r8]               
+        MOV    r6, r9                  
         STR    r6, [fp, #-4]           
-        MOV    r5, #3                   @ let var6 = ? in...
-        MOV    r0, r5                   @ let var5 = ? in...
+        LDR    r5, =label2              @ let addr_fun5 = ? in...
+        LDR    r7, [fp, #-4]            @ let tmp0 = ? in...
+        MOV    r6, #0                  
+        LSL    r6, #2                  
+        LDR    r8, [r7]                
+        STR    r5, [r7, r6]            
+        MOV    r5, r8                  
+        LDR    r6, [fp, #-8]            @ let var23 = ? in...
+        MOV    r6, #123                
+        STR    r6, [fp, #-8]           
+        MOV    r0, r5                   @ let var24 = ? in...
         MOV    r1, r4                  
         LDR    r6, [r4]                
         PUSH   {r0, r1}                
@@ -79,17 +69,29 @@ label3: PUSH   {r4-r11, lr}             @ Function _
         MOV    r4, r0                  
         ADD    sp, sp, #4              
         POP    {r0, r1}                
-        LDR    r6, [fp, #-4]            @ let var2 = ? in...
-        MOV    r0, r6                  
-        MOV    r1, r4                  
-        LDR    r6, [r4]                
+        MOV    r0, r5                   @ let var27 = ? in...
+        LDR    r6, [fp, #-4]           
+        MOV    r1, r6                  
+        LDR    r7, [fp, #-4]           
+        LDR    r6, [r7]                
         PUSH   {r0, r1}                
-        PUSH   {r4}                     @ Closure info
+        PUSH   {r7}                     @ Closure info
         BLX    r6                       @ Apply closure
-        MOV    r4, r0                  
+        MOV    r5, r0                  
         ADD    sp, sp, #4              
         POP    {r0, r1}                
-        MOV    r0, r4                   @ let var0 = ? in...
+        MOV    r6, #0                   @ let var31 = ? in...
+        CMP    r5, r6                  
+        BNE    label4                  
+        LDR    r6, [fp, #-8]           
+        SUB    r5, r6, r4              
+        B      label5                  
+label4: LDR    r6, [fp, #-8]           
+        SUB    r5, r4, r6              
+label5: MOV    r6, #123                 @ let var32 = ? in...
+        ADD    r5, r5, r6              
+        ADD    r4, r5, r4               @ let var33 = ? in...
+        MOV    r0, r4                   @ let var34 = ? in...
         PUSH   {r0}                    
         SUB    sp, sp, #4               @ Placeholder for closure info
         BL     _min_caml_print_int      @ call _min_caml_print_int
