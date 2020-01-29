@@ -516,7 +516,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         InstructionBlock offset = visitIdentOrImmediate(e.offset);
         int offsetRegister = offset.getUsedRegisters().get(0);
-
+        offset.add(factory.instr("LSL", "r" + offsetRegister, "#2")); // Multiply offset by 4 to align on 4 byte values
 
         InstructionBlock get = new InstructionBlock()
             .add(factory.instr("ADD", "r"+baseRegister, "r"+baseRegister, "r"+offsetRegister))
@@ -539,7 +539,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         
         InstructionBlock offset = visitIdentOrImmediate(e.offset);
         int offsetRegister = offset.getUsedRegisters().get(0);
-        
+        offset.add(factory.instr("LSL", "r" + offsetRegister, "#2")); // Multiply offset by 4 to align on 4 byte values
+
         InstructionBlock base = e.base.accept(this);
         int baseRegister = base.getUsedRegisters().get(0);
         
