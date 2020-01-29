@@ -151,7 +151,15 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
     }
 
     public common.asml.Exp visit(Let e) throws Exception {
-        if (e.e1 instanceof Tuple) {
+        if (e.e1 instanceof Float) {
+            common.asml.Exp res = e.e1.accept(this);
+            common.asml.Id id = new common.asml.Id("tmp" + tempCount);
+            tempCount++;
+            common.asml.Get g = new common.asml.Get(new common.asml.Var(id), new common.asml.Int(0));
+            common.asml.Let l = new common.asml.Let(new common.asml.Id(e.id.id), common.type.Type.gen(), g,
+                    e.e2.accept(this));
+            return new common.asml.Let(id, common.type.Type.gen(), res, l);
+        } else if (e.e1 instanceof Tuple) {
             Tuple t = (Tuple) e.e1;
             common.asml.Exp exp = e.e2.accept(this);
             common.asml.Id tid = new common.asml.Id(e.id.id);
@@ -200,14 +208,14 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
                 }
                 if (off == 0) {
                     common.asml.Id funId = new common.asml.Id("addr" + ((Var) arg).id.id);
-                    common.asml.Put p = new common.asml.Put(closureVar, new common.asml.Int(off/4), funId);
+                    common.asml.Put p = new common.asml.Put(closureVar, new common.asml.Int(off / 4), funId);
                     exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp);
                     tempCount++;
                     exp = new common.asml.Let(funId, common.type.Type.gen(),
                             new common.asml.Fun(new common.asml.Label(((Var) arg).id.id)), exp);
                     break;
                 }
-                common.asml.Put p = new common.asml.Put(closureVar, new common.asml.Int(off/4),
+                common.asml.Put p = new common.asml.Put(closureVar, new common.asml.Int(off / 4),
                         new common.asml.Id(((Var) arg).id.id));
                 exp = new common.asml.Let(new common.asml.Id("tmp" + tempCount), common.type.Type.gen(), p, exp);
                 tempCount++;
@@ -221,7 +229,7 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
     }
 
     public common.asml.Exp visit(Var e) {
-        if(e.id.id.startsWith("_")) {
+        if (e.id.id.startsWith("_")) {
             return new common.asml.Fun(new common.asml.Label(e.id.id));
         }
         return new common.asml.Var(new common.asml.Id(e.id.id));
