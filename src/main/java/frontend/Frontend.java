@@ -119,8 +119,7 @@ public class Frontend {
             throw new Exception();
           }
           file = new FileReader(argv[2]);
-        }
-        else if (argv[2].startsWith("-")) {
+        } else if (argv[2].startsWith("-")) {
           System.out.println("Error : Too many arguments");
           throw new Exception();
         }
@@ -172,21 +171,29 @@ public class Frontend {
       System.out.println();
       System.out.println("------ Nested Let-Reduction DONE ------");
 
-      System.out.println("------ Beta-Reduction ------");
+      System.out.println("------ Beta-Reduction #1 ------");
       expression = expression.accept(new BetaReducer());
       expression.accept(new PrintVisitor());
       System.out.println();
-      System.out.println("------ Beta-Reduction DONE ------");
+      System.out.println("------ Beta-Reduction #1 DONE ------");
+
+      /*System.out.println("------ Inline Expansion ------");
+      expression = expression.accept(new InlineExpander(100));
+      expression.accept(new AlphaConverter());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ Inline Expansion DONE ------");
+
+      System.out.println("------ Beta-Reduction #2 ------");
+      expression = expression.accept(new BetaReducer());
+      expression.accept(new PrintVisitor());
+      System.out.println();
+      System.out.println("------ Beta-Reduction #2 DONE ------");*/
 
       System.out.println("------ Constant folding ------");
       expression = expression.accept(new ConstantFolder());
       expression.accept(new PrintVisitor());
       System.out.println("------ Constant folding DONE ------");
-
-      System.out.println("------ Elemenation of Unnecessary Definitions ------");
-      expression = expression.accept(new UnnecessaryDefRemover());
-      expression.accept(new PrintVisitor());
-      System.out.println("------ Elemenation of Unnecessary Definitions DONE ------");
 
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
@@ -200,6 +207,11 @@ public class Frontend {
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ Closure Conversion DONE ------");
+
+      System.out.println("------ Elimination of Unnecessary Definitions ------");
+      expression = expression.accept(new UnnecessaryDefRemover());
+      expression.accept(new PrintVisitor());
+      System.out.println("------ Elimination of Unnecessary Definitions DONE ------");
 
       System.out.println("------ ASML Generation ------");
       AsmlGenerator v = new AsmlGenerator();

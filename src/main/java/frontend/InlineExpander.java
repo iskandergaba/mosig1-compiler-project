@@ -3,11 +3,16 @@ package frontend;
 import java.util.*;
 
 /**
- * Visitor used for removing unnecessary definitions
+ * Visitor used for Inline Expansion
  */
-public class UnnecessaryDefRemover implements ObjVisitor<Exp> {
+public class InlineExpander implements ObjVisitor<Exp> {
 
-    List<String> usedVars = new ArrayList<>();
+    private int threshold;
+    private static Hashtable<String, FunDef> inlineFuncs = new Hashtable<String, FunDef>();;
+
+    public InlineExpander(int t) {
+        threshold = t;
+    }
 
     public Exp visit(Unit e) {
         return e;
@@ -93,54 +98,73 @@ public class UnnecessaryDefRemover implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Let e) throws Exception {
-        Exp res2 = e.e2.accept(this);
-        if (e.e1 instanceof App && ((App) e.e1).e instanceof Var
-                && !((Var) ((App) e.e1).e).id.id.equals("_make_closure_")) {
-            usedVars.add(e.id.id);
+        if (e.e1 instanceof App) {
+            App a = (App) e.e1;
+            if (a.e instanceof Var) {
+                FunDef fd = inlineFuncs.get(((Var) a.e).id.id);
+                if (fd != null) {
+                    Exp res;
+                    if (fd.e instanceof Let || fd.e instanceof LetTuple) {
+                        InlineInsertionVisitor v = new InlineInsertionVisitor(e.id, e.e2);
+                        res = fd.e.accept(v);
+                    } else {
+                        res = new Let(new Id(e.id.id), e.t, fd.e, e.e2);
+                    }
+                    int i = 0;
+                    for (Id id : fd.args) {
+                        res = new Let(new Id(id.id), common.type.Type.gen(), a.es.get(i), res);
+                        i++;
+                    }
+                    return res;
+                }
+            }
         }
-        if (usedVars.contains(e.id.id)) {
-            Exp res1 = e.e1.accept(this);
-            return new Let(e.id, e.t, res1, res2);
-        } else {
-            return res2;
-        }
+        return new Let(e.id, e.t, e.e1, e.e2.accept(this));
     }
 
     public Exp visit(Var e) throws Exception {
-        if (!usedVars.contains(e.id.id)) {
-            usedVars.add(e.id.id);
-        }
         return e;
     }
 
     public Exp visit(LetRec e) throws Exception {
-        Exp res = e.e.accept(this);
-        if (usedVars.contains(e.fd.id.id)) {
-            LetRec lr = new LetRec(new FunDef(e.fd.id, e.fd.type, e.fd.args, e.fd.e.accept(this)), res);
-            lr.fd.free = e.fd.free;
-            return lr;
-        } else {
-            return res;
+        Exp res = e.fd.e.accept(this);
+        int size = res.accept(new InlineHeightVisitor());
+        FunDef fun = new FunDef(e.fd.id, e.fd.type, e.fd.args, res);
+        if (size <= threshold) {
+            inlineFuncs.put(e.fd.id.toString(), fun);
         }
+        return new LetRec(fun, e.e.accept(this));
     }
 
     public Exp visit(App e) throws Exception {
-        e.e.accept(this);
-        for (Exp arg : e.es) {
-            arg.accept(this);
+        if (e.e instanceof Var) {
+            FunDef fd = inlineFuncs.get(((Var) e.e).id.id);
+            if (fd != null) {
+                Id res = Id.gen();
+                InlineInsertionVisitor v = new InlineInsertionVisitor(res,new Var(res));                 
+                Exp insert = fd.e.accept(v);
+                int i = 0;
+                for (Id id : fd.args) {
+                    insert = new Let(new Id(id.id), common.type.Type.gen(), e.es.get(i), insert);
+                    i++;
+                }
+                return insert;
+            } else {
+                return e;
+            }
+        } else {
+            return e;
         }
-        return e;
     }
 
     public Exp visit(Tuple e) throws Exception {
-        for (Exp exp : e.es) {
-            exp.accept(this);
-        }
         return e;
     }
 
     public Exp visit(LetTuple e) throws Exception {
-        return new LetTuple(e.ids, e.ts, e.e1.accept(this), e.e2.accept(this));
+        e.e1.accept(this);
+        e.e2.accept(this);
+        return e;
     }
 
     public Exp visit(Array e) throws Exception {

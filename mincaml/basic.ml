@@ -1,5 +1,9 @@
-let rec f x =
-    let rec g y = 1 in
-    g in
-let h = f 1 in
-print_int (h 1)
+let rec f x = 
+    let y = x + 1 in
+    let z = y + 1 in
+    z in
+let rec g x =
+    let y = x + 1 in
+    let z = y + 1 in
+    f y in
+print_int (g 1)
