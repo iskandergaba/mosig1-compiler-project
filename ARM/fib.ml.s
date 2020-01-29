@@ -5,7 +5,7 @@ heap_offset_addr: .word 0
 .text
 .global _start
 
-label1: PUSH   {r4-r11, lr}             @ Function _fun1
+label1: PUSH   {r4-r11, lr}             @ Function _fun0
         ADD    r11, sp, #0             
         SUB    sp, sp, #16             
         LDR    r4, [fp, #40]           
@@ -15,10 +15,10 @@ label1: PUSH   {r4-r11, lr}             @ Function _fun1
         LDR    r4, [fp, #40]           
         MOV    r0, r4                  
         B      label3                  
-label2: LDR    r5, [fp, #40]            @ let var22 = ? in...
+label2: LDR    r5, [fp, #40]            @ let var4 = ? in...
         MOV    r6, #1                  
         SUB    r4, r5, r6              
-        MOV    r0, r4                   @ let var24 = ? in...
+        MOV    r0, r4                   @ let var3 = ? in...
         LDR    r5, [fp, #44]           
         MOV    r1, r5                  
         LDR    r6, [fp, #44]           
@@ -29,10 +29,10 @@ label2: LDR    r5, [fp, #40]            @ let var22 = ? in...
         MOV    r4, r0                  
         ADD    sp, sp, #4              
         POP    {r0, r1}                
-        LDR    r5, [fp, #40]            @ let var26 = ? in...
+        LDR    r5, [fp, #40]            @ let var10 = ? in...
         MOV    r6, #2                  
         SUB    r5, r5, r6              
-        MOV    r0, r5                   @ let var28 = ? in...
+        MOV    r0, r5                   @ let var9 = ? in...
         LDR    r6, [fp, #44]           
         MOV    r1, r6                  
         LDR    r7, [fp, #44]           
@@ -51,7 +51,7 @@ label3: SUB    sp, r11, #0
 label4: PUSH   {r4-r11, lr}             @ Function _
         ADD    r11, sp, #0             
         SUB    sp, sp, #24             
-        MOV    r4, #4                   @ let fun1 = ? in...
+        MOV    r4, #4                   @ let fun0 = ? in...
         LDR    r5, heap_start          
         LDR    r6, heap_offset         
         LDR    r7, [r5]                
@@ -60,14 +60,14 @@ label4: PUSH   {r4-r11, lr}             @ Function _
         ADD    r8, r8, r4              
         STR    r8, [r6]                
         MOV    r4, r7                  
-        LDR    r5, =label1              @ let addr_fun1 = ? in...
+        LDR    r5, =label1              @ let addr_fun0 = ? in...
         MOV    r6, #0                   @ let tmp0 = ? in...
         LSL    r6, #2                  
         LDR    r7, [r4]                
         STR    r5, [r4, r6]            
         MOV    r5, r7                  
-        MOV    r5, #30                  @ let var29 = ? in...
-        MOV    r0, r5                   @ let var31 = ? in...
+        MOV    r5, #30                  @ let var17 = ? in...
+        MOV    r0, r5                   @ let var16 = ? in...
         MOV    r1, r4                  
         LDR    r6, [r4]                
         PUSH   {r0, r1}                
@@ -76,7 +76,7 @@ label4: PUSH   {r4-r11, lr}             @ Function _
         MOV    r4, r0                  
         ADD    sp, sp, #4              
         POP    {r0, r1}                
-        MOV    r0, r4                   @ let var32 = ? in...
+        MOV    r0, r4                   @ let var14 = ? in...
         PUSH   {r0}                    
         SUB    sp, sp, #4               @ Placeholder for closure info
         BL     _min_caml_print_int      @ call _min_caml_print_int
