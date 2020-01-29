@@ -359,9 +359,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
         
-        if (registerBlock.instructionCount() == 0) {
+        //if (registerBlock.instructionCount() == 0) {
             registerBlock.varInRegister = true;
-        }
+        //}
 
         return registerBlock
             .useRegister(reg);
