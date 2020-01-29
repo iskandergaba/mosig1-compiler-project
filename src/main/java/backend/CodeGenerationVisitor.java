@@ -315,7 +315,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int reg = registerBlock.getUsedRegisters().get(0);
         
 
-        if (!letExpression.setReturn("r" + reg)) {
+        if (letExpression.instructionCount() > 0 && !letExpression.setReturn("r" + reg)) {
             letExpression.add(factory.instr("MOV", "r" + reg, "r" + letExpression.getUsedRegisters().get(0)));
         }
         
