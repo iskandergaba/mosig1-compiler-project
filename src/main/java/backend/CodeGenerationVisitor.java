@@ -181,6 +181,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(Int e) {
+        if (e.i > 255) {
+            return new InstructionBlock(factory.instr("LDR", "$", "=#" + e.i));
+        }
         return new InstructionBlock(factory.instr("MOV", "$", "#" + e.i));
     }
 
@@ -194,7 +197,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
         
-        InstructionBlock b = new InstructionBlock(factory.instr("RSB", "$", "#0", "r" + reg));
+        InstructionBlock b = new InstructionBlock(factory.instr("RSB", "$","r" + reg, "#0"));
         
         InstructionBlock freeReg = freeRegister(reg);
         
@@ -268,7 +271,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         String labelElse = labelGenerator.getLabel();
         String labelEnd = labelGenerator.getLabel();
 
-        InstructionBlock condition = e.cond.accept(this).setReturn(labelElse);
+        InstructionBlock condition = e.cond.accept(this);
+        condition.setReturn(labelElse);
         InstructionBlock thenBlock = e.e1.accept(this);
 
         if (thenBlock.varInRegister)  {
@@ -306,11 +310,14 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         // Allocation of the register for spilling the result of the
         // let expression (not the in expression)
         InstructionBlock letExpression = e.e1.accept(this);
-
+        
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
         
-        letExpression.setReturn("r" + reg);
+
+        if (!letExpression.setReturn("r" + reg)) {
+            letExpression.add(factory.instr("MOV", "r" + reg, "r" + letExpression.getUsedRegisters().get(0)));
+        }
         
         List<InstructionBlock> freedRegisters = new ArrayList<InstructionBlock>();
         
@@ -384,7 +391,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         }
 
         InstructionBlock result = prologue
-            .chain(body).setReturn("r0")
+            .chain(body);
+        result.setReturn("r0");
+        result = result
             .chain(epilogue)
             .add(factory.instr("BX", "lr")).comment("Return");
 

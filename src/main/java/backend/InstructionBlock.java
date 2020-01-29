@@ -128,13 +128,15 @@ public class InstructionBlock {
      * @param register The register in which the result will be put
      * @return The updated block
      */
-    public InstructionBlock setReturn(String register) {
-        instructions.forEach(i -> {
+    public boolean setReturn(String register) {
+        boolean placeholderFound = false;
+        for (Instruction i: instructions) {
             if (i.hasPlaceholder()) {
+                placeholderFound = true;
                 i.replaceArgument(register);
             }
-        });
-        return this;
+        }
+        return placeholderFound;
     }
 
     public InstructionBlock replaceLabels(String toReplace, String newLabel) {
