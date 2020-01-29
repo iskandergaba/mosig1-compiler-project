@@ -16,6 +16,7 @@ public class InstructionBlock {
     public String lastFunctionLabel;
 
     public boolean varInRegister;
+    public boolean hasReturned;
     public String storedLabel;
 
     public InstructionBlock() {
@@ -23,6 +24,7 @@ public class InstructionBlock {
         this.usedRegisters = new ArrayList<Integer>();
         this.lastFunctionLabel = "";
         this.varInRegister = false;
+        this.hasReturned = false;
     }
 
     public InstructionBlock(Instruction instr) {
@@ -73,6 +75,7 @@ public class InstructionBlock {
         this.varInRegister = block.varInRegister;
         this.usedRegisters = block.usedRegisters;
         this.storedLabel = block.storedLabel;
+        this.hasReturned = block.hasReturned || this.hasReturned;
         return this;
     }
 

@@ -278,8 +278,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         condition.setReturn(labelElse);
         InstructionBlock thenBlock = e.e1.accept(this);
 
-        if (thenBlock.varInRegister)  {
+        if (thenBlock.varInRegister && !thenBlock.hasReturned)  {
             thenBlock.add(factory.instr("MOV", "$", "r" + thenBlock.getUsedRegisters().get(0)));
+            thenBlock.hasReturned = true;
         }
 
         Instruction branchToEnd = factory.instr("B", labelEnd);

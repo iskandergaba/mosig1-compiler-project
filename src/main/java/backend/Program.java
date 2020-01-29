@@ -11,7 +11,7 @@ public class Program {
     private InstructionFactory factory;
 
     // The size of the heap, in bytes
-    private static final int HEAP_SIZE = 4096;
+    private static final int HEAP_SIZE = 65536;
 
     public Program(InstructionBlock text) {
         this.text = text;
@@ -35,7 +35,7 @@ public class Program {
 
         text
             .add(factory.instr("MOV", "r0", "#0")).comment("Heap allocation")
-            .add(factory.instr("MOV", "r1", "#" + HEAP_SIZE))
+            .add(factory.instr("LDR", "r1", "=#" + HEAP_SIZE))
             .add(factory.instr("MOV", "r2", "#0x3"))  // PROT_READ | PROT_WRITE
             .add(factory.instr("MOV", "r3", "#0x22")) // MAP_PRIVATE | MAP_ANONYMOUS
             .add(factory.instr("MOV", "r4", "#-1"))
