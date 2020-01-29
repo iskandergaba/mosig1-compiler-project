@@ -58,6 +58,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
                 return new InstructionBlock().useRegister(i);
             }
         }
+        
+        // I think this part will produce bugs at runtime 
         for (int i = 4; i <= 12; i++) {
             if (i == 11) continue;
             if (!pushedRegisters[i]) {
@@ -67,6 +69,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
                     .useRegister(i);
             }
         }
+        
         // Don't know what to do at this stage: no more free registers
         // and all used registers are pushed 
         return null;
@@ -371,6 +374,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         int size = e.accept(new SizeVisitor());
         
         this.currentFunction = e.fd.fun.l.label;
+        Arrays.fill(this.registersInUse, false);
+        Arrays.fill(this.pushedRegisters, false);
+        Arrays.fill(this.namedRegistersInUse, false);
 
         String functionLabel = this.labelGenerator.getLabel();
         functionLabels.put(currentFunction, functionLabel);
@@ -412,6 +418,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         List<String> argumentRegisterList = new ArrayList<String>();
 
+        InstructionBlock freeArgumentRegisters = new InstructionBlock();
+
         for (Id id: e.args) {
             if (callParameterRegister < 4) { // Don't put more than 4 parameters
                 InstructionBlock paramBlock = getRegister(id);
@@ -419,6 +427,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
                 result.chain(paramBlock)
                     .add(factory.instr("MOV", "r" + callParameterRegister, "r" + paramReg));
+
+                freeArgumentRegisters.chain(freeRegister(paramReg));
 
                 argumentRegisterList.add("r" + callParameterRegister++);
             }
@@ -443,7 +453,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("BL", functionLabel)).comment("call " + e.f.label)
             .add(factory.instr("MOV", "$", "r0"))
             .add(factory.instr("ADD", "sp", "sp", "#4"))
-            .chain(popArguments);
+            .chain(popArguments)
+            .chain(freeArgumentRegisters);
     }
 
     @Override
@@ -583,6 +594,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         List<String> argumentRegisterList = new ArrayList<String>();
 
+        InstructionBlock freeArgumentRegisters = new InstructionBlock();
+
         for (Id id: e.args) {
             if (callParameterRegister < 4) { // Don't put more than 4 parameters
                 InstructionBlock paramBlock = getRegister(id);
@@ -592,6 +605,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
                     .add(factory.instr("MOV", "r" + callParameterRegister, "r" + paramReg));
 
                 argumentRegisterList.add("r" + callParameterRegister++);
+
+                freeArgumentRegisters.chain(freeRegister(paramReg));
             }
         }
 
@@ -627,7 +642,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("ADD", "sp", "sp", "#4"))
             .chain(popArguments)
             .chain(freeClosureArray)
-            .chain(freeClosureAddr);
+            .chain(freeClosureAddr)
+            .chain(freeArgumentRegisters);
     }
 
     @Override
