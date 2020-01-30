@@ -36,7 +36,7 @@ public class InlineInsertionVisitor implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Neg e) throws Exception {
-        return new Neg(e.accept(this));
+        return new Neg(e.e.accept(this));
     }
 
     public Exp visit(Add e) throws Exception {
