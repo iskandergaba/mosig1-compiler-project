@@ -10,7 +10,6 @@ public class ClosureConverter implements ObjVisitor<Exp> {
     private Hashtable<String, List<Id>> free;
     private List<String> retClosure = new ArrayList<>();
     private List<String> isClosure = new ArrayList<>();
-    private List<String> directFuns = new ArrayList<>();
 
     private String currentFun;
 
@@ -183,25 +182,22 @@ public class ClosureConverter implements ObjVisitor<Exp> {
         FunDef fun = new FunDef(label, e.fd.type, args_, res1);
         fun.free = free.get(e.fd.id.id);
         funs.add(fun);
-        if (/* fun.free.size() > 0 */true) { // temporary : closures for every function call
-            List<Exp> args = new ArrayList<>();
-            args.add(new Var(fun.id));
-            for (Id id : fun.free) {
-                if (id.id.equals(currentFun)) {
-                    id.id += "_self_clos";
-                }
-                args.add(new Var(id));
+        List<Exp> args = new ArrayList<>();
+        args.add(new Var(fun.id));
+        for (Id id : fun.free) {
+            if (id.id.equals(currentFun)) {
+                id.id += "_self_clos";
             }
-            App app = new App(mk_closure, args);
-            app.isClosureFlag = true;
-            isClosure.add(e.fd.id.id);
-            Exp res2 = e.e.accept(this);
-            Exp closure = new Let(e.fd.id, fun.type, app, res2);
-            closure.isClosureFlag = res2.isClosureFlag;
-            closure.retClosureFlag = res2.retClosureFlag;
-            return closure;
+            args.add(new Var(id));
         }
-        return e.e.accept(this);
+        App app = new App(mk_closure, args);
+        app.isClosureFlag = true;
+        isClosure.add(e.fd.id.id);
+        Exp res2 = e.e.accept(this);
+        Exp closure = new Let(e.fd.id, fun.type, app, res2);
+        closure.isClosureFlag = res2.isClosureFlag;
+        closure.retClosureFlag = res2.retClosureFlag;
+        return closure;
     }
 
     public Exp visit(App e) throws Exception {
@@ -265,8 +261,6 @@ public class ClosureConverter implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Get e) throws Exception {
-        System.out.println(isClosure);
-        System.out.println(retClosure);
         Exp res1 = e.e1.accept(this);
         Exp res2 = e.e2.accept(this);
         Get g = new Get(res1, res2);
