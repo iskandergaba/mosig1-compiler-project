@@ -5,6 +5,7 @@ package backend;
  */
 public class Program {
     // The text block, essentially the program's code
+    private String data;
     private InstructionBlock text;
 
     // Factory used for creating instructions
@@ -13,7 +14,8 @@ public class Program {
     // The size of the heap, in bytes
     private static final int HEAP_SIZE = 4096;
 
-    public Program(InstructionBlock text) {
+    public Program(InstructionBlock text, String data) {
+        this.data = data;
         this.text = text;
         this.factory = new InstructionFactory();
     }
@@ -50,12 +52,17 @@ public class Program {
 
     @Override
     public String toString() {
-        return 
+        return
               ".data\n"
             + "heap_start_addr: .word 0\n"
-            + "heap_offset_addr: .word 0\n\n"
+            + "heap_offset_addr: .word 0\n"
+            + data
+            + "\n"
             + ".text\n"
-            + ".global _start\n\n"
+            + ".global _start\n"
+            + ".arch armv7-a\n"
+            + ".arm\n"
+            + ".fpu vfpv4\n\n"
             + text
             + "heap_start: .word heap_start_addr\n"
             + "heap_offset: .word heap_offset_addr\n";

@@ -21,7 +21,7 @@ public class Backend {
       CodeGenerationVisitor cgv = new CodeGenerationVisitor(v.registers, v.locations);
 
       InstructionBlock text = expression.accept(cgv);
-      Program prog = new Program(text);
+      Program prog = new Program(text, cgv.data);
       prog.generateHeapAllocationCode();
 
       System.out.println(writer);

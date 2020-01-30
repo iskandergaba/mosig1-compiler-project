@@ -35,6 +35,9 @@ public class InstructionBlock {
      * @return the last instruction of the program
      */
     public Instruction lastInstruction() {
+        if (this.instructions.size() == 0){
+            return new Instruction();
+        }
         return this.instructions.get(this.instructions.size() - 1);
     }
 
@@ -63,7 +66,7 @@ public class InstructionBlock {
     /**
      * Chains this block to another, adding the other
      * block's instruction to this one and returning the
-     * new block 
+     * new block
      * @param block The other block to be chained
      * @return The update block
      */

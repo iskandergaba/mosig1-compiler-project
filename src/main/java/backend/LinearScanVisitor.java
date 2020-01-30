@@ -327,10 +327,9 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.base);
         updatePosition();
 
-        e.base.accept(this);
 
         System.out.print("mem (");
-        System.out.print(e.base);
+        e.base.accept(this);
         System.out.print(" + ");
         e.offset.accept(this);
         System.out.print(")");
@@ -342,12 +341,12 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.dest);
         updatePosition();
 
+        System.out.print("mem (");
+
         e.base.accept(this);
 
         updateInterval(e.dest.id);
 
-        System.out.print("mem (");
-        System.out.print(e.base);
         System.out.print(" + ");
         e.offset.accept(this);
         System.out.print(") <- ");
