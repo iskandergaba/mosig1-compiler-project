@@ -290,6 +290,11 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         if (elseBlock.storedLabel == null && elseBlock.instructionCount() == 0) {
             elseBlock.storedLabel = labelElse;
         }
+
+        if (elseBlock.varInRegister && !elseBlock.hasReturned) {
+            elseBlock.add(factory.instr("MOV", "$", "r" + elseBlock.getUsedRegisters().get(0)));
+            elseBlock.hasReturned = true;
+        }
         
         InstructionBlock result = condition
             .chain(thenBlock)
