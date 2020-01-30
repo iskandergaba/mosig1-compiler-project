@@ -3,6 +3,7 @@ _min_caml_create_array:
     ADD r11, sp, #0
     LDR r4, heap_start
     LDR r5, heap_offset
+    LSL r0, #2 
     LDR r6, [r4]
     LDR r7, [r5]
     ADD r6, r6, r7
