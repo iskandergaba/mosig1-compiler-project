@@ -12,11 +12,11 @@ echo:
 	echo ${ASM}
 	echo ${PRG}
 
-%.o : %.s libmincaml.S libarray.S
+%.o : %.s libmincaml.S libarray.S math.S
 	${AS} -o $@ $^
 
 %.arm : %.o
-	${LD} -o $@ $^
+	${LD} -o $@ $^ -L. -lgcc -lc -lm
 
 test: ${PRG}
 	@for p in ${PRG} ; do \
