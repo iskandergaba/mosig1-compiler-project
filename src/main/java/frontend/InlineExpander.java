@@ -105,10 +105,10 @@ public class InlineExpander implements ObjVisitor<Exp> {
                 if (fd != null) {
                     Exp res;
                     if (fd.e instanceof Let || fd.e instanceof LetTuple) {
-                        InlineInsertionVisitor v = new InlineInsertionVisitor(e.id, e.e2);
+                        InlineInsertionVisitor v = new InlineInsertionVisitor(e.id, e.e2.accept(this));
                         res = fd.e.accept(v);
                     } else {
-                        res = new Let(new Id(e.id.id), e.t, fd.e, e.e2);
+                        res = new Let(new Id(e.id.id), e.t, fd.e, e.e2.accept(this));
                     }
                     int i = 0;
                     for (Id id : fd.args) {
@@ -141,7 +141,7 @@ public class InlineExpander implements ObjVisitor<Exp> {
             FunDef fd = inlineFuncs.get(((Var) e.e).id.id);
             if (fd != null) {
                 Id res = Id.gen();
-                InlineInsertionVisitor v = new InlineInsertionVisitor(res,new Var(res));                 
+                InlineInsertionVisitor v = new InlineInsertionVisitor(res, new Var(res));
                 Exp insert = fd.e.accept(v);
                 int i = 0;
                 for (Id id : fd.args) {

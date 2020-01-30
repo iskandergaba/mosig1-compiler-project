@@ -5,7 +5,10 @@ import java.util.List;
 
 import common.type.Type;
 
-class KNormalizer implements ObjVisitor<Exp> {
+/**
+ * Visitor used for K-Normalization
+ */
+public class KNormalizer implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {
         return e;

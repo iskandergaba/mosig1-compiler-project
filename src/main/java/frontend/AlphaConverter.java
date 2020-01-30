@@ -3,7 +3,7 @@ package frontend;
 import java.util.*;
 
 /**
- * Visitor used for alpha conversion (also checks scope)
+ * Visitor used for alpha conversion
  */
 public class AlphaConverter implements Visitor {
 

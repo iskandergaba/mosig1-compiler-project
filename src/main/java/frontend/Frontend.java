@@ -140,7 +140,7 @@ public class Frontend {
         throw new Exception();
       }
 
-      System.out.println("------ Compiling " + fileName + " ------");
+      System.out.println("\nCompiling " + fileName + ":");
 
       Parser p = new Parser(new Lexer(file));
       Exp expression = (Exp) p.parse().value;

@@ -7,7 +7,10 @@ import java.util.Map;
 
 import common.type.Type;
 
-class BetaReducer implements ObjVisitor<Exp> {
+/**
+ * Visitor used for Beta Reduction
+ */
+public class BetaReducer implements ObjVisitor<Exp> {
 
     private Map<String, String> substitutions;
 

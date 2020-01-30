@@ -13,6 +13,7 @@ public class AsmlGenerator implements ObjVisitor<common.asml.Exp> {
     int tempCount = 0;
     int tupleCount = 0;
 
+    /** Method used for adding float and function definitions to the asml */
     public common.asml.FunDefs join(common.asml.Exp exp) {
         List<common.asml.Exp> defs = new ArrayList<>();
         for (common.asml.Float f : floatDefs) {
