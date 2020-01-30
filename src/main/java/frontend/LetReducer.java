@@ -1,6 +1,9 @@
 package frontend;
 
-class LetReducer implements ObjVisitor<Exp> {
+/**
+ * Visitor for Nested Let-Reduction
+ */
+public class LetReducer implements ObjVisitor<Exp> {
 
     public Exp visit(Unit e) {
         return e;
