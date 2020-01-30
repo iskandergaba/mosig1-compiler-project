@@ -29,13 +29,13 @@ class LinearScanVisitor implements Visitor {
 
     void printlnDebug(String msg) {
         if (debug) {
-            System.out.println(msg);
+            printlnDebug(msg);
         }
     }
 
     void printDebug(Object msg) {
         if (debug) {
-            System.out.print(msg.toString());
+            printlnDebug(msg.toString());
         }
     }
 
@@ -355,13 +355,13 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.dest);
         updatePosition();
 
-        System.out.print("mem (");
+        printlnDebug("mem (");
 
         e.base.accept(this);
 
         updateInterval(e.dest.id);
 
-        System.out.print(" + ");
+        printlnDebug(" + ");
         e.offset.accept(this);
         printDebug(") <- ");
         printDebug(e.dest);
