@@ -29,11 +29,11 @@ public class Frontend {
           switch (c) {
           case 'h':
             System.out.println(
-                "Options :\n-o : output file\n-h : display help\n-v : display version\n-t : type check only\n-p : parse only\n-asml : output ASML");
-            throw new Exception();
+                "Options :\n-o : output file\n-h : display help\n-v : display version\n-t : type check only\n-p : parse only\n-a : output ASML");
+            System.exit(0);
           case 'v':
             System.out.println("mincamlc 1.0");
-            throw new Exception();
+            System.exit(0);
           case 'o':
           case 't':
           case 'p':
@@ -132,14 +132,15 @@ public class Frontend {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
-      if (parseOnly) {
-        return Optional.empty();
-      }
-
       System.out.println("------ AST Generation ------");
       expression.accept(new PrintVisitor());
       System.out.println();
       System.out.println("------ AST Generation DONE ------");
+
+      if (parseOnly) {
+        System.out.println("Program is correctly typed.");
+        return Optional.empty();
+      }
 
       System.out.println("------ Scope checking ------");
       expression.accept(new ScopeVisitor());

@@ -22,5 +22,6 @@ test: ${PRG}
 	@for p in ${PRG} ; do \
 	  echo "*** Launching $$p"; \
 	  qemu-arm ./$$p ; \
+	  echo "" ; \
 	done
 
