@@ -110,15 +110,15 @@ public class InlineInsertionVisitor implements ObjVisitor<Exp> {
 
     public Exp visit(LetTuple e) throws Exception {
         if (e.e2 instanceof Let || e.e2 instanceof LetTuple) {
-            List<Id> ids=new ArrayList<>();
-            for(Id id : e.ids){
+            List<Id> ids = new ArrayList<>();
+            for (Id id : e.ids) {
                 ids.add(new Id(id.id));
             }
             return new LetTuple(ids, e.ts, e.e1.accept(this), e.e2.accept(this));
         } else {
             Let l = new Let(ret, common.type.Type.gen(), e.e2.accept(this), next);
-            List<Id> ids=new ArrayList<>();
-            for(Id id : e.ids){
+            List<Id> ids = new ArrayList<>();
+            for (Id id : e.ids) {
                 ids.add(new Id(id.id));
             }
             return new LetTuple(ids, e.ts, e.e1.accept(this), l);

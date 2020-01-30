@@ -31,24 +31,27 @@ public class Instruction {
         if (label != null) {
             result += label + ":";
         }
+        if (indent == 0) {
+            indent = 1;
+        }
         String format = "%" + indent + "s%-" + instrSize + "s %-" + argsSize + "s";
-        
+
         String formattedArgs = String.join(", ", args);
         result += String.format(format, " ", name, formattedArgs);
-        
+
         if (comment != null) {
             result += " @ " + comment;
         }
 
         return result + (finalInstruction ? "\n\n" : "\n");
     }
-    
+
     /**
      * Sets the indentation of the instruction.
      * @param indent The number of spaces before the instruction
      */
     public void setIndent(int indent) {
-        this.indent = indent; 
+        this.indent = indent;
     }
 
     /**

@@ -78,7 +78,7 @@ class LinearScanVisitor implements Visitor {
     String fullPath(String vname) {
         return this.scope + "." + vname;
     }
-    
+
     void printIntervals() {
         if (debug) {
             printlnDebug("# Live intervals");
@@ -342,10 +342,8 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.base);
         updatePosition();
 
-        e.base.accept(this);
-
         printDebug("mem (");
-        printDebug(e.base);
+        e.base.accept(this);
         printDebug(" + ");
         e.offset.accept(this);
         printDebug(")");
@@ -357,13 +355,13 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.dest);
         updatePosition();
 
+        printlnDebug("mem (");
+
         e.base.accept(this);
 
         updateInterval(e.dest.id);
 
-        printDebug("mem (");
-        printDebug(e.base);
-        printDebug(" + ");
+        printlnDebug(" + ");
         e.offset.accept(this);
         printDebug(") <- ");
         printDebug(e.dest);
