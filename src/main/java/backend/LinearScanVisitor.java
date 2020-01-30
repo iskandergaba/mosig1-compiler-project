@@ -29,13 +29,13 @@ class LinearScanVisitor implements Visitor {
 
     void printlnDebug(String msg) {
         if (debug) {
-            printlnDebug(msg);
+            System.out.println(msg);
         }
     }
 
     void printDebug(Object msg) {
         if (debug) {
-            printlnDebug(msg.toString());
+            System.out.print(msg.toString());
         }
     }
 
