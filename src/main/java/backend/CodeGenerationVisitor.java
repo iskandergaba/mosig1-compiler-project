@@ -171,11 +171,12 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     // Used for generating arithmetic operations like FADD, FSUB, ...
     private InstructionBlock singlePrecisionArithmeticOperation(String op, Id id1, Id id2) {
 
+        InstructionBlock moveOperands = singlePrecisionOpRoutine(id1, id2);
         InstructionBlock operation = new InstructionBlock().add(factory.instr(op, "s15", "s14", "s15"));
         InstructionBlock movResult = new InstructionBlock().add(factory.instr("VMOV.32", "$", "s15"));
 
 
-        return singlePrecisionOpRoutine(id1, id2).chain(operation).chain(movResult);
+        return moveOperands.chain(operation).chain(movResult);
     }
 
     // Used for generating condition checking, like =, >, ...
@@ -203,12 +204,13 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     // Used for generating condition checking, like =., >., ...
     private InstructionBlock singlePrecisionConditionOperation(String condition, Id id1, Id id2) {
 
+        InstructionBlock moveOperands = singlePrecisionOpRoutine(id1, id2);
         InstructionBlock operation = new InstructionBlock()
             .add(factory.instr("VCMP.F32", "s14", "s15"))
             .add(factory.instr("VMRS", "APSR_nzcv", "FPSCR"))
             .add(factory.instr(condition, "$"));
 
-        return singlePrecisionOpRoutine(id1, id2).chain(operation);
+        return moveOperands.chain(operation);
     }
 
     public CodeGenerationVisitor(Map<String, Integer> registers, Map<String, Integer> locations) {
