@@ -13,7 +13,7 @@ public class Main {
                 if (Frontend.writer != null) {
                     fw = new FileWriter(Frontend.writer);
                 }
-                Backend.execute(frontendResult.get(), fw);
+                Backend.execute(frontendResult.get(), fw, Frontend.debug);
             }
         } catch (Exception e) {
             e.printStackTrace();

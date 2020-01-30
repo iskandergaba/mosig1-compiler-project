@@ -5,13 +5,15 @@ import java.util.Optional;
 
 public class Frontend {
   public static String writer = null;
-
+  public static boolean debug = false;
+  
   static public Optional<common.asml.Exp> execute(String argv[]) throws Exception {
     try {
       FileReader file = null;
       boolean parseOnly = false;
       boolean typeCheckOnly = false;
       boolean asmlOnly = false;
+      
 
       // Command Line Arguments
       if (argv.length == 0) {
@@ -29,15 +31,16 @@ public class Frontend {
           switch (c) {
           case 'h':
             System.out.println(
-                "Options :\n-o : output file\n-h : display help\n-v : display version\n-t : type check only\n-p : parse only\n-asml : output ASML");
-            throw new Exception();
+                "Options :\n-o : output file\n-h : display help\n-v : display version\n-t : type check only\n-p : parse only\n-asml : print ASML\n-d : debugging");
+            System.exit(0);
           case 'v':
             System.out.println("mincamlc 1.0");
-            throw new Exception();
+            System.exit(0);
           case 'o':
           case 't':
           case 'p':
           case 'a':
+          case 'd':
             System.out.println("Error : Missing filename after '" + argv[0] + "'");
             throw new Exception();
           default:
@@ -68,6 +71,9 @@ public class Frontend {
             // Output ASML
             asmlOnly = true;
             break;
+          case 'd':
+            debug = true;
+            break;
           case 'o':
             System.out.println("Error : No input files");
             throw new Exception();
@@ -92,6 +98,7 @@ public class Frontend {
           case 't':
           case 'p':
           case 'a':
+          case 'd':
             System.out.println("Error : Too many arguments ");
             throw new Exception();
           default:
@@ -112,6 +119,7 @@ public class Frontend {
           case 't':
           case 'p':
           case 'a':
+          case 'd':
             System.out.println("Error : Too many arguments ");
             throw new Exception();
           default:
@@ -119,8 +127,7 @@ public class Frontend {
             throw new Exception();
           }
           file = new FileReader(argv[2]);
-        }
-        else if (argv[2].startsWith("-")) {
+        } else if (argv[2].startsWith("-")) {
           System.out.println("Error : Too many arguments");
           throw new Exception();
         }
@@ -133,14 +140,18 @@ public class Frontend {
       Exp expression = (Exp) p.parse().value;
       assert (expression != null);
 
+      System.out.println("------ AST Generation ------");
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
+      System.out.println("------ AST Generation DONE ------");
+
       if (parseOnly) {
+        expression.accept(new PrintVisitor());
+        System.out.println("Program is correctly typed.");
         return Optional.empty();
       }
-
-      System.out.println("------ AST Generation ------");
-      expression.accept(new PrintVisitor());
-      System.out.println();
-      System.out.println("------ AST Generation DONE ------");
 
       System.out.println("------ Scope checking ------");
       expression.accept(new ScopeVisitor());
@@ -156,37 +167,60 @@ public class Frontend {
 
       System.out.println("------ K-Normalization ------");
       expression = expression.accept(new KNormalizer());
-      expression.accept(new PrintVisitor());
-      System.out.println();
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
       System.out.println("------ K-Normalization DONE------");
 
       System.out.println("------ Alpha-Conversion ------");
       expression.accept(new AlphaConverter());
-      expression.accept(new PrintVisitor());
-      System.out.println();
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
       System.out.println("------ Alpha-Conversion DONE ------");
 
       System.out.println("------ Nested Let-Reduction ------");
       expression = expression.accept(new LetReducer());
-      expression.accept(new PrintVisitor());
-      System.out.println();
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
       System.out.println("------ Nested Let-Reduction DONE ------");
 
-      System.out.println("------ Beta-Reduction ------");
+      System.out.println("------ Beta-Reduction #1 ------");
       expression = expression.accept(new BetaReducer());
-      expression.accept(new PrintVisitor());
-      System.out.println();
-      System.out.println("------ Beta-Reduction DONE ------");
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
+      System.out.println("------ Beta-Reduction #1 DONE ------");
+
+      System.out.println("------ Inline Expansion ------");
+      expression = expression.accept(new InlineExpander(100));
+      expression.accept(new AlphaConverter());
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
+      System.out.println("------ Inline Expansion DONE ------");
+
+      System.out.println("------ Beta-Reduction #2 ------");
+      expression = expression.accept(new BetaReducer());
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
+      System.out.println("------ Beta-Reduction #2 DONE ------");
 
       System.out.println("------ Constant folding ------");
       expression = expression.accept(new ConstantFolder());
-      expression.accept(new PrintVisitor());
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
       System.out.println("------ Constant folding DONE ------");
-
-      System.out.println("------ Elemenation of Unnecessary Definitions ------");
-      expression = expression.accept(new UnnecessaryDefRemover());
-      expression.accept(new PrintVisitor());
-      System.out.println("------ Elemenation of Unnecessary Definitions DONE ------");
 
       System.out.println("------ Free Variable Computation ------");
       FreeVarVisitor v1 = new FreeVarVisitor();
@@ -197,20 +231,32 @@ public class Frontend {
       ClosureConverter v2 = new ClosureConverter(v1);
       expression = expression.accept(v2);
       expression = v2.join(expression);
-      expression.accept(new PrintVisitor());
-      System.out.println();
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
       System.out.println("------ Closure Conversion DONE ------");
+
+      System.out.println("------ Elimination of Unnecessary Definitions ------");
+      expression = expression.accept(new UnnecessaryDefRemover());
+      if (debug) {
+        expression.accept(new PrintVisitor());
+        System.out.println();
+      }
+      System.out.println("------ Elimination of Unnecessary Definitions DONE ------");
 
       System.out.println("------ ASML Generation ------");
       AsmlGenerator v = new AsmlGenerator();
       common.asml.Exp result = expression.accept(v);
       result = v.join(result);
-      result.accept(new common.visitor.PrintVisitor());
-      System.out.println();
+      if (debug) {
+        result.accept(new common.visitor.PrintVisitor());
+        System.out.println();
+      }
       System.out.println("------ ASML Generation DONE ------");
 
       if (asmlOnly) {
-        result.accept(new common.visitor.PrintVisitor(new PrintStream(Frontend.writer)));
+        result.accept(new common.visitor.PrintVisitor());
         return Optional.empty();
       }
       return Optional.of(result);

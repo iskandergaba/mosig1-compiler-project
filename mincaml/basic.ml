@@ -1,5 +1,9 @@
-let rec compose f g =
-  let rec composed x = g+f in
-  composed in
-let h = compose 1 1 in
-print_int(h 1)
+let rec f x = 
+    let y = x + 1 in
+    let z = y + 1 in
+    z in
+let rec g x =
+    let y = x + 1 in
+    let z = y + 1 in
+    f y in
+print_int (g 1)

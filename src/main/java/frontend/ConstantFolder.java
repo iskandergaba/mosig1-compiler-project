@@ -59,10 +59,10 @@ public class ConstantFolder implements ObjVisitor<Exp> {
             if (res2 instanceof Int) {
                 return new Int(((Int) res1).i - ((Int) res2).i);
             } else {
-                return new Add(res2, res1);
+                return e;
             }
         } else if (res2 instanceof Int) {
-            return new Add(res1, res2);
+            return new Sub(res1, res2);
         } else {
             return e;
         }
@@ -114,13 +114,27 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Eq e) throws Exception {
+        replaceVars = true;
+        Exp res = e.e2.accept(this);
         replaceVars = false;
-        return new Eq(e.e1.accept(this), e.e2.accept(this));
+        if (res instanceof Float) {
+            res = e.e2.accept(this);
+        }
+        Eq res_ = new Eq(e.e1.accept(this), res);
+        res_.t = e.t;
+        return res_;
     }
 
     public Exp visit(LE e) throws Exception {
+        replaceVars = true;
+        Exp res = e.e2.accept(this);
         replaceVars = false;
-        return new LE(e.e1.accept(this), e.e2.accept(this));
+        if (res instanceof Float) {
+            res = e.e2.accept(this);
+        }
+        LE res_ = new LE(e.e1.accept(this), res);
+        res_.t = e.t;
+        return res_;
     }
 
     public Exp visit(If e) throws Exception {
@@ -182,12 +196,16 @@ public class ConstantFolder implements ObjVisitor<Exp> {
     }
 
     public Exp visit(Get e) throws Exception {
+        replaceVars = true;
+        Exp res = e.e2.accept(this);
         replaceVars = false;
-        return new Get(e.e1.accept(this), e.e2.accept(this));
+        return new Get(e.e1.accept(this), res);
     }
 
     public Exp visit(Put e) throws Exception {
+        replaceVars = true;
+        Exp res = e.e2.accept(this);
         replaceVars = false;
-        return new Put(e.e1, e.e2.accept(this), e.e3.accept(this));
+        return new Put(e.e1, res, e.e3.accept(this));
     }
 }

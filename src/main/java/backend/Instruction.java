@@ -7,9 +7,9 @@ import java.util.*;
  */
 public class Instruction {
     private String name;
-    private List<String> args;
+    public List<String> args;
     private int indent;
-    private String label;
+    public String label;
     private String comment;
     private boolean finalInstruction;
     private Optional<Integer> argumentToReplace;

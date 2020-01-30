@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+rm -f ARM/*.s ARM/*.ml
+for file in mincaml/*.ml; do 
+	./mincamlc -o ARM/$(basename $file).s $file
+done
+cd ARM
+find . -size 0 -print0 | xargs -0 rm --
+make
+make test

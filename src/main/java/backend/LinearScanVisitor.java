@@ -15,12 +15,29 @@ class LinearScanVisitor implements Visitor {
     Map<String, List<LiveInterval>> basicBlocksMap = new HashMap<String, List<LiveInterval>>();
     Map<String, LiveInterval> intervalsMap;
     List<LiveInterval> liveIntervals, active;
+    boolean debug;
+
+    public LinearScanVisitor(boolean debug) {
+        this.debug = debug;
+    }
 
     final Integer activeMax = 2, registersNum = 16, fp = 11, regStart = 4, regEnd = 12;
     Boolean[] regIsFree = new Boolean[registersNum];
     Map<String, Integer> registers = new HashMap<String, Integer>();
     Map<String, Integer> locations = new HashMap<String, Integer>();
     Map<String, String> memory = new HashMap<String, String>();
+
+    void printlnDebug(String msg) {
+        if (debug) {
+            System.out.println(msg);
+        }
+    }
+
+    void printDebug(Object msg) {
+        if (debug) {
+            System.out.print(msg.toString());
+        }
+    }
 
     void updatePosition() {
         this.position++;
@@ -47,19 +64,13 @@ class LinearScanVisitor implements Visitor {
 
     void updateInterval(String vname) {
         if (locations.get(fullPath(vname)) == null)
-            if (this.intervalsMap.get(fullPath(vname)) != null) {
-                this.intervalsMap.get(fullPath(vname)).update(this.position);
-            }
+            this.intervalsMap.get(fullPath(vname)).update(this.position);
     }
 
     void addParams(List<Id> params) {
         int i = 0;
         for (Id id: params) {
-            if (i >= this.regStart) {
-                this.locations.put(fullPath(id.id), -1);
-            } else {
-                this.locations.put(fullPath(id.id), (i + 1) * 4);
-            }
+            this.locations.put(fullPath(id.id), (i + 10) * 4);
             i++;
         }
     }
@@ -67,20 +78,22 @@ class LinearScanVisitor implements Visitor {
     String fullPath(String vname) {
         return this.scope + "." + vname;
     }
-
+    
     void printIntervals() {
-        System.out.println("# Live intervals");
-        for (Map.Entry<String, List<LiveInterval>> entry : basicBlocksMap.entrySet()) {
-            String label = entry.getKey();
-            List<LiveInterval> block = entry.getValue();
-            System.out.println("GROUP '" + label + "': ");
-            for (LiveInterval liveInterval : block) {
-                System.out.println("INTERVAL " + liveInterval.name +
-                " (" + liveInterval.startpoint + "," + liveInterval.endpoint + ") " +
-                liveInterval.length);
+        if (debug) {
+            printlnDebug("# Live intervals");
+            for (Map.Entry<String, List<LiveInterval>> entry : basicBlocksMap.entrySet()) {
+                String label = entry.getKey();
+                List<LiveInterval> block = entry.getValue();
+                printlnDebug("GROUP '" + label + "': ");
+                for (LiveInterval liveInterval : block) {
+                    printlnDebug("  " + liveInterval.name +
+                    " (" + liveInterval.startpoint + "," + liveInterval.endpoint + ") " +
+                    liveInterval.length);
+                }
             }
+            printlnDebug("");
         }
-        System.out.println("");
     }
 
     Integer getFreeRegister() {
@@ -106,7 +119,7 @@ class LinearScanVisitor implements Visitor {
     }
 
     void linearScanRegisterAllocation() {
-        System.out.println("# Live intervals traversal");
+        printlnDebug("# Live intervals traversal");
 
         for (Map.Entry<String, List<LiveInterval>> entry : basicBlocksMap.entrySet()) {
             this.active = new ArrayList<LiveInterval>();
@@ -114,19 +127,16 @@ class LinearScanVisitor implements Visitor {
             Integer offset = 0;
             this.scope = entry.getKey();
             List<LiveInterval> liveIntervals = entry.getValue();
-            // System.out.println("GROUP '" + this.scope + "': ");
             for (LiveInterval i : liveIntervals) {
-                // System.out.println("INTERVAL " + i.name +
-                //     " (" + i.startpoint + "," + i.endpoint + ") " +
-                //     i.length);
                 expireOldInterval(i);
                 if (this.active.size() == activeMax) {
+                    // use location
                     offset -= 4;
                     spillInterval(i, offset);
                 } else {
                     // use register
                     registers.put(i.name, getFreeRegister());
-                    System.out.println("r" + registers.get(i.name) + " <- " + i.name);
+                    printlnDebug("r" + registers.get(i.name) + " <- " + i.name);
                     this.active.add(i);
                     this.active.sort((i1, i2) -> i1.endpoint.compareTo(i2.endpoint));
                 }
@@ -139,10 +149,11 @@ class LinearScanVisitor implements Visitor {
             this.memory.put(entry.getKey(), "[r" + fp + ", " + entry.getValue() + "]");
         }
 
-        System.out.println("\n# Register allocation memory map");
+        printlnDebug("\n# Register allocation memory map");
         for (Map.Entry<String, String> entry : this.memory.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
+            printlnDebug(entry.getKey() + ": " + entry.getValue());
         }
+        printlnDebug("");
     }
 
     void expireOldInterval(LiveInterval i) {
@@ -150,8 +161,8 @@ class LinearScanVisitor implements Visitor {
         for (LiveInterval j : this.active) {
             if (j.endpoint >= i.startpoint)
                 break;
-            // System.out.println("expired: " + j.name);
-            System.out.println("r" + registers.get(j.name) + " -> ");
+            // expire
+            printlnDebug("r" + registers.get(j.name) + " -> X");
             expired.add(j);
             // free register
             freeRegister(registers.get(j.name));
@@ -160,23 +171,29 @@ class LinearScanVisitor implements Visitor {
     }
 
     void spillInterval(LiveInterval i, Integer offset) {
+        if (this.active.size() == 0) {
+            // location
+            printlnDebug("[r" + fp + ", " + offset + "]" + " <- " + i.name);
+            locations.put(i.name, offset);
+            return;
+        }
         int last = this.active.size() - 1;
         LiveInterval spill = this.active.get(last);
         if (spill.endpoint > i.endpoint) {
             // register
             registers.put(i.name, registers.get(spill.name));
-            System.out.println("r" + registers.get(spill.name) + " -> ");
+            printlnDebug("r" + registers.get(spill.name) + " -> ");
             registers.remove(spill.name); // just for convenience
-            System.out.println("r" + registers.get(i.name) + " <- " + i.name);
+            printlnDebug("r" + registers.get(i.name) + " <- " + i.name);
             // location
             locations.put(spill.name, offset);
-            System.out.println("[r" + fp + ", " + locations.get(spill.name) + "]" + " <- " + spill.name);
-            // System.out.println("spilled: " + spill.name);
+            printlnDebug("[r" + fp + ", " + locations.get(spill.name) + "]" + " <- " + spill.name);
             this.active.remove(last);
             this.active.add(i);
             this.active.sort((i1, i2) -> i1.endpoint.compareTo(i2.endpoint));
         } else {
             // location
+            printlnDebug("[r" + fp + ", " + offset + "]" + " <- " + i.name);
             locations.put(i.name, offset);
         }
     }
@@ -185,7 +202,7 @@ class LinearScanVisitor implements Visitor {
 
     @Override
     public void visit(Int e) {
-        System.out.print(e.i);
+        printDebug(e.i);
     }
 
     @Override
@@ -193,17 +210,17 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.id);
         updateInterval(e.id.id);
 
-        System.out.print(e.id);
+        printDebug(e.id);
     }
 
     @Override
     public void visit(Nop e) {
-        System.out.print("nop");
+        printDebug("nop");
     }
 
     @Override
     public void visit(Fun e) {
-        System.out.print(e.l);
+        printDebug(e.l);
     }
 
     @Override
@@ -212,9 +229,9 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(neg ");
-        System.out.print(e.id);
-        System.out.print(")");
+        printDebug("(neg ");
+        printDebug(e.id);
+        printDebug(")");
     }
 
     @Override
@@ -223,9 +240,9 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(fneg ");
-        System.out.print(e.id);
-        System.out.print(")");
+        printDebug("(fneg ");
+        printDebug(e.id);
+        printDebug(")");
     }
 
     @Override
@@ -236,11 +253,11 @@ class LinearScanVisitor implements Visitor {
         updateInterval(e.id1.id);
         updateInterval(e.id2.id);
 
-        System.out.print("(fadd ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        printDebug("(fadd ");
+        printDebug(e.id1);
+        printDebug(" ");
+        printDebug(e.id2);
+        printDebug(")");
     }
 
     @Override
@@ -251,11 +268,11 @@ class LinearScanVisitor implements Visitor {
         updateInterval(e.id1.id);
         updateInterval(e.id2.id);
 
-        System.out.print("(fsub ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        printDebug("(fsub ");
+        printDebug(e.id1);
+        printDebug(" ");
+        printDebug(e.id2);
+        printDebug(")");
     }
 
     @Override
@@ -266,11 +283,11 @@ class LinearScanVisitor implements Visitor {
         updateInterval(e.id1.id);
         updateInterval(e.id2.id);
 
-        System.out.print("(fmul ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        printDebug("(fmul ");
+        printDebug(e.id1);
+        printDebug(" ");
+        printDebug(e.id2);
+        printDebug(")");
     }
 
     @Override
@@ -281,16 +298,16 @@ class LinearScanVisitor implements Visitor {
         updateInterval(e.id1.id);
         updateInterval(e.id2.id);
 
-        System.out.print("(fdiv ");
-        System.out.print(e.id1);
-        System.out.print(" ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        printDebug("(fdiv ");
+        printDebug(e.id1);
+        printDebug(" ");
+        printDebug(e.id2);
+        printDebug(")");
     }
 
     @Override
     public void visit(New e) {
-        System.out.print("new ");
+        printDebug("new ");
         e.size.accept(this);
     }
 
@@ -300,11 +317,11 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(add ");
-        System.out.print(e.id);
-        System.out.print(" ");
+        printDebug("(add ");
+        printDebug(e.id);
+        printDebug(" ");
         e.e.accept(this);
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
@@ -313,11 +330,11 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(sub ");
-        System.out.print(e.id);
-        System.out.print(" ");
+        printDebug("(sub ");
+        printDebug(e.id);
+        printDebug(" ");
         e.e.accept(this);
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
@@ -327,11 +344,11 @@ class LinearScanVisitor implements Visitor {
 
         e.base.accept(this);
 
-        System.out.print("mem (");
-        System.out.print(e.base);
-        System.out.print(" + ");
+        printDebug("mem (");
+        printDebug(e.base);
+        printDebug(" + ");
         e.offset.accept(this);
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
@@ -344,23 +361,23 @@ class LinearScanVisitor implements Visitor {
 
         updateInterval(e.dest.id);
 
-        System.out.print("mem (");
-        System.out.print(e.base);
-        System.out.print(" + ");
+        printDebug("mem (");
+        printDebug(e.base);
+        printDebug(" + ");
         e.offset.accept(this);
-        System.out.print(") <- ");
-        System.out.print(e.dest);
+        printDebug(") <- ");
+        printDebug(e.dest);
     }
 
     @Override
     public void visit(If e) {
-        // System.out.print(position + ": ");
-        System.out.print("if ");
+        // printDebug(position + ": ");
+        printDebug("if ");
         e.cond.accept(this);
-        System.out.print(" then\n");
+        printDebug(" then\n");
         // updatePosition();
         e.e1.accept(this);
-        System.out.print(" else\n");
+        printDebug(" else\n");
         // updatePosition();
         e.e2.accept(this);
     }
@@ -371,11 +388,11 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(");
-        System.out.print(e.id);
-        System.out.print(" = ");
+        printDebug("(");
+        printDebug(e.id);
+        printDebug(" = ");
         e.e.accept(this);
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
@@ -384,11 +401,11 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(");
-        System.out.print(e.id);
-        System.out.print(" <= ");
+        printDebug("(");
+        printDebug(e.id);
+        printDebug(" <= ");
         e.e.accept(this);
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
@@ -397,11 +414,11 @@ class LinearScanVisitor implements Visitor {
         updatePosition();
         updateInterval(e.id.id);
 
-        System.out.print("(");
-        System.out.print(e.id);
-        System.out.print(" >= ");
+        printDebug("(");
+        printDebug(e.id);
+        printDebug(" >= ");
         e.e.accept(this);
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
@@ -412,11 +429,11 @@ class LinearScanVisitor implements Visitor {
         updateInterval(e.id1.id);
         updateInterval(e.id2.id);
 
-        System.out.print("(");
-        System.out.print(e.id1);
-        System.out.print(" =. ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        printDebug("(");
+        printDebug(e.id1);
+        printDebug(" =. ");
+        printDebug(e.id2);
+        printDebug(")");
     }
 
     @Override
@@ -427,38 +444,38 @@ class LinearScanVisitor implements Visitor {
         updateInterval(e.id1.id);
         updateInterval(e.id2.id);
 
-        System.out.print("(");
-        System.out.print(e.id1);
-        System.out.print(" <= ");
-        System.out.print(e.id2);
-        System.out.print(")");
+        printDebug("(");
+        printDebug(e.id1);
+        printDebug(" <= ");
+        printDebug(e.id2);
+        printDebug(")");
     }
 
     @Override
     public void visit(Call e) {
-        System.out.print("(");
-        System.out.print(e.f);
+        printDebug("(");
+        printDebug(e.f);
         for (Id id: e.args) {
-            System.out.print(" ");
+            printDebug(" ");
 
             updatePosition();
             updateInterval(id.id);
 
-            System.out.print(id);
+            printDebug(id);
         }
-        System.out.print(")");
+        printDebug(")");
     }
 
     @Override
     public void visit(AppClosure e) {
         // currentBlock.addGen(e.id);
 
-        System.out.print("appclo ");
-        System.out.print(e.id);
+        printDebug("appclo ");
+        printDebug(e.id);
         updateInterval(e.id.id);
         for (Id id: e.args) {
-            System.out.print(" ");
-            System.out.print(id);
+            printDebug(" ");
+            printDebug(id);
 
             updatePosition();
             updateInterval(id.id);
@@ -469,7 +486,7 @@ class LinearScanVisitor implements Visitor {
     public void visit(FunDefs e) {
         for (Exp exp: e.funs) {
             exp.accept(this);
-            System.out.println("\n");
+            printlnDebug("\n");
         }
     }
 
@@ -477,18 +494,18 @@ class LinearScanVisitor implements Visitor {
     public void visit(Let e) {
         // currentBlock.addKill(e.id);
 
-        System.out.print(position + ": ");
-        System.out.print("let ");
-        System.out.print(e.id);
-        System.out.print(" = ");
+        printDebug(position + ": ");
+        printDebug("let ");
+        printDebug(e.id);
+        printDebug(" = ");
         e.e1.accept(this);
 
         updatePosition();
         startInterval(e.id.id);
 
-        System.out.print(" in\n");
+        printDebug(" in\n");
         e.e2.accept(this);
-        System.out.print("");
+        printDebug("");
 
 
     }
@@ -497,27 +514,27 @@ class LinearScanVisitor implements Visitor {
     public void visit(LetRec e) {
         startBlock(e.fd.fun.l.label);
 
-        System.out.print(position + ": ");
-        System.out.print("let ");
-        System.out.print(e.fd.fun.l);
+        printDebug(position + ": ");
+        printDebug("let ");
+        printDebug(e.fd.fun.l);
         updatePosition();
         addParams(e.fd.args);
         for (Id id: e.fd.args) {
-            System.out.print(" ");
-            System.out.print(id);
+            printDebug(" ");
+            printDebug(id);
 
             // startInterval(id.id);
         }
-        System.out.print(" =\n");
+        printDebug(" =\n");
         // updatePosition();
         e.fd.e.accept(this);
-        System.out.print("");
+        printDebug("");
         endBlock();
     }
 
     @Override
     public void visit(Float e) {
-        System.out.print(String.format("%.2f", e.f));
+        printDebug(String.format("%.2f", e.f));
     }
 
     @Override

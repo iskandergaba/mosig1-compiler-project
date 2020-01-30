@@ -12,7 +12,7 @@ echo:
 	echo ${ASM}
 	echo ${PRG}
 
-%.o : %.s libmincaml.S
+%.o : %.s libmincaml.S libarray.S
 	${AS} -o $@ $^
 
 %.arm : %.o
@@ -22,5 +22,6 @@ test: ${PRG}
 	@for p in ${PRG} ; do \
 	  echo "*** Launching $$p"; \
 	  qemu-arm ./$$p ; \
+	  echo "" ; \
 	done
 

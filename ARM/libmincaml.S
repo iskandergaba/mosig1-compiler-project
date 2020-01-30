@@ -1,20 +1,20 @@
 	.text
-        .globl min_caml_exit
+        .globl _min_caml_exit
 /* exit syscall */
-min_caml_exit:
+_min_caml_exit:
 	mov	r0, #0
 	mov	r7, #1  @ exit syscall
 	swi	#0      @ perform syscall
 
-	.globl min_caml_print_newline
-min_caml_print_newline:
+	.globl _min_caml_print_newline
+_min_caml_print_newline:
 	stmfd	sp!, {lr}
 	mov	r0, #10
-	bl	min_caml_print_char
+	bl	_min_caml_print_char
 	mov	r0, #0
 	ldmfd	sp!, {lr}
         bx	lr
-        .size	min_caml_print_newline, .-min_caml_print_newline
+        .size	_min_caml_print_newline, .-_min_caml_print_newline
 
 	.globl stringlength
 stringlength:             @ note: r1 is untouched
@@ -31,8 +31,8 @@ stringlength_first:
         bx	lr
         .size	stringlength, .-stringlength
 
-	.globl min_caml_print_string
-min_caml_print_string:
+	.globl _min_caml_print_string
+_min_caml_print_string:
 	stmfd	sp!, {lr}
         mov	r1, r0          @ save r0 in r1 untouched by stringlength
         bl	stringlength
@@ -43,24 +43,24 @@ min_caml_print_string:
         nop            @ why is that needed?
 	ldmfd	sp!, {lr}
         bx	lr
-        .size	min_caml_print_string, .-min_caml_print_string
+        .size	_min_caml_print_string, .-_min_caml_print_string
 
 	.data
 hello_world_string:
 	.asciz	"Hello world!\n"
 
 	.text
-	.globl min_caml_hello_world
-min_caml_hello_world:
+	.globl _min_caml_hello_world
+_min_caml_hello_world:
 	stmfd	sp!, {lr}
 	ldr	r0, =hello_world_string  @ the string
-        bl	min_caml_print_string
+        bl	_min_caml_print_string
 	ldmfd	sp!, {lr}
         bx	lr
-	.size min_caml_hello_world, .-min_caml_hello_world
+	.size _min_caml_hello_world, .-_min_caml_hello_world
 
-	.globl min_caml_print_char
-min_caml_print_char:
+	.globl _min_caml_print_char
+_min_caml_print_char:
 	sub	sp, #4   @ room for char
         strb	r0, [sp]
 	mov	r0, #1 @ file descriptor
@@ -71,7 +71,7 @@ min_caml_print_char:
 	nop
 	add	sp, #4   @ get back room for char
         bx	lr
-        .size	min_caml_print_char, .-min_caml_print_char
+        .size	_min_caml_print_char, .-_min_caml_print_char
 
 	.data
 .string_for_int:
@@ -131,11 +131,11 @@ stringofint:
         .align	2
 
 
-        .globl min_caml_print_int
-min_caml_print_int:
+        .globl _min_caml_print_int
+_min_caml_print_int:
 	stmfd	sp!, {lr}
 	bl	stringofint
-	bl	min_caml_print_string
+	bl	_min_caml_print_string
 	ldmfd	sp!, {lr}
         bx	lr
-        .size min_caml_print_int, .-min_caml_print_int
+        .size _min_caml_print_int, .-_min_caml_print_int

@@ -15,10 +15,16 @@ public class InstructionBlock {
     // Label of the last function defined in the program
     public String lastFunctionLabel;
 
+    public boolean varInRegister;
+    public boolean hasReturned;
+    public String storedLabel;
+
     public InstructionBlock() {
         this.instructions = new ArrayList<Instruction>();
         this.usedRegisters = new ArrayList<Integer>();
         this.lastFunctionLabel = "";
+        this.varInRegister = false;
+        this.hasReturned = false;
     }
 
     public InstructionBlock(Instruction instr) {
@@ -66,6 +72,10 @@ public class InstructionBlock {
     public InstructionBlock chain(InstructionBlock block) {
         this.instructions.addAll(block.instructions);
         this.lastFunctionLabel = block.lastFunctionLabel;
+        this.varInRegister = block.varInRegister;
+        this.usedRegisters = block.usedRegisters;
+        this.storedLabel = block.storedLabel;
+        this.hasReturned = block.hasReturned || this.hasReturned;
         return this;
     }
 
@@ -121,12 +131,23 @@ public class InstructionBlock {
      * @param register The register in which the result will be put
      * @return The updated block
      */
-    public InstructionBlock setReturn(String register) {
-        instructions.forEach(i -> {
+    public boolean setReturn(String register) {
+        boolean placeholderFound = false;
+        for (Instruction i: instructions) {
             if (i.hasPlaceholder()) {
+                placeholderFound = true;
                 i.replaceArgument(register);
             }
-        });
+        }
+        return placeholderFound;
+    }
+
+    public InstructionBlock replaceLabels(String toReplace, String newLabel) {
+        for (Instruction i: instructions) {
+            if (i.args.get(0) == toReplace && i.args.get(0) != storedLabel) {
+                i.args.set(0, newLabel);
+            }
+        }
         return this;
     }
 
@@ -143,6 +164,10 @@ public class InstructionBlock {
     public InstructionBlock reverse() {
         Collections.reverse(instructions);
         return this;
+    }
+
+    public int instructionCount() {
+        return this.instructions.size();
     }
 
     /**

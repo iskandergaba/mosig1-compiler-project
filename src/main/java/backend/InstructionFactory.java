@@ -18,7 +18,17 @@ public class InstructionFactory {
      * Adds a label on the next instruction
      * @param label The label (without the semicolon)
      */
-    public void setLabel(String label) {
+    public String setLabel(String label) {
+        if (printLabel) {
+            return nextLabel;
+        }
+        this.nextLabel = label;
+        this.indent = label.length() + 2;
+        this.printLabel = true;
+        return null;
+    }
+
+    public void setLabelForce(String label) {
         this.nextLabel = label;
         this.indent = label.length() + 2;
         this.printLabel = true;

@@ -23,3 +23,5 @@ bin
 Parser.java
 Lexer.java
 sym.java
+ARM/*.arm
+ARM/*.s
