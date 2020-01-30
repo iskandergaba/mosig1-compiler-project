@@ -85,6 +85,11 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         } else {
             InstructionBlock regBlock = getTemporaryRegister();
             int reg = regBlock.getUsedRegisters().get(0);
+
+            if (locations.get(getFullName(id)) == -1) {
+                System.err.println("Warning: invalid offset for " + id);
+            }
+
             return regBlock
                 .add(factory.instr("LDR", "r" + reg, "[fp, #" + locations.get(getFullName(id)) + "]"))
                 .useRegister(reg);
@@ -414,37 +419,28 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(Call e) {
-        // For the moment this will do.
-        if (e.args.size() > 4) {
-            System.err.println("Warning: too many arguments in syscall.");
-        }
-
         InstructionBlock result = new InstructionBlock();
-        int callParameterRegister = 0;
-
-        List<String> argumentRegisterList = new ArrayList<String>();
 
         InstructionBlock freeArgumentRegisters = new InstructionBlock();
 
-        for (Id id: e.args) {
-            if (callParameterRegister < 4) { // Don't put more than 4 parameters
-                InstructionBlock paramBlock = getRegister(id);
-                int paramReg = paramBlock.getUsedRegisters().get(0);
+        int counter = 4 - (e.args.size() % 4);
 
-                result.chain(paramBlock)
-                    .add(factory.instr("MOV", "r" + callParameterRegister, "r" + paramReg));
-
-                freeArgumentRegisters.chain(freeRegister(paramReg));
-
-                argumentRegisterList.add("r" + callParameterRegister++);
+        for (int i = e.args.size() - 1; i >= 0; i--) {
+            if (counter == 4) {
+                counter = 0;
             }
+            Id id = e.args.get(i);
+            InstructionBlock paramBlock = getRegister(id);
+            int paramReg = paramBlock.getUsedRegisters().get(0);
+            result.chain(paramBlock)
+                .add(factory.instr("MOV", "r" + (3 - counter), "r" + paramReg));
+            
+            result.add(factory.instr("PUSH", "{r" + (3 - counter) + "}"));
+            freeArgumentRegisters.chain(freeRegister(paramReg));
+            counter ++;
         }
 
-        String argumentRegisters = argumentRegisterList
-            .stream()
-            .collect(Collectors.joining(", "));
-        InstructionBlock pushArguments = new InstructionBlock(factory.instr("PUSH", "{" + argumentRegisters + "}"));
-        InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * argumentRegisterList.size()))));
+        InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * e.args.size()))));
 
         String functionLabel = functionLabels.get(e.f.label);
         
@@ -454,7 +450,6 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         }
 
         return result
-            .chain(pushArguments)
             .add(factory.instr("SUB", "sp", "sp", "#4")).comment("Placeholder for closure info")
             .add(factory.instr("BL", functionLabel)).comment("call " + e.f.label)
             .add(factory.instr("MOV", "$", "r0"))
@@ -590,30 +585,24 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(AppClosure e) {
-        if (e.args.size() > 4) {
-            System.err.println("Too many arguments in closure application.");
-            return null;
-        }
-
         InstructionBlock result = new InstructionBlock();
-        int callParameterRegister = 0;
-
-        List<String> argumentRegisterList = new ArrayList<String>();
 
         InstructionBlock freeArgumentRegisters = new InstructionBlock();
 
-        for (Id id: e.args) {
-            if (callParameterRegister < 4) { // Don't put more than 4 parameters
-                InstructionBlock paramBlock = getRegister(id);
-                int paramReg = paramBlock.getUsedRegisters().get(0);
-
-                result.chain(paramBlock)
-                    .add(factory.instr("MOV", "r" + callParameterRegister, "r" + paramReg));
-
-                argumentRegisterList.add("r" + callParameterRegister++);
-
-                freeArgumentRegisters.chain(freeRegister(paramReg));
+        int counter = 4 - (e.args.size() % 4);
+        for (int i = e.args.size() - 1; i >= 0; i--) {
+            if (counter == 4) {
+                counter = 0;
             }
+            Id id = e.args.get(i);
+            InstructionBlock paramBlock = getRegister(id);
+            int paramReg = paramBlock.getUsedRegisters().get(0);
+            result.chain(paramBlock)
+                .add(factory.instr("MOV", "r" + (3 - counter), "r" + paramReg));
+            
+            result.add(factory.instr("PUSH", "{r" + (3 - counter) + "}"));
+            freeArgumentRegisters.chain(freeRegister(paramReg));
+            counter ++;
         }
 
         // Retrieve closure address
@@ -629,19 +618,12 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock freeClosureArray = freeRegister(closureArrayRegister);
         InstructionBlock freeClosureAddr = freeRegister(closureAddrRegister);
         
-        //argumentRegisterList.add("r" + closureArrayRegister);
-
-        String argumentRegisters = argumentRegisterList
-        .stream()
-        .collect(Collectors.joining(", "));
-        InstructionBlock pushArguments = new InstructionBlock(factory.instr("PUSH", "{" + argumentRegisters + "}"));
-        InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * argumentRegisterList.size()))));
+        InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * e.args.size()))));
 
         return result
             .chain(closureAddrRegBlock)
             .chain(closureArrayRegBlock)
             .chain(closureAddr)
-            .chain(pushArguments)
             .add(factory.instr("PUSH", "{r" + closureArrayRegister + "}")).comment("Closure info")
             .add(factory.instr("BLX", "r" + closureAddrRegister)).comment("Apply closure")
             .add(factory.instr("MOV", "$", "r0"))

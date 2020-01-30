@@ -53,11 +53,7 @@ class LinearScanVisitor implements Visitor {
     void addParams(List<Id> params) {
         int i = 0;
         for (Id id: params) {
-            if (i >= this.regStart) {
-                this.locations.put(fullPath(id.id), -1);
-            } else {
-                this.locations.put(fullPath(id.id), (i + 10) * 4);
-            }
+            this.locations.put(fullPath(id.id), (i + 10) * 4);
             i++;
         }
     }
