@@ -13,6 +13,7 @@ public class Frontend {
       boolean parseOnly = false;
       boolean typeCheckOnly = false;
       boolean asmlOnly = false;
+      String fileName = "";
       
 
       // Command Line Arguments
@@ -22,6 +23,7 @@ public class Frontend {
 
         // Case for direct compilation
         if (argv[0].endsWith(".ml")) {
+          fileName = argv[0];
           file = new FileReader(argv[0]);
         }
 
@@ -81,6 +83,7 @@ public class Frontend {
             System.out.println("Error : Invalid flag: " + argv[0]);
             throw new Exception();
           }
+          fileName = argv[1];
           file = new FileReader(argv[1]);
         }
       } else if (argv.length == 3) {
@@ -126,6 +129,7 @@ public class Frontend {
             System.out.println("Error : Invalid flag: " + argv[0]);
             throw new Exception();
           }
+          fileName = argv[2];
           file = new FileReader(argv[2]);
         } else if (argv[2].startsWith("-")) {
           System.out.println("Error : Too many arguments");
@@ -135,6 +139,8 @@ public class Frontend {
         System.out.println("Error : Too many arguments");
         throw new Exception();
       }
+
+      System.out.println("------ Compiling " + fileName + " ------");
 
       Parser p = new Parser(new Lexer(file));
       Exp expression = (Exp) p.parse().value;
