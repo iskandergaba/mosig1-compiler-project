@@ -439,7 +439,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .stream()
             .collect(Collectors.joining(", "));
         InstructionBlock pushArguments = new InstructionBlock(factory.instr("PUSH", "{" + argumentRegisters + "}"));
-        InstructionBlock popArguments = new InstructionBlock(factory.instr("POP", "{" + argumentRegisters + "}"));
+        InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * argumentRegisterList.size()))));
 
         String functionLabel = functionLabels.get(e.f.label);
         
@@ -453,7 +453,6 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("SUB", "sp", "sp", "#4")).comment("Placeholder for closure info")
             .add(factory.instr("BL", functionLabel)).comment("call " + e.f.label)
             .add(factory.instr("MOV", "$", "r0"))
-            .add(factory.instr("ADD", "sp", "sp", "#4"))
             .chain(popArguments)
             .chain(freeArgumentRegisters);
     }
@@ -631,7 +630,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         .stream()
         .collect(Collectors.joining(", "));
         InstructionBlock pushArguments = new InstructionBlock(factory.instr("PUSH", "{" + argumentRegisters + "}"));
-        InstructionBlock popArguments = new InstructionBlock(factory.instr("POP", "{" + argumentRegisters + "}"));
+        InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * argumentRegisterList.size()))));
 
         return result
             .chain(closureAddrRegBlock)
@@ -641,7 +640,6 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("PUSH", "{r" + closureArrayRegister + "}")).comment("Closure info")
             .add(factory.instr("BLX", "r" + closureAddrRegister)).comment("Apply closure")
             .add(factory.instr("MOV", "$", "r0"))
-            .add(factory.instr("ADD", "sp", "sp", "#4"))
             .chain(popArguments)
             .chain(freeClosureArray)
             .chain(freeClosureAddr)
