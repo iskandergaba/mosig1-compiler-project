@@ -342,6 +342,10 @@ class LinearScanVisitor implements Visitor {
         // currentBlock.addGen(e.base);
         updatePosition();
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1126f75a160678a1d67de50b430ca020ea343290
         System.out.print("mem (");
         e.base.accept(this);
         System.out.print(" + ");
