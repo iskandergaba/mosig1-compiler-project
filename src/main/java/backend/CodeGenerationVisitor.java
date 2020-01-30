@@ -10,6 +10,7 @@ import common.visitor.*;
  * Visits the ASML AST and generates ARM assembly code.
  */
 public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
+    public String data;
 
     // Generates label for branching (if's, function calls, ...)
     private LabelGenerator labelGenerator;
@@ -57,8 +58,8 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
                 return new InstructionBlock().useRegister(i);
             }
         }
-        
-        // I think this part will produce bugs at runtime 
+
+        // I think this part will produce bugs at runtime
         for (int i = 4; i <= 12; i++) {
             if (i == 11) continue;
             if (!pushedRegisters[i]) {
@@ -68,9 +69,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
                     .useRegister(i);
             }
         }
-        
+
         // Don't know what to do at this stage: no more free registers
-        // and all used registers are pushed 
+        // and all used registers are pushed
         return null;
     }
 
@@ -106,12 +107,30 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     private InstructionBlock spillVariable(Id id, int reg) {
         registersInUse[reg] = false;
-        
+
         Integer offset = locations.get(getFullName(id));
         if (offset != null) {
             return new InstructionBlock(factory.instr("STR", "r" + reg, "[fp, #" + offset + "]"));
         }
         return new InstructionBlock();
+    }
+
+    private InstructionBlock singlePrecisionOpRoutine(Id id1, Id id2) {
+        InstructionBlock moveLeftOperand = new InstructionBlock();
+        if (registers.get(getFullName(id1)) != null) {
+            moveLeftOperand.add(factory.instr("VMOV.32", "s14", "r" + registers.get(getFullName(id1))));
+        } else {
+            moveLeftOperand.add(factory.instr("VLDR", "s14", "[fp, #" + locations.get(getFullName(id1)) + "]"));
+        }
+
+        InstructionBlock moveRightOperand = new InstructionBlock();
+        if (registers.get(getFullName(id2)) != null) {
+            moveRightOperand.add(factory.instr("VMOV.32", "s15", "r" + registers.get(getFullName(id2))));
+        } else {
+            moveRightOperand.add(factory.instr("VLDR", "s15", "[fp, #" + locations.get(getFullName(id2)) + "]"));
+        }
+
+        return moveLeftOperand.chain(moveRightOperand);
     }
 
     private InstructionBlock prologue(int size) {
@@ -149,6 +168,16 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .chain(freeLeftOperand);
     }
 
+    // Used for generating arithmetic operations like FADD, FSUB, ...
+    private InstructionBlock singlePrecisionArithmeticOperation(String op, Id id1, Id id2) {
+
+        InstructionBlock operation = new InstructionBlock().add(factory.instr(op, "s15", "s14", "s15"));
+        InstructionBlock movResult = new InstructionBlock().add(factory.instr("VMOV.32", "$", "s15"));
+
+
+        return singlePrecisionOpRoutine(id1, id2).chain(operation).chain(movResult);
+    }
+
     // Used for generating condition checking, like =, >, ...
     private InstructionBlock conditionOperation(String condition, Id id, Exp e) {
 
@@ -160,7 +189,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
         InstructionBlock operation = new InstructionBlock(factory.instr("CMP", "r" + leftOperandRegister, "r" + rightOperandRegister))
             .add(factory.instr(condition, "$"));
-        
+
         InstructionBlock freeLeftOperand = freeRegister(leftOperandRegister);
         InstructionBlock freeRightOperand = freeRegister(rightOperandRegister);
 
@@ -171,7 +200,19 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .chain(freeLeftOperand);
     }
 
+    // Used for generating condition checking, like =., >., ...
+    private InstructionBlock singlePrecisionConditionOperation(String condition, Id id1, Id id2) {
+
+        InstructionBlock operation = new InstructionBlock()
+            .add(factory.instr("VCMP.F32", "s14", "s15"))
+            .add(factory.instr("VMRS", "APSR_nzcv", "FPSCR"))
+            .add(factory.instr(condition, "$"));
+
+        return singlePrecisionOpRoutine(id1, id2).chain(operation);
+    }
+
     public CodeGenerationVisitor(Map<String, Integer> registers, Map<String, Integer> locations) {
+        this.data = new String();
         this.labelGenerator = new LabelGenerator();
         this.currentFunction = "";
         this.functionLabels = new HashMap<String, String>();
@@ -196,18 +237,19 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(Float e) {
-        return null;   
+        data += e.l.label + ": .single 0r" + e.f + "\n";
+        return new InstructionBlock();
     }
 
     @Override
     public InstructionBlock visit(Neg e) {
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
-        
+
         InstructionBlock b = new InstructionBlock(factory.instr("RSB", "$","r" + reg, "#0"));
-        
+
         InstructionBlock freeReg = freeRegister(reg);
-        
+
         return registerBlock
             .chain(b)
             .chain(freeReg);
@@ -225,27 +267,36 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(FNeg e) {
-        return null;
+        InstructionBlock moveOperand = new InstructionBlock();
+        if (registers.get(getFullName(e.id)) != null) {
+            moveOperand.add(factory.instr("VMOV.32", "s15", "r" + registers.get(getFullName(e.id))));
+        } else {
+            moveOperand.add(factory.instr("VLDR", "s15", "[fp, #" + locations.get(getFullName(e.id)) + "]"));
+        }
+        InstructionBlock operation = new InstructionBlock().add(factory.instr("VNEG.F32", "s15", "s15"));
+        InstructionBlock movResult = new InstructionBlock().add(factory.instr("VMOV.32", "$", "s15"));
+
+        return moveOperand.chain(operation).chain(movResult);
     }
 
     @Override
     public InstructionBlock visit(FAdd e) {
-        return null;
+        return singlePrecisionArithmeticOperation("VADD.F32", e.id1, e.id2);
     }
 
     @Override
     public InstructionBlock visit(FSub e) {
-        return null;
+        return singlePrecisionArithmeticOperation("VSUB.F32", e.id1, e.id2);
     }
 
     @Override
     public InstructionBlock visit(FMul e) {
-        return null;
+        return singlePrecisionArithmeticOperation("VMUL.F32", e.id1, e.id2);
     }
 
     @Override
     public InstructionBlock visit(FDiv e) {
-        return null;
+        return singlePrecisionArithmeticOperation("VDIV.F32", e.id1, e.id2);
     }
 
     @Override
@@ -265,12 +316,12 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(FEq e) {
-        return null;
+        return singlePrecisionConditionOperation("BNE", e.id1, e.id2);
     }
 
     @Override
     public InstructionBlock visit(FLE e) {
-        return null;
+        return singlePrecisionConditionOperation("BHI", e.id1, e.id2);
     }
 
     @Override
@@ -288,7 +339,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         }
 
         Instruction branchToEnd = factory.instr("B", labelEnd);
-        
+
         factory.setLabel(labelElse);
         InstructionBlock elseBlock = e.e2.accept(this);
         if (elseBlock.storedLabel == null && elseBlock.instructionCount() == 0) {
@@ -299,17 +350,17 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             elseBlock.add(factory.instr("MOV", "$", "r" + elseBlock.getUsedRegisters().get(0)));
             elseBlock.hasReturned = true;
         }
-        
+
         InstructionBlock result = condition
             .chain(thenBlock)
             .add(branchToEnd)
             .chain(elseBlock);
-        
+
         if (elseBlock.varInRegister && elseBlock.instructionCount() == 0) {
             factory.setLabelForce(labelEnd);
         } else {
             String maybeNewerLabel = factory.setLabel(labelEnd);
-                     
+
             if (maybeNewerLabel != null) {
                 result.replaceLabels(labelEnd, maybeNewerLabel);
             }
@@ -319,27 +370,27 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     }
 
     @Override
-    public InstructionBlock visit(Let e) {    
+    public InstructionBlock visit(Let e) {
         // Allocation of the register for spilling the result of the
         // let expression (not the in expression)
         InstructionBlock letExpression = e.e1.accept(this);
-        
+
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
-        
+
 
         if (letExpression.instructionCount() > 0 && !letExpression.setReturn("r" + reg)) {
             letExpression.add(factory.instr("MOV", "r" + reg, "r" + letExpression.getUsedRegisters().get(0)));
         }
-        
+
         List<InstructionBlock> freedRegisters = new ArrayList<InstructionBlock>();
-        
+
         // Aggregating the list of registers that were eventually
         // pushed on the stack and then freed.
         for (int register: letExpression.getUsedRegisters()) {
             freedRegisters.add(freeRegister(register));
         }
-        
+
         // Spill result of let expression to its variable in the stack
         InstructionBlock saveVariable = spillVariable(e.id, reg);
 
@@ -368,7 +419,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     public InstructionBlock visit(Var e) {
         InstructionBlock registerBlock = getRegister(e.id);
         int reg = registerBlock.getUsedRegisters().get(0);
-        
+
         //if (registerBlock.instructionCount() == 0) {
             registerBlock.varInRegister = true;
         //}
@@ -382,7 +433,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         // We need to get the 'size' of the function (the number of local variables)
         // so that we can generate the prologue
         int size = e.accept(new SizeVisitor());
-        
+
         this.currentFunction = e.fd.fun.l.label;
         Arrays.fill(this.registersInUse, false);
         Arrays.fill(this.pushedRegisters, false);
@@ -413,7 +464,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             .add(factory.instr("BX", "lr")).comment("Return");
 
         return result.setFunctionLabel(functionLabel);
-    }   
+    }
 
     @Override
     public InstructionBlock visit(Call e) {
@@ -432,7 +483,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             int paramReg = paramBlock.getUsedRegisters().get(0);
             result.chain(paramBlock)
                 .add(factory.instr("MOV", "r" + (3 - counter), "r" + paramReg));
-            
+
             result.add(factory.instr("PUSH", "{r" + (3 - counter) + "}"));
             freeArgumentRegisters.chain(freeRegister(paramReg));
             counter ++;
@@ -441,9 +492,9 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * e.args.size()))));
 
         String functionLabel = functionLabels.get(e.f.label);
-        
+
         // For the moment this is how we handle external functions.
-        if (functionLabel == null) { 
+        if (functionLabel == null) {
             functionLabel = e.f.label;
         }
 
@@ -534,14 +585,14 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
     public InstructionBlock visit(Put e) {
         InstructionBlock valueRegisterBlock = getRegister(e.dest);
         int valueRegister = valueRegisterBlock.getUsedRegisters().get(0);
-        
+
         InstructionBlock offset = visitIdentOrImmediate(e.offset);
         int offsetRegister = offset.getUsedRegisters().get(0);
         offset.add(factory.instr("LSL", "r" + offsetRegister, "#2")); // Multiply offset by 4 to align on 4 byte values
 
         InstructionBlock base = e.base.accept(this);
         int baseRegister = base.getUsedRegisters().get(0);
-        
+
 
         InstructionBlock oldValueRegisterBlock = getTemporaryRegister();
         int oldValueRegister = oldValueRegisterBlock.getUsedRegisters().get(0);
@@ -572,11 +623,15 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
 
     @Override
     public InstructionBlock visit(Fun e) {
-        
+
         /*
         InstructionBlock regBlock = getTemporaryRegister();
         int reg = regBlock.getUsedRegisters().get(0);
         */
+        if (functionLabels.get(e.l.label) == null) {
+            return new InstructionBlock()
+                .add(factory.instr("LDR", "$", "=" + e.l.label));
+        }
         return new InstructionBlock()
             .add(factory.instr("LDR", "$", "=" + functionLabels.get(e.l.label)));
     }
@@ -597,7 +652,7 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             int paramReg = paramBlock.getUsedRegisters().get(0);
             result.chain(paramBlock)
                 .add(factory.instr("MOV", "r" + (3 - counter), "r" + paramReg));
-            
+
             result.add(factory.instr("PUSH", "{r" + (3 - counter) + "}"));
             freeArgumentRegisters.chain(freeRegister(paramReg));
             counter ++;
@@ -606,16 +661,16 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
         // Retrieve closure address
         InstructionBlock closureAddrRegBlock = getTemporaryRegister();
         int closureAddrRegister = closureAddrRegBlock.getUsedRegisters().get(0);
-        
+
         InstructionBlock closureArrayRegBlock = getRegister(e.id);
         int closureArrayRegister = closureArrayRegBlock.getUsedRegisters().get(0);
-        
+
         InstructionBlock closureAddr = new InstructionBlock()
         .add(factory.instr("LDR", "r" + closureAddrRegister, "[r" + closureArrayRegister + "]"));
-        
+
         InstructionBlock freeClosureArray = freeRegister(closureArrayRegister);
         InstructionBlock freeClosureAddr = freeRegister(closureAddrRegister);
-        
+
         InstructionBlock popArguments = new InstructionBlock(factory.instr("ADD", "sp", "sp", "#" + (4 + (4 * e.args.size()))));
 
         return result
