@@ -5,14 +5,15 @@ import java.util.Optional;
 
 public class Frontend {
   public static String writer = null;
-
+  public static boolean debug = false;
+  
   static public Optional<common.asml.Exp> execute(String argv[]) throws Exception {
     try {
       FileReader file = null;
       boolean parseOnly = false;
       boolean typeCheckOnly = false;
       boolean asmlOnly = false;
-      boolean debug = false;
+      
 
       // Command Line Arguments
       if (argv.length == 0) {

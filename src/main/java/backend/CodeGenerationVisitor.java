@@ -1,7 +1,6 @@
 package backend;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import common.asml.*;
 import common.asml.Float;
@@ -403,7 +402,6 @@ public class CodeGenerationVisitor implements ObjVisitor<InstructionBlock> {
             body.storedLabel = null;
             body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
         } else if (body.varInRegister) {
-            System.out.println(body.getUsedRegisters().get(0));
             body.add(factory.instr("MOV", "r0", "r" + body.getUsedRegisters().get(0)));
         }
 
