@@ -98,6 +98,9 @@ public class UnnecessaryDefRemover implements ObjVisitor<Exp> {
                 && !((Var) ((App) e.e1).e).id.id.equals("_make_closure_")) {
             usedVars.add(e.id.id);
         }
+        if (e.e1 instanceof Put) {
+            usedVars.add(e.id.id);
+        }
         if (usedVars.contains(e.id.id)) {
             Exp res1 = e.e1.accept(this);
             return new Let(e.id, e.t, res1, res2);
